@@ -1128,13 +1128,15 @@ $('#mwUseUrl').addEventListener('click',()=>{
 });
 async function handleWorkFile(file){
   if(!file.type.startsWith('image/')){alert('이미지 파일만 업로드할 수 있습니다.');return;}
+  const slot=_pickSlot;
   const reader=new FileReader();
   reader.onload=e=>resizeImage(e.target.result,1600,async dataUrl=>{
-    const filename=`work_${Date.now()}.jpg`;
-    toast('이미지 업로드 중...');
-    const url=await uploadImageToGitHub(dataUrl,filename);
-    stagedWork.images[_pickSlot]=url;
+    stagedWork.images[slot]=dataUrl;  /* 즉시 dataUrl로 미리보기 */
     renderImageSlots();
+    toast('업로드 중...');
+    const filename=`work_${Date.now()}.jpg`;
+    const url=await uploadImageToGitHub(dataUrl,filename);
+    stagedWork.images[slot]=url;      /* GitHub URL로 교체 */
     toast('이미지 업로드 완료 ✓');
   });
   reader.readAsDataURL(file);
@@ -1239,12 +1241,15 @@ $('#msUseUrl').addEventListener('click',()=>{
 $('#msClearImg').addEventListener('click',()=>{stagedSvc.image='';refreshMsPreview();});
 async function handleSvcFile(f){
   if(!f.type.startsWith('image/')){alert('이미지 파일만');return;}
+  const slot=_svcPickSlot;
   const r=new FileReader();
   r.onload=e=>resizeImage(e.target.result,1400,async du=>{
-    const url=await uploadImageToGitHub(du,`svc_${Date.now()}.jpg`);
     if(!stagedSvc.images) stagedSvc.images=[];
-    stagedSvc.images[_svcPickSlot]=url;
+    stagedSvc.images[slot]=du;        /* 즉시 dataUrl로 미리보기 */
     renderSvcImageSlots();
+    toast('업로드 중...');
+    const url=await uploadImageToGitHub(du,`svc_${Date.now()}.jpg`);
+    stagedSvc.images[slot]=url;       /* GitHub URL로 교체 */
     toast('이미지 업로드 완료 ✓');
   });
   r.readAsDataURL(f);
@@ -1264,8 +1269,12 @@ $('#svcBgFile').addEventListener('change', e => {
   if(!f.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); return; }
   const r = new FileReader();
   r.onload = ev => resizeImage(ev.target.result, 1600, async du => {
+    DATA.settings.svcBg = du;         /* 즉시 dataUrl로 미리보기 */
+    renderSvcBg();
+    toast('업로드 중...');
     const url = await uploadImageToGitHub(du, `svcbg_${Date.now()}.jpg`);
     DATA.settings.svcBg = url;
+    renderSvcBg();
     saveData();
     toast('서비스 배경 업로드 완료 ✓');
   });
@@ -1285,6 +1294,9 @@ $('#aboutBgFile').addEventListener('change', e => {
   if(!f.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); return; }
   const r = new FileReader();
   r.onload = ev => resizeImage(ev.target.result, 1600, async du => {
+    DATA.settings.aboutBg = du;       /* 즉시 dataUrl로 미리보기 */
+    renderAboutBg();
+    toast('업로드 중...');
     const url = await uploadImageToGitHub(du, `aboutbg_${Date.now()}.jpg`);
     DATA.settings.aboutBg = url;
     renderAboutBg();
