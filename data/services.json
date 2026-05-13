@@ -1,0 +1,44 @@
+{
+  "services": [
+    {
+      "id": "s1",
+      "tags": ["P2~P10", "실내/실외", "4K"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "풀컬러 LED 전광판", "d": "P2부터 P10까지 픽셀 피치를 자유롭게 선택할 수 있는 실내·실외 풀컬러 전광판입니다."},
+        "en": {"t": "Full-color LED Display", "d": "Indoor and outdoor full-color LED displays with pixel pitches from P2 to P10."},
+        "jp": {"t": "フルカラーLEDディスプレイ", "d": "P2からP10までピクセルピッチを自由に選べる屋内・屋外フルカラーディスプレイ。"}
+      }
+    },
+    {
+      "id": "s2",
+      "tags": ["저전력", "도로·주차장"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "단색·삼색 전광판", "d": "저전력으로 장시간 운영이 필요한 도로·주차장·공장 환경에 최적화된 단색 및 삼색 LED 전광판입니다."},
+        "en": {"t": "Monochrome / Tri-color Display", "d": "Low-power monochrome and tri-color LED displays for roads and parking lots."},
+        "jp": {"t": "単色・三色ディスプレイ", "d": "長時間運用に最適化された低消費電力の単色・三色LEDディスプレイです。"}
+      }
+    },
+    {
+      "id": "s3",
+      "tags": ["플렉시블", "커스텀 형태"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "곡면형 커브드 전광판", "d": "플렉시블 모듈로 곡면, 기둥형, 천장형 등 공간 디자인에 맞춘 커스텀 형태의 LED를 제작합니다."},
+        "en": {"t": "Curved / Flexible Display", "d": "Flexible LED modules for curved, column-wrapped, or ceiling-mounted forms."},
+        "jp": {"t": "カーブド・フレキシブル", "d": "フレキシブルモジュールでカスタム形状のLEDを製作します。"}
+      }
+    },
+    {
+      "id": "s4",
+      "tags": ["원격제어", "앱 지원"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "스마트 콘텐츠 관리", "d": "설치 후에도 PC·모바일 앱에서 콘텐츠를 원격으로 업로드하고 스케줄링할 수 있습니다."},
+        "en": {"t": "Smart Content Management", "d": "Manage content remotely via PC or mobile app after install."},
+        "jp": {"t": "スマートコンテンツ管理", "d": "PC・モバイルアプリからコンテンツを遠隔でアップロード・スケジューリングできます。"}
+      }
+    }
+  ]
+}

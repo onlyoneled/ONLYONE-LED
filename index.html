@@ -1,0 +1,1379 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="온리원 LED — 주문제작 LED 사이니지, 실내외 대형 LED 전광판 설계부터 설치까지." />
+<meta property="og:title" content="온리원 LED — LED 전광판 전문" />
+<meta property="og:description" content="주문제작 LED 사이니지, 실내외 대형 LED 전광판 설계부터 설치까지." />
+<meta property="og:image" content="https://only1led.com/slide2.png" />
+<title>온리원 LED — LED 전광판 전문</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='42' fill='%23f97316'/></svg>" />
+<meta name="theme-color" content="#0a0a0a" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="image" href="/slide2.png" />
+<link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+  href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Gothic+A1:wght@400;700;900&family=IBM+Plex+Mono:wght@400&family=Noto+Sans+JP:wght@400;700;900&display=swap" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Gothic+A1:wght@400;700;900&family=IBM+Plex+Mono:wght@400&family=Noto+Sans+JP:wght@400;700;900&display=swap" /></noscript>
+<style>
+/* ══════════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════════ */
+:root {
+  --ink: #f6f4ef;
+  --bg: #0a0a0a;
+  --bg-2: #111;
+  --line: rgba(246,244,239,.13);
+  --line-strong: rgba(246,244,239,.28);
+  --mute: rgba(246,244,239,.52);
+  --accent: oklch(0.78 0.19 55); /* orange */
+  --font-en: "Archivo Black","Archivo",sans-serif;
+  --font-kr: "Gothic A1","Noto Sans JP",sans-serif;
+  --font-jp: "Noto Sans JP","Gothic A1",sans-serif;
+  --font-body: "Gothic A1","Noto Sans JP",sans-serif;
+  --font-mono: "IBM Plex Mono",ui-monospace,monospace;
+  --pad: 40px; /* horizontal gutters */
+  --fs-hero: 1;
+  --fs-section: 1;
+  --fs-body: 1;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;display:block;}
+body[data-lang="jp"]{font-family:var(--font-jp);}
+
+/* ══════════════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════════════ */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px var(--pad);
+  mix-blend-mode:difference;color:#fff;
+}
+.logo{
+  font-family:var(--font-en);font-size:21px;letter-spacing:-.01em;
+  line-height:1;color:inherit;z-index:60;position:relative;
+}
+.logo .dot{
+  display:inline-block;width:9px;height:9px;background:var(--accent);
+  border-radius:50%;margin-right:9px;transform:translateY(-3px);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:translateY(-3px) scale(1)}50%{opacity:.35;transform:translateY(-3px) scale(.82)}}
+
+.nav{display:flex;align-items:center;gap:26px;}
+.nav a{
+  font-family:var(--font-en);font-size:15px;letter-spacing:.05em;
+  text-transform:uppercase;position:relative;padding:8px 4px;
+}
+.nav a::after{
+  content:"";position:absolute;left:4px;right:4px;bottom:4px;
+  height:1px;background:var(--accent);transform:scaleX(0);
+  transform-origin:left;transition:transform .3s cubic-bezier(.7,0,.2,1);
+}
+.nav a:hover::after{transform:scaleX(1);}
+
+.langs{display:flex;align-items:center;gap:2px;padding-left:18px;border-left:1px solid rgba(255,255,255,.2);}
+.langs button{
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;
+  background:transparent;color:inherit;border:0;padding:6px 7px;cursor:pointer;
+  opacity:.5;transition:opacity .2s;
+}
+.langs button:hover{opacity:1;}
+.langs button[aria-pressed="true"]{opacity:1;color:var(--accent);}
+
+/* Hamburger */
+.menu-btn{
+  display:none;background:transparent;border:0;color:#fff;
+  cursor:pointer;padding:6px;z-index:110;mix-blend-mode:difference;
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE NAV OVERLAY
+══════════════════════════════════════════════ */
+.mob-nav{
+  display:none;position:fixed;inset:0;z-index:100;
+  background:var(--bg);flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:24px;padding:80px var(--pad) 60px;
+}
+.mob-nav.is-open{display:flex;}
+.mob-close{
+  position:absolute;top:18px;right:var(--pad);
+  background:transparent;border:0;color:var(--ink);
+  cursor:pointer;padding:8px;font-size:26px;line-height:1;
+}
+.mob-nav a{
+  font-family:var(--font-en);font-size:34px;letter-spacing:-.02em;
+  color:var(--ink);text-transform:uppercase;transition:color .2s;
+}
+.mob-nav a:hover{color:var(--accent);}
+.mob-langs{
+  display:flex;gap:6px;margin-top:24px;
+  border-top:1px solid var(--line);padding-top:28px;width:100%;justify-content:center;
+}
+.mob-langs button{
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;
+  background:transparent;border:1px solid var(--line-strong);
+  color:var(--mute);padding:10px 22px;border-radius:999px;
+  cursor:pointer;transition:all .2s;
+}
+.mob-langs button[aria-pressed="true"]{background:var(--accent);color:#000;border-color:var(--accent);}
+
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+.hero{
+  position:relative;min-height:100vh;min-height:100svh;
+  padding:128px var(--pad) 72px;overflow:hidden;color:var(--ink);
+}
+
+/* Video / image background */
+.hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden;background:#000;}
+.hero-bg.has-image::before{
+  background:var(--hero-img,none) center/cover no-repeat !important;
+  animation:none !important;
+  filter:saturate(1.05) contrast(1.04);
+}
+.hero-bg::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255,140,40,.38), transparent 44%),
+    radial-gradient(circle at 80% 72%, rgba(60,160,255,.22), transparent 52%),
+    linear-gradient(180deg,#0a0a0a 0%,#1c1008 100%);
+  animation:hue-cycle 20s ease-in-out infinite alternate;
+}
+@keyframes hue-cycle{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(28deg)}}
+.hero-bg iframe{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:177.78vh;min-width:100vw;height:56.25vw;min-height:100vh;
+  pointer-events:none;opacity:0;transition:opacity 1.2s;border:0;
+}
+.hero-bg.has-video iframe{opacity:.5;}
+.hero-bg::after{
+  content:"";position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.15) 3px,rgba(0,0,0,.15) 4px),
+    linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,.55) 60%,rgba(0,0,0,.92) 100%);
+  pointer-events:none;
+}
+
+/* Hero content */
+.hero-grid{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1.4fr 1fr;gap:72px;align-items:end;
+  min-height:calc(100vh - 220px);min-height:calc(100svh - 220px);
+}
+.hero-tag{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.24em;color:var(--accent);
+  display:flex;align-items:center;gap:10px;margin:0 0 22px;
+}
+.hero-tag::before{content:"";width:30px;height:1px;background:var(--accent);flex-shrink:0;}
+.hero-title{
+  font-family:var(--font-kr);font-weight:900;
+  font-size:clamp(calc(56px * var(--fs-hero)), calc(12vw * var(--fs-hero)), calc(210px * var(--fs-hero)));
+  line-height:1.0;letter-spacing:-.05em;margin:0;color:var(--ink);
+}
+body[data-lang="en"] .hero-title{font-family:var(--font-en);line-height:.84;font-size:clamp(48px,10.5vw,180px);}
+body[data-lang="jp"] .hero-title{font-family:var(--font-jp);font-weight:900;line-height:1.02;}
+.hero-title .row{display:flex;align-items:baseline;gap:20px;}
+.hero-title .row+.row{margin-top:.02em;}
+body[data-lang="en"] .hero-title .row+.row{margin-top:-.08em;}
+.hero-title .row-num{
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;
+  color:var(--accent);font-weight:400;align-self:flex-start;padding-top:1.4em;flex-shrink:0;
+}
+.hero-title .hl{color:var(--accent);}
+
+.hero-right{padding-bottom:28px;display:flex;flex-direction:column;gap:26px;}
+.hero-sub{font-size:17px;line-height:1.6;color:var(--ink);max-width:360px;text-wrap:pretty;margin:0;}
+.hero-list{
+  list-style:none;margin:0;padding:18px 0 0;
+  display:flex;flex-direction:column;gap:9px;
+  border-top:1px solid var(--line);
+}
+.hero-list li{
+  display:flex;align-items:center;gap:11px;
+  font-size:14px;line-height:1.4;color:var(--ink);
+}
+.hero-list li::before{
+  content:"";width:18px;height:18px;flex-shrink:0;border-radius:50%;
+  background:color-mix(in oklch,var(--accent) 15%,transparent);
+  border:1px solid color-mix(in oklch,var(--accent) 55%,transparent);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='7' viewBox='0 0 9 7' fill='none'%3E%3Cpath d='M1 3.5L3.5 6L8 1' stroke='%23f97316' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+}
+.hero-bgnote{
+  position:absolute;bottom:28px;right:var(--pad);z-index:3;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;color:rgba(255,255,255,.3);
+  margin:0;
+}
+
+/* ══════════════════════════════════════════════
+   MARQUEE
+══════════════════════════════════════════════ */
+.marquee{display:flex;overflow:hidden;border-block:1px solid var(--line);padding:14px 0;}
+.marquee-track{
+  display:flex;flex-shrink:0;gap:48px;padding-right:48px;
+  animation:scroll-left 30s linear infinite;white-space:nowrap;
+}
+.marquee-track span{font-family:var(--font-en);font-size:26px;letter-spacing:-.01em;line-height:1;}
+.marquee-track .dot{color:var(--accent);}
+@keyframes scroll-left{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+
+/* ══════════════════════════════════════════════
+   WORKS
+══════════════════════════════════════════════ */
+.work-section{padding:88px var(--pad) 110px;}
+.section-head{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  padding-bottom:30px;border-bottom:1px solid var(--line);margin-bottom:52px;
+}
+.section-head h2{
+  font-family:var(--font-en);font-size:clamp(calc(48px * var(--fs-section)), calc(7.5vw * var(--fs-section)), calc(130px * var(--fs-section)));
+  margin:0;line-height:.88;letter-spacing:-.03em;
+}
+body[data-lang="kr"] .section-head h2{font-family:var(--font-kr);font-weight:900;line-height:.94;}
+body[data-lang="jp"] .section-head h2{font-family:var(--font-jp);font-weight:900;}
+.section-head .count{font-family:var(--font-mono);font-size:12px;letter-spacing:.18em;color:var(--mute);}
+.section-head .count b{color:var(--accent);}
+
+/* Editorial 12-col work grid */
+.work-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;}
+.work-card{
+  position:relative;overflow:hidden;background:#141414;
+  border:1px solid var(--line);cursor:pointer;
+  transition:transform .5s cubic-bezier(.15,.7,.1,1),border-color .3s;
+}
+.work-card:hover{transform:translateY(-5px);border-color:var(--line-strong);}
+.work-card .wc-img{position:absolute;inset:0;}
+.work-card .wc-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.15,.7,.1,1);}
+.work-card:hover .wc-img img{transform:scale(1.04);}
+.work-card .wc-veil{position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,rgba(0,0,0,.88) 100%);}
+.work-card .wc-num{
+  position:absolute;top:14px;left:16px;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.22em;color:var(--accent);
+}
+.work-card .wc-info{position:absolute;left:16px;right:16px;bottom:14px;color:#fff;}
+.work-card .wc-info h3{
+  margin:0 0 4px;font-family:var(--font-kr);font-weight:900;
+  font-size:19px;line-height:1.15;letter-spacing:-.01em;
+}
+body[data-lang="en"] .work-card .wc-info h3{font-family:var(--font-en);}
+body[data-lang="jp"] .work-card .wc-info h3{font-family:var(--font-jp);}
+.work-card .wc-info p{margin:0;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--accent);}
+
+/* Card size slots — editorial mix */
+.wc-s1{grid-column:span 7;aspect-ratio:16/10;}
+.wc-s2{grid-column:span 5;aspect-ratio:4/5;}
+.wc-s3{grid-column:span 4;aspect-ratio:4/5;}
+.wc-s4{grid-column:span 4;aspect-ratio:4/5;}
+.wc-s5{grid-column:span 4;aspect-ratio:4/5;}
+.wc-s6{grid-column:span 12;aspect-ratio:21/7;}
+
+/* ══════════════════════════════════════════════
+   SERVICES
+══════════════════════════════════════════════ */
+.svc-section{
+  padding:80px var(--pad) 100px;border-top:1px solid var(--line);
+  position:relative;isolation:isolate;overflow:hidden;
+}
+.svc-section.has-svc-bg{border-top-color:transparent;}
+.svc-section.has-svc-bg::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:var(--svc-bg-img) center/cover no-repeat;
+  filter:brightness(.28) saturate(.7);
+  pointer-events:none;
+}
+.svc-list{border-bottom:1px solid var(--line);}
+.svc-row{border-top:1px solid var(--line);}
+.svc-trigger{
+  display:grid;grid-template-columns:52px 1fr auto auto;align-items:center;
+  gap:18px;padding:22px 0;cursor:pointer;user-select:none;transition:color .2s;
+}
+.svc-trigger:hover{color:var(--accent);}
+.svc-n{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;color:var(--mute);}
+.svc-trigger h3{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em;}
+.svc-tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.svc-tags span{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;
+  border:1px solid var(--line-strong);color:var(--mute);
+  padding:3px 9px;border-radius:999px;white-space:nowrap;
+}
+.svc-ico{
+  width:30px;height:30px;display:grid;place-items:center;
+  background:transparent;border:1px solid var(--line);border-radius:50%;
+  cursor:pointer;color:var(--ink);transition:all .25s;flex-shrink:0;
+}
+.svc-row[aria-expanded="true"] .svc-ico{background:var(--accent);border-color:var(--accent);color:#000;transform:rotate(45deg);}
+.svc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease;}
+.svc-row[aria-expanded="true"] .svc-body{grid-template-rows:1fr;}
+.svc-body>div{overflow:hidden;}
+.svc-body-inner{display:grid;grid-template-columns:1fr auto;gap:36px;padding:4px 0 28px 70px;}
+.svc-body-inner p{margin:0;font-size:15px;line-height:1.68;color:var(--mute);max-width:540px;}
+.svc-body-img{width:160px;flex-shrink:0;}
+.svc-body-img img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;}
+
+/* ══════════════════════════════════════════════
+   ABOUT
+══════════════════════════════════════════════ */
+.about-section{
+  padding:96px var(--pad) 110px;border-top:1px solid var(--line);
+  position:relative;isolation:isolate;overflow:hidden;
+}
+.about-section.has-about-bg{border-top-color:transparent;}
+.about-section.has-about-bg::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:var(--about-bg-img) center/cover no-repeat;
+  filter:brightness(.28) saturate(.7);
+  pointer-events:none;
+}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start;}
+.about-eyebrow{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.24em;color:var(--accent);
+  display:flex;align-items:center;gap:10px;margin:0 0 28px;
+}
+.about-eyebrow::before{content:"";width:26px;height:1px;background:var(--accent);}
+.about-title{
+  font-family:var(--font-kr);font-weight:900;
+  font-size:clamp(52px,7.5vw,120px);
+  line-height:.96;letter-spacing:-.04em;margin:0;
+}
+body[data-lang="en"] .about-title{font-family:var(--font-en);font-size:clamp(44px,6.5vw,100px);line-height:.87;}
+body[data-lang="jp"] .about-title{font-family:var(--font-jp);}
+.about-title span{display:block;}
+.about-title .hl{color:var(--accent);}
+.about-right{padding-top:8px;}
+#aboutCopy p{margin:0 0 18px;font-size:16px;line-height:1.72;color:var(--mute);}
+#aboutCopy p:last-child{margin-bottom:0;}
+
+/* ══════════════════════════════════════════════
+   CONTACT CTA BANNER
+══════════════════════════════════════════════ */
+.cta-section{
+  padding:96px var(--pad);border-top:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:flex-start;gap:36px;
+}
+.cta-title{
+  font-family:var(--font-kr);font-weight:900;
+  font-size:clamp(56px,11vw,190px);
+  line-height:.97;letter-spacing:-.05em;margin:0;
+}
+body[data-lang="en"] .cta-title{font-family:var(--font-en);line-height:.84;}
+body[data-lang="jp"] .cta-title{font-family:var(--font-jp);}
+.cta-title span{display:block;}
+.cta-title .hl{color:var(--accent);}
+.cta-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  background:var(--accent);color:#000;border:none;
+  font-family:var(--font-en);font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+  padding:16px 32px;border-radius:999px;cursor:pointer;
+  transition:transform .22s,background .2s;
+}
+.cta-btn:hover{transform:translateY(-3px);}
+.cta-btn svg{transition:transform .22s;}
+.cta-btn:hover svg{transform:translateX(4px);}
+
+/* ══════════════════════════════════════════════
+   CONTACT FORM
+══════════════════════════════════════════════ */
+.cf-section{
+  padding:88px var(--pad) 120px;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:1fr 1.65fr;gap:80px;align-items:start;
+}
+.cf-sidebar{position:sticky;top:108px;}
+.cf-eyebrow{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.24em;color:var(--accent);
+  display:flex;align-items:center;gap:10px;margin:0 0 20px;
+}
+.cf-eyebrow::before{content:"";width:26px;height:1px;background:var(--accent);}
+.cf-title{
+  font-family:var(--font-kr);font-weight:900;
+  font-size:clamp(26px,3vw,44px);margin:0 0 14px;
+  line-height:1.04;letter-spacing:-.02em;
+}
+body[data-lang="en"] .cf-title{font-family:var(--font-en);}
+body[data-lang="jp"] .cf-title{font-family:var(--font-jp);}
+.cf-lead{font-size:14px;line-height:1.68;color:var(--mute);margin:0 0 36px;max-width:340px;}
+.cf-details{display:grid;gap:16px;margin-bottom:28px;}
+.cf-dl{display:grid;gap:3px;}
+.cf-dl dt{font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;}
+.cf-dl dd{margin:0;font-size:14px;}
+.cf-dl a:hover{color:var(--accent);}
+.cf-kakao{
+  display:inline-flex;align-items:center;gap:9px;
+  background:#FEE500;color:#191919;
+  font-family:var(--font-body);font-size:13px;font-weight:700;
+  padding:13px 20px;border-radius:10px;text-decoration:none;
+  transition:transform .2s,box-shadow .2s;
+}
+.cf-kakao:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(254,229,0,.25);}
+
+/* Form */
+.cf-form{display:grid;gap:14px;}
+.cf-form label{display:grid;gap:5px;}
+.cf-form label>span,
+.cf-form .cf-label{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.18em;
+  color:var(--mute);text-transform:uppercase;
+}
+.cf-form input,
+.cf-form textarea,
+.cf-form select{
+  background:var(--bg-2);border:1px solid var(--line);color:var(--ink);
+  padding:13px 15px;border-radius:10px;outline:none;
+  font:14px/1.45 var(--font-body);transition:border-color .2s;
+  width:100%;-webkit-appearance:none;appearance:none;
+}
+.cf-form input:focus,
+.cf-form textarea:focus,
+.cf-form select:focus{border-color:var(--accent);}
+.cf-form textarea{min-height:114px;resize:vertical;}
+.cf-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cf-agree{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:14px;background:var(--bg-2);border-radius:10px;
+}
+.cf-agree input[type="checkbox"]{
+  -webkit-appearance:none;appearance:none;
+  width:20px;height:20px;min-width:20px;
+  border:1.5px solid var(--line-strong);border-radius:5px;
+  background:transparent;cursor:pointer;
+  margin-top:1px;flex-shrink:0;
+  transition:background .15s,border-color .15s;
+}
+.cf-agree input[type="checkbox"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.cf-agree input[type="checkbox"]:checked{
+  background:var(--accent);border-color:var(--accent);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='9' viewBox='0 0 12 9' fill='none'%3E%3Cpath d='M1 4.5L4.5 8L11 1' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;
+}
+.cf-agree span{font-size:12px;color:var(--mute);line-height:1.55;}
+.cf-submit{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  background:var(--accent);color:#000;border:none;
+  font-family:var(--font-en);font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+  padding:17px 24px;border-radius:999px;cursor:pointer;width:100%;
+  transition:transform .2s,background .2s;
+}
+.cf-submit:hover{transform:translateY(-2px);}
+.cf-submit:disabled{opacity:.55;pointer-events:none;}
+
+/* Submit success modal */
+.cf-modal-bg{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;padding:var(--pad);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.cf-modal-bg.open{opacity:1;pointer-events:auto;}
+.cf-modal{
+  background:var(--bg-2);border:1px solid var(--line-strong);
+  border-radius:20px;padding:52px 44px;
+  width:100%;max-width:460px;text-align:center;
+  transform:translateY(18px);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.cf-modal-bg.open .cf-modal{transform:translateY(0);}
+.cf-modal-icon{
+  width:64px;height:64px;border-radius:50%;
+  background:color-mix(in oklch,var(--accent) 14%,transparent);
+  border:1.5px solid var(--accent);
+  display:grid;place-items:center;margin:0 auto 28px;
+}
+.cf-modal-tag{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;
+  color:var(--accent);text-transform:uppercase;margin-bottom:14px;
+}
+.cf-modal h2{
+  font-family:var(--font-kr);font-weight:900;
+  font-size:clamp(20px,3vw,28px);letter-spacing:-.02em;
+  margin:0 0 14px;line-height:1.15;
+}
+.cf-modal p{
+  font-size:14px;line-height:1.72;color:var(--mute);margin:0 0 32px;
+}
+.cf-modal-close{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--accent);color:#000;border:none;
+  font-family:var(--font-en);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  padding:14px 36px;border-radius:999px;cursor:pointer;
+  transition:transform .2s,background .2s;
+}
+.cf-modal-close:hover{transform:translateY(-2px);}
+
+/* ══════════════════════════════════════════════
+   LIGHTBOX
+══════════════════════════════════════════════ */
+.lb-bg{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,.93);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;cursor:zoom-out;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.lb-bg.open{opacity:1;pointer-events:auto;}
+.lb-img{
+  max-width:100%;max-height:90vh;
+  object-fit:contain;border-radius:4px;
+  cursor:default;display:block;
+  user-select:none;-webkit-user-drag:none;
+}
+.lb-wrap{
+  position:relative;
+  max-width:100%;max-height:90vh;
+  display:flex;
+  transform:scale(.95);transition:transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.lb-bg.open .lb-wrap{transform:scale(1);}
+.lb-close{
+  position:absolute;top:10px;right:10px;z-index:1;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:1px solid rgba(246,244,239,.35);
+  color:#f6f4ef;cursor:pointer;display:grid;place-items:center;
+  transition:background .15s,transform .15s;touch-action:manipulation;
+}
+.lb-close:hover{background:rgba(0,0,0,.8);transform:scale(1.1);}
+.work-card{cursor:zoom-in;}
+.svc-body-inner img{cursor:zoom-in;transition:opacity .2s;}
+.svc-body-inner img:hover{opacity:.78;}
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+footer{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
+  padding:22px var(--pad);border-top:1px solid var(--line);
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute);
+}
+footer .logo{font-size:15px;}
+.admin-lnk{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--line);padding:6px 12px;border-radius:6px;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--mute);
+  transition:all .2s;
+}
+.admin-lnk:hover{color:var(--accent);border-color:var(--accent);}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — TABLET ≤ 1100px
+══════════════════════════════════════════════ */
+@media(max-width:1100px){
+  :root{--pad:28px;}
+  .hero-grid{grid-template-columns:1fr;gap:36px;min-height:auto;padding-top:24px;}
+  .hero-right{max-width:500px;}
+  .hero-sub{max-width:100%;}
+  .hero-bgnote{bottom:80px;left:var(--pad);right:auto;}
+
+  .about-grid{grid-template-columns:1fr;gap:36px;}
+  .cf-section{grid-template-columns:1fr;gap:52px;}
+  .cf-sidebar{position:static;}
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — MOBILE ≤ 768px
+══════════════════════════════════════════════ */
+@media(max-width:768px){
+  :root{--pad:20px;}
+
+  /* Nav → hamburger */
+  .nav,.langs{display:none;}
+  .menu-btn{display:block;}
+
+  /* Hero */
+  .hero{padding:96px var(--pad) 56px;min-height:100svh;}
+  .hero-title{font-size:clamp(44px,13.5vw,80px);}
+  body[data-lang="en"] .hero-title{font-size:clamp(38px,11.5vw,68px);}
+  .hero-sub{font-size:15px;}
+
+  /* Marquee */
+  .marquee-track span{font-size:20px;}
+  .marquee-track{gap:32px;padding-right:32px;}
+
+  /* Works */
+  .work-section{padding:56px var(--pad) 72px;}
+  .work-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .wc-s1,.wc-s2,.wc-s3,.wc-s4,.wc-s5{grid-column:span 1;aspect-ratio:3/4;}
+  .wc-s6{grid-column:span 2;aspect-ratio:16/9;}
+  .work-card .wc-info h3{font-size:14px;}
+
+  /* Services */
+  .svc-section{padding:56px var(--pad) 72px;}
+  .svc-trigger{grid-template-columns:36px 1fr auto;gap:10px;}
+  .svc-tags{display:none;}
+  .svc-body-inner{grid-template-columns:1fr;padding:4px 0 22px 46px;}
+  .svc-body-img{width:100%;}
+
+  /* About */
+  .about-section{padding:56px var(--pad) 72px;}
+  .about-title{font-size:clamp(44px,13vw,72px);}
+
+  /* CTA */
+  .cta-section{padding:56px var(--pad) 72px;gap:24px;}
+  .cta-title{font-size:clamp(40px,12.5vw,72px);}
+  .cta-btn{font-size:13px;padding:14px 26px;}
+
+  /* Contact form */
+  .cf-section{padding:56px var(--pad) 80px;}
+  .cf-row2{grid-template-columns:1fr;}
+
+  /* Footer */
+  footer{flex-direction:column;align-items:center;text-align:center;padding:24px var(--pad);}
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE ≤ 480px
+══════════════════════════════════════════════ */
+@media(max-width:480px){
+  .work-grid{grid-template-columns:1fr;}
+  .wc-s1,.wc-s2,.wc-s3,.wc-s4,.wc-s5,.wc-s6{grid-column:span 1;aspect-ratio:4/5;}
+  .work-card .wc-info h3{font-size:16px;}
+}
+</style>
+</head>
+
+<body data-lang="kr">
+
+
+
+<!-- ═══════════════════════════════════════
+     TOP BAR
+═══════════════════════════════════════ -->
+<header class="topbar">
+  <a class="logo" href="#hero"><span class="dot"></span>ONLYONE LED</a>
+
+  <nav class="nav" aria-label="메인 메뉴">
+    <a href="#work"     data-i="nav.work">시공사례</a>
+    <a href="#services" data-i="nav.services">서비스</a>
+    <a href="#about"    data-i="nav.about">소개</a>
+    <a href="#contact"  data-i="nav.contact">문의</a>
+  </nav>
+
+  <div class="langs" role="group" aria-label="언어 선택">
+    <button data-lang="kr" aria-pressed="true">KR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="jp" aria-pressed="false">JP</button>
+  </div>
+
+  <button class="menu-btn" id="menuBtn" aria-label="메뉴 열기" aria-expanded="false">
+    <svg width="24" height="18" viewBox="0 0 24 18" fill="none" aria-hidden="true">
+      <path d="M0 1h24M0 9h24M0 17h24" stroke="currentColor" stroke-width="1.8"/>
+    </svg>
+  </button>
+</header>
+
+<!-- ═══════════════════════════════════════
+     MOBILE NAV
+═══════════════════════════════════════ -->
+<div class="mob-nav" id="mobNav" role="dialog" aria-modal="true" aria-label="모바일 메뉴">
+  <button class="mob-close" id="mobClose" aria-label="메뉴 닫기">✕</button>
+  <a href="#work"     data-i="nav.work"     onclick="closeMob()">시공사례</a>
+  <a href="#services" data-i="nav.services" onclick="closeMob()">서비스</a>
+  <a href="#about"    data-i="nav.about"    onclick="closeMob()">소개</a>
+  <a href="#contact"  data-i="nav.contact"  onclick="closeMob()">문의</a>
+  <div class="mob-langs" role="group" aria-label="언어 선택">
+    <button data-lang="kr" aria-pressed="true">KR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="jp" aria-pressed="false">JP</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     HERO
+═══════════════════════════════════════ -->
+<section id="hero" class="hero">
+  <div class="hero-bg" id="ytBg">
+    <iframe id="ytFrame" frameborder="0"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen title="배경 영상"></iframe>
+  </div>
+
+  <div class="hero-grid">
+    <div class="hero-left">
+      <p class="hero-tag" data-i="tag">LED DISPLAY SPECIALIST ·</p>
+      <h1 class="hero-title">
+        <div class="row"><span class="row-num">01</span><span data-i="hero.l1">빛이</span></div>
+        <div class="row"><span class="row-num">02</span><span data-i="hero.l2">공간을</span></div>
+        <div class="row"><span class="row-num">03</span><span class="hl" data-i="hero.l3">말한다</span></div>
+      </h1>
+    </div>
+    <div class="hero-right">
+      <p class="hero-sub" data-i="hero.sub">주문제작 LED 사이니지, 실내외 대형 LED 전광판 설계부터 설치까지. 우리가 만드는 빛은 오래 기억됩니다.</p>
+      <ul class="hero-list">
+        <li data-i="feat.1">어떤 형태든 제작 가능합니다</li>
+        <li data-i="feat.2">실내외 모두 시공합니다</li>
+        <li data-i="feat.3">설계부터 설치까지 직접 합니다</li>
+        <li data-i="feat.4">A/S까지 책임집니다</li>
+      </ul>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════
+     MARQUEE
+═══════════════════════════════════════ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="marqueeTrack1"></div>
+  <div class="marquee-track" id="marqueeTrack2" aria-hidden="true"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     WORKS
+═══════════════════════════════════════ -->
+<section id="work" class="work-section">
+  <div class="section-head">
+    <h2 data-i="work.title">시공사례</h2>
+    <div class="count"><b id="workCount">06</b> <span data-i="work.count">CASES</span></div>
+  </div>
+  <div class="work-grid" id="workGrid"></div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SERVICES
+═══════════════════════════════════════ -->
+<section id="services" class="svc-section">
+  <div class="section-head">
+    <h2 data-i="services.title">서비스</h2>
+    <div class="count"><b id="svcCount">04</b> <span data-i="services.count">SERVICES</span></div>
+  </div>
+  <div class="svc-list" id="svcList"></div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     ABOUT
+═══════════════════════════════════════ -->
+<section id="about" class="about-section">
+  <div class="about-grid">
+    <div>
+      <p class="about-eyebrow" data-i="about.eyebrow">ONLYONE LED</p>
+      <h2 class="about-title">
+        <span data-i="about.l1">세상에 없던</span>
+        <span data-i="about.l2">사이니지를</span>
+        <span class="hl" data-i="about.l3">만듭니다.</span>
+      </h2>
+    </div>
+    <div class="about-right">
+      <div id="aboutCopy"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     CONTACT FORM  (Netlify Forms)
+═══════════════════════════════════════ -->
+<section id="contact" class="cf-section">
+
+  <!-- Info sidebar -->
+  <div class="cf-sidebar">
+    <p class="cf-eyebrow" data-i="cf.tag">CONTACT · 빠른 상담</p>
+    <h2 class="cf-title" data-i="cf.title">현장을 알려주세요</h2>
+    <p class="cf-lead" data-i="cf.lead">규모·예산·일정 정보를 남겨주시면 24시간 내에 담당자가 회신드립니다. 급하신 경우 카카오톡으로 바로 문의해주세요.</p>
+    <dl class="cf-details">
+      <div class="cf-dl">
+        <dt data-i="cf.tel.l">전화</dt>
+        <dd><a href="tel:only1@only1led.com">010-7782-0021</a></dd>
+      </div>
+      <div class="cf-dl">
+        <dt data-i="cf.mail.l">이메일</dt>
+        <dd><a href="mailto:only1@only1led.com">only1@only1led.com</a></dd>
+      </div>
+      <div class="cf-dl">
+        <dt data-i="cf.hours.l">상담시간</dt>
+        <dd data-i="cf.hours.v">평일 09:00 – 18:00</dd>
+      </div>
+      <div class="cf-dl">
+        <dt data-i="cf.addr.l">위치</dt>
+        <dd data-i="cf.addr.v">서울특별시 · 전국 시공</dd>
+      </div>
+    </dl>
+    <a href="https://pf.kakao.com/_LxaJKX" target="_blank" rel="noopener noreferrer" class="cf-kakao">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 3C6.477 3 2 6.477 2 10.778c0 2.704 1.67 5.09 4.203 6.528L5.1 21l5.047-2.69c.604.085 1.221.129 1.853.129 5.523 0 10-3.478 10-7.661S17.523 3 12 3z"/>
+      </svg>
+      <span data-i="cf.kakao">카카오톡으로 문의하기</span>
+    </a>
+  </div>
+
+  <!-- Netlify Form -->
+  <form class="cf-form" name="contact" method="POST"
+        data-netlify="true"
+        netlify-honeypot="bot-field">
+    <input type="hidden" name="form-name" value="contact" />
+    <label style="display:none" aria-hidden="true">
+      <input name="bot-field" tabindex="-1" autocomplete="off" />
+    </label>
+
+    <div class="cf-row2">
+      <label>
+        <span data-i="cf.name">이름 / 회사명</span>
+        <input type="text" name="name" required placeholder="홍길동 / (주)온리원" autocomplete="name" />
+      </label>
+      <label>
+        <span data-i="cf.phone">연락처</span>
+        <input type="tel" name="phone" required placeholder="010-0000-0000" autocomplete="tel" maxlength="13" inputmode="numeric" />
+      </label>
+    </div>
+
+    <label>
+      <span data-i="cf.email">이메일</span>
+      <input type="email" name="email" placeholder="your@email.com" autocomplete="email" />
+    </label>
+
+    <div class="cf-row2">
+      <label>
+        <span data-i="cf.type">설치 환경</span>
+        <select name="type">
+          <option value="">선택해주세요</option>
+          <option>실내 — 로비 / 쇼룸</option>
+          <option>실내 — 공장 / 창고</option>
+          <option>실내 — 연회장 / 행사장</option>
+          <option>실외 — 건물 외벽</option>
+          <option>실외 — 도로 / 주차장</option>
+          <option>기타</option>
+        </select>
+      </label>
+      <label>
+        <span data-i="cf.budget">예상 예산</span>
+        <select name="budget">
+          <option value="">선택해주세요</option>
+          <option>1,000만원 미만</option>
+          <option>1,000 ~ 3,000만원</option>
+          <option>3,000만원 ~ 1억</option>
+          <option>1억 이상</option>
+        </select>
+      </label>
+    </div>
+
+    <label>
+      <span data-i="cf.msg">상세 내용</span>
+      <textarea name="msg" rows="5" required
+        placeholder="설치 장소, 크기, 일정 등 알려주시면 더 정확하게 안내드립니다."></textarea>
+    </label>
+
+    <div class="cf-agree">
+      <input type="checkbox" id="agree" name="agree" required />
+      <label for="agree">
+        <span data-i="cf.agree">개인정보 수집·이용에 동의합니다. (문의 접수·회신 목적)</span>
+      </label>
+    </div>
+
+    <button class="cf-submit" type="submit">
+      <span data-i="cf.submit">문의 보내기</span>
+      <svg width="17" height="13" viewBox="0 0 17 13" fill="none" aria-hidden="true">
+        <path d="M1 6.5h15M10 1l6 5.5-6 5.5" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+    </button>
+  </form>
+</section>
+
+<!-- ═══════════════════════════════════════
+     CONTACT SUCCESS MODAL
+═══════════════════════════════════════ -->
+<div class="cf-modal-bg" id="cfModal" role="dialog" aria-modal="true" aria-labelledby="cfModalTitle">
+  <div class="cf-modal">
+    <div class="cf-modal-icon">
+      <svg width="26" height="20" viewBox="0 0 26 20" fill="none" aria-hidden="true">
+        <path d="M2 10L9.5 17.5L24 2" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="cf-modal-tag">INQUIRY RECEIVED</div>
+    <h2 id="cfModalTitle">문의가 접수되었습니다</h2>
+    <p>빠른 시일 내에 담당자가 확인 후 연락드립니다.<br>급하신 경우 카카오톡으로 바로 문의해 주세요.</p>
+    <button class="cf-modal-close" id="cfModalClose">확인</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     LIGHTBOX
+═══════════════════════════════════════ -->
+<div class="lb-bg" id="lightbox" role="dialog" aria-modal="true" aria-label="이미지 확대">
+  <div class="lb-wrap">
+    <button class="lb-close" id="lbClose" aria-label="닫기">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <img class="lb-img" id="lbImg" src="" alt="" />
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════ -->
+<footer>
+  <a class="logo" href="#hero"><span class="dot"></span>ONLYONE LED</a>
+  <span>© 2024 온리원 LED. ALL RIGHTS RESERVED.</span>
+  <a href="/admin.html" class="admin-lnk" data-i="adminlink">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4"/>
+    </svg>
+    관리자 페이지에서 편집
+  </a>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════ -->
+<script>
+/* ── Mobile nav ──────────────────────────── */
+const menuBtn = document.getElementById('menuBtn');
+const mobNav  = document.getElementById('mobNav');
+const mobClose = document.getElementById('mobClose');
+
+menuBtn.addEventListener('click', () => {
+  mobNav.classList.add('is-open');
+  menuBtn.setAttribute('aria-expanded','true');
+  document.body.style.overflow = 'hidden';
+});
+mobClose.addEventListener('click', closeMob);
+mobNav.addEventListener('click', e => { if (e.target === mobNav) closeMob(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMob(); });
+
+function closeMob() {
+  mobNav.classList.remove('is-open');
+  menuBtn.setAttribute('aria-expanded','false');
+  document.body.style.overflow = '';
+}
+
+/* ── i18n ────────────────────────────────── */
+const I18N = {
+  kr: {
+    "nav.work":"시공사례","nav.services":"서비스","nav.about":"소개","nav.contact":"문의",
+    "tag":"LED DISPLAY SPECIALIST ·",
+    "hero.l1":"빛이","hero.l2":"공간을","hero.l3":"말한다",
+    "hero.sub":"주문제작 LED 사이니지, 실내외 대형 LED 전광판 설계부터 설치까지. 우리가 만드는 빛은 오래 기억됩니다.",
+    "feat.1":"어떤 형태든 제작 가능합니다","feat.2":"실내외 모두 시공합니다","feat.3":"설계부터 설치까지 직접 합니다","feat.4":"A/S까지 책임집니다",
+    "work.title":"시공사례","work.count":"CASES",
+    "services.title":"서비스","services.count":"SERVICES",
+    "about.l1":"세상에 없던","about.l2":"사이니지를","about.l3":"만듭니다.",
+    "contact.l1":"함께","contact.l2":"만들어","contact.l3":"봅시다",
+    "contact.cta":"문의하기",
+    "cf.tag":"CONTACT · 빠른 상담","cf.title":"현장을 알려주세요",
+    "cf.lead":"규모·예산·일정 정보를 남겨주시면 24시간 내에 담당자가 회신드립니다. 급하신 경우 카카오톡으로 바로 문의해주세요.",
+    "cf.tel.l":"전화","cf.mail.l":"이메일","cf.hours.l":"상담시간","cf.hours.v":"평일 09:00 – 18:00",
+    "cf.addr.l":"위치","cf.addr.v":"서울특별시 · 전국 시공",
+    "cf.kakao":"카카오톡으로 문의하기",
+    "cf.name":"이름 / 회사명","cf.phone":"연락처","cf.email":"이메일",
+    "cf.type":"설치 환경","cf.budget":"예상 예산","cf.msg":"상세 내용",
+    "cf.agree":"개인정보 수집·이용에 동의합니다. (문의 접수·회신 목적)","cf.submit":"문의 보내기",
+    "adminlink":"관리자 페이지에서 편집",
+    "bgnote":"YouTube 배경 영상 슬롯 — setBackgroundVideo('VIDEO_ID')"
+  },
+  jp: {
+    "nav.work":"ワーク","nav.services":"サービス","nav.about":"アバウト","nav.contact":"コンタクト",
+    "tag":"LEDディスプレイ専門 ·",
+    "hero.l1":"光が","hero.l2":"空間を","hero.l3":"語る",
+    "hero.sub":"屋内大型LEDディスプレイの設計から設置まで。私たちがつくる光は、長く記憶されます。",
+    "feat.1":"あらゆる形状に対応します","feat.2":"屋内外どちらも施工します","feat.3":"設計から設置まで自社対応","feat.4":"アフターサービスまで責任をもって",
+    "work.title":"ワーク","work.count":"CASES",
+    "services.title":"サービス","services.count":"SERVICES",
+    "about.l1":"前例のない","about.l2":"サイネージを","about.l3":"つくります。",
+    "contact.l1":"一緒に","contact.l2":"つくり","contact.l3":"ましょう",
+    "contact.cta":"お問い合わせ",
+    "cf.tag":"CONTACT · クイック相談","cf.title":"現場を教えてください",
+    "cf.lead":"規模・予算・スケジュールをお知らせいただければ、24時間以内に担当者よりご返信します。",
+    "cf.tel.l":"電話","cf.mail.l":"メール","cf.hours.l":"対応時間","cf.hours.v":"平日 09:00 – 18:00",
+    "cf.addr.l":"所在地","cf.addr.v":"ソウル特別市 · 全国対応",
+    "cf.kakao":"カカオトークでお問い合わせ",
+    "cf.name":"お名前 / 会社名","cf.phone":"連絡先","cf.email":"メール",
+    "cf.type":"設置環境","cf.budget":"想定予算","cf.msg":"詳細内容",
+    "cf.agree":"個人情報の収集・利用に同意します。（問い合わせ対応目的）","cf.submit":"問い合わせを送る",
+    "adminlink":"管理者ページで編集",
+    "bgnote":"YouTube 背景動画スロット — setBackgroundVideo('VIDEO_ID')"
+  },
+  en: {
+    "nav.work":"WORK","nav.services":"SERVICES","nav.about":"ABOUT","nav.contact":"CONTACT",
+    "tag":"LED DISPLAY SPECIALIST ·",
+    "hero.l1":"LIGHT","hero.l2":"SPEAKS","hero.l3":"THROUGH SPACE",
+    "hero.sub":"From design to install of large indoor LED displays. The light we make is remembered.",
+    "feat.1":"Any shape, any size","feat.2":"Indoor & outdoor installs","feat.3":"End-to-end, all in-house","feat.4":"Full after-sales support",
+    "work.title":"WORK","work.count":"CASES",
+    "services.title":"SERVICES","services.count":"SERVICES",
+    "about.l1":"SIGNAGE","about.l2":"UNLIKE","about.l3":"ANY OTHER.",
+    "contact.l1":"LET'S","contact.l2":"BUILD","contact.l3":"TOGETHER",
+    "contact.cta":"GET IN TOUCH",
+    "cf.tag":"CONTACT · QUICK CHAT","cf.title":"Tell us about the site",
+    "cf.lead":"Share the scale, budget, and timeline and we'll get back to you within 24 hours. For urgent inquiries, KakaoTalk is fastest.",
+    "cf.tel.l":"PHONE","cf.mail.l":"EMAIL","cf.hours.l":"HOURS","cf.hours.v":"Weekdays 09:00 – 18:00",
+    "cf.addr.l":"BASE","cf.addr.v":"Seoul · Nationwide installs",
+    "cf.kakao":"Message us on KakaoTalk",
+    "cf.name":"Name / Company","cf.phone":"Phone","cf.email":"Email",
+    "cf.type":"Install type","cf.budget":"Budget","cf.msg":"Details",
+    "cf.agree":"I agree to the collection and use of my personal data for inquiry purposes.","cf.submit":"Send inquiry",
+    "adminlink":"Edit in admin",
+    "bgnote":"YouTube background video slot — setBackgroundVideo('VIDEO_ID')"
+  }
+};
+
+function applyLang(lang) {
+  document.body.dataset.lang = lang;
+  document.documentElement.lang = lang==='kr'?'ko':(lang==='jp'?'ja':'en');
+  const dict = I18N[lang];
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const v = dict[el.dataset.i];
+    if (v != null) el.textContent = v;
+  });
+  document.querySelectorAll('.langs button,.mob-langs button').forEach(b => {
+    b.setAttribute('aria-pressed', b.dataset.lang===lang ? 'true' : 'false');
+  });
+  renderWorks(); renderServices(); renderAbout();
+  try { localStorage.setItem('only1.lang', lang); } catch(_) {}
+   // 마퀴 렌더
+  const mq = (I18N[lang] && I18N[lang]['marquee']) || I18N.kr['marquee'] || '';
+  if (mq) {
+    const items = mq.split('●').map(s => s.trim()).filter(Boolean);
+    const html = items.map(t => `<span>${t}</span><span class="dot"> ● </span>`).join('');
+    const t1 = document.getElementById('marqueeTrack1');
+    const t2 = document.getElementById('marqueeTrack2');
+    if (t1) t1.innerHTML = html;
+    if (t2) t2.innerHTML = html;
+  }
+}
+
+document.querySelectorAll('.langs button,.mob-langs button').forEach(b => {
+  b.addEventListener('click', () => { applyLang(b.dataset.lang); closeMob(); });
+});
+
+/* ── CMS data ────────────────────────────── */
+const DEFAULT = {
+  works: [
+    {id:'w1',image:'https://only1led.com/slide2.png',isHero:true,title_kr:'빌딩 로비 LED 큐브',meta_kr:'P3 풀컬러 · 실내',title_en:'Lobby LED Cube',meta_en:'P3 Full-color · Indoor',title_jp:'ビルロビー LEDキューブ',meta_jp:'P3 フルカラー · 屋内'},
+    {id:'w2',image:'https://only1led.com/slide4.png',title_kr:'연회장 벽면 전광판',meta_kr:'P2.5 풀컬러 · 실내',title_en:'Banquet Hall Wall',meta_en:'P2.5 Full-color · Indoor',title_jp:'宴会場 壁面ディスプレイ',meta_jp:'P2.5 フルカラー · 屋内'},
+    {id:'w3',image:'https://only1led.com/slide6.png',title_kr:'쇼룸 대형 전광판',meta_kr:'P3 풀컬러 · 실내',title_en:'Showroom Display',meta_en:'P3 Full-color · Indoor',title_jp:'ショールーム 大型ディスプレイ',meta_jp:'P3 フルカラー · 屋内'},
+    {id:'w4',image:'https://only1led.com/slide3.png',title_kr:'사무공간 가로형 LED',meta_kr:'P4 풀컬러 · 실내',title_en:'Office Wide LED',meta_en:'P4 Full-color · Indoor',title_jp:'オフィス 横型LED',meta_jp:'P4 フルカラー · 屋内'},
+    {id:'w5',image:'https://only1led.com/slide5.png',title_kr:'공장 와이드 LED 월',meta_kr:'P5 풀컬러 · 실내',title_en:'Factory Wide LED Wall',meta_en:'P5 Full-color · Indoor',title_jp:'工場 ワイドLEDウォール',meta_jp:'P5 フルカラー · 屋内'},
+    {id:'w6',image:'https://only1led.com/slide1.png',title_kr:'창고형 대형 전광판',meta_kr:'P4 풀컬러 · 실내',title_en:'Warehouse Display',meta_en:'P4 Full-color · Indoor',title_jp:'倉庫 大型ディスプレイ',meta_jp:'P4 フルカラー · 屋内'}
+  ],
+  services: [
+    {id:'s1',tags:['P2~P10','실내/실외','4K'],title_kr:'풀컬러 LED 전광판',desc_kr:'P2부터 P10까지 픽셀 피치를 자유롭게 선택할 수 있는 실내·실외 풀컬러 전광판입니다. 4K 해상도 콘텐츠를 또렷하게 출력하며, 공간 규모에 맞춰 설계·시공합니다.',title_en:'Full-color LED Display',desc_en:'Indoor and outdoor full-color LED displays with pixel pitches from P2 to P10. Renders 4K content sharply and is engineered to match the scale of your space.',title_jp:'フルカラーLEDディスプレイ',desc_jp:'P2からP10までピクセルピッチを自由に選べる屋内・屋外フルカラーディスプレイ。4Kコンテンツを鮮明に表示し、空間のスケールに合わせて設計・施工します。'},
+    {id:'s2',tags:['저전력','도로·주차장'],title_kr:'단색·삼색 전광판',desc_kr:'저전력으로 장시간 운영이 필요한 도로·주차장·공장 환경에 최적화된 단색 및 삼색 LED 전광판입니다.',title_en:'Monochrome / Tri-color Display',desc_en:'Low-power monochrome and tri-color LED displays optimized for roads, parking lots, and factories.',title_jp:'単色・三色ディスプレイ',desc_jp:'長時間運用が必要な道路・駐車場・工場環境に最適化された低消費電力のディスプレイです。'},
+    {id:'s3',tags:['플렉시블','커스텀 형태'],title_kr:'곡면형 커브드 전광판',desc_kr:'플렉시블 모듈로 곡면, 기둥형, 천장형 등 공간 디자인에 맞춘 커스텀 형태의 LED를 제작합니다.',title_en:'Curved / Flexible Display',desc_en:'Flexible LED modules for curved, column-wrapped, or ceiling-mounted custom forms.',title_jp:'カーブド・フレキシブル',desc_jp:'フレキシブルモジュールで曲面・柱型・天井型などカスタム形状のLEDを製作します。'},
+    {id:'s4',tags:['원격제어','앱 지원'],title_kr:'스마트 콘텐츠 관리',desc_kr:'설치 후에도 PC·모바일 앱에서 콘텐츠를 원격으로 업로드하고 스케줄링할 수 있는 스마트 관리 시스템을 제공합니다.',title_en:'Smart Content Management',desc_en:'After install, manage content from a PC or mobile app — upload, schedule, and monitor remotely.',title_jp:'スマートコンテンツ管理',desc_jp:'設置後もPC・モバイルアプリからコンテンツを遠隔でアップロード・スケジューリングできます。'}
+  ],
+  about: {
+    kr:['설계·제조·설치·유지보수 모두 직접 수행합니다. 중간 단계가 없으니 품질과 비용 모두 명확합니다. 우리가 만드는 것은 단순한 화면이 아닙니다 — 공간을 바꾸는 빛입니다.'],
+    en:['Design, manufacturing, installation, and service are all done in-house. No middlemen — clear quality, clear cost. What we make is not just a screen; it is light that transforms space.'],
+    jp:['設計・製造・設置・メンテナンスをすべて自社で行います。中間工程がないため品質もコストも明確です。私たちがつくるのは単なる画面ではなく、空間を変える光です。']
+  },
+  settings:{heroBg:'w1',videoId:''}
+};
+
+let CMS = JSON.parse(JSON.stringify(DEFAULT));
+
+/* Fetch JSON data from Netlify CMS files */
+async function loadCMS() {
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 6000);
+    const [wRes, sRes, aRes, stRes, txRes] = await Promise.all([
+      fetch('/data/works.json',    { signal: ctrl.signal }),
+      fetch('/data/services.json', { signal: ctrl.signal }),
+      fetch('/data/about.json',    { signal: ctrl.signal }),
+      fetch('/data/settings.json', { signal: ctrl.signal }),
+      fetch('/data/texts.json',    { signal: ctrl.signal })
+    ]);
+    clearTimeout(tid);
+    if (wRes.ok)  { const j=await wRes.json();  if(j.works)    CMS.works    = j.works; }
+    if (sRes.ok)  { const j=await sRes.json();  if(j.services) CMS.services = j.services; }
+    if (aRes.ok)  { const j=await aRes.json();  if(j.about)    CMS.about    = j.about; }
+    if (stRes.ok) { const j=await stRes.json(); CMS.settings = Object.assign({},DEFAULT.settings,j); }
+    if (txRes.ok) {
+      const tx = await txRes.json();
+      ['kr','en','jp'].forEach(lang => {
+        if (tx[lang]) Object.assign(I18N[lang], tx[lang]);
+      });
+    }
+  } catch(_) {}
+  renderAll();
+  applyHeroBg();
+  applySvcBg();
+  applyAboutBg();
+  applyFontSizes();
+  if (CMS.settings.videoId) setBackgroundVideo(CMS.settings.videoId);
+  try {
+    const lang = localStorage.getItem('only1.lang');
+    if (lang && I18N[lang]) applyLang(lang);
+    else applyLang('kr');
+  } catch(_) { applyLang('kr'); }
+}
+
+function currentLang() { return document.body.dataset.lang || 'kr'; }
+
+function wText(w, lang) {
+  if (w['title_'+lang]) return { t:w['title_'+lang], m:w['meta_'+lang]||'' };
+  if (w.i18n) { const x=w.i18n[lang]||w.i18n.kr; return x||{t:'',m:''}; }
+  return {t:'',m:''};
+}
+function sText(s, lang) {
+  if (s['title_'+lang]) return { t:s['title_'+lang], d:s['desc_'+lang]||'' };
+  if (s.i18n) { const x=s.i18n[lang]||s.i18n.kr; return x||{t:'',d:''}; }
+  return {t:'',d:''};
+}
+
+const SIZES = ['wc-s1','wc-s2','wc-s3','wc-s4','wc-s5','wc-s6'];
+
+function renderWorks() {
+  const grid = document.getElementById('workGrid');
+  if (!grid) return;
+  const lang = currentLang();
+  document.getElementById('workCount').textContent = String(CMS.works.length).padStart(2,'0');
+  grid.innerHTML = CMS.works.map((w,i) => {
+    const {t,m} = wText(w, lang);
+    const n = String(i+1).padStart(2,'0');
+    return `<a class="work-card ${SIZES[i%SIZES.length]}" href="#${w.id}">
+      <div class="wc-img"><img src="${(w.images&&w.images[0])||w.image||''}" alt="${t}" loading="lazy"/></div>
+      <div class="wc-veil"></div>
+      <span class="wc-num">${n}</span>
+      <div class="wc-info"><h3>${t}</h3><p>${m}</p></div>
+    </a>`;
+  }).join('');
+}
+
+function renderServices() {
+  const list = document.getElementById('svcList');
+  if (!list) return;
+  const lang = currentLang();
+  document.getElementById('svcCount').textContent = String(CMS.services.length).padStart(2,'0');
+  list.innerHTML = CMS.services.map((s,i) => {
+    const {t,d} = sText(s, lang);
+    const n = String(i+1).padStart(2,'0');
+    const tags = (s.tags||[]).map(x=>`<span>${x}</span>`).join('');
+    return `<div class="svc-row" aria-expanded="false">
+      <div class="svc-trigger">
+        <span class="svc-n">${n}</span>
+        <h3>${t}</h3>
+        <div class="svc-tags">${tags}</div>
+        <button class="svc-ico" aria-label="펼치기">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+      <div class="svc-body"><div><div class="svc-body-inner" style="grid-template-columns:1fr;">
+        <div><p>${d.replace(/\n/g,'<br/>')}</p></div>
+        ${(s.images&&s.images.length)?`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">${s.images.map(img=>`<img src="${img}" alt="${t}" loading="lazy" style="width:160px;height:120px;object-fit:cover;border-radius:8px;"/>`).join('')}</div>`:''}
+      </div></div></div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.svc-row').forEach(row => {
+    row.querySelector('.svc-trigger').addEventListener('click', () => {
+      const open = row.getAttribute('aria-expanded')==='true';
+      list.querySelectorAll('.svc-row').forEach(r => r.setAttribute('aria-expanded','false'));
+      row.setAttribute('aria-expanded', open?'false':'true');
+    });
+  });
+}
+
+function renderAbout() {
+  const el = document.getElementById('aboutCopy');
+  if (!el) return;
+  const lang = currentLang();
+  const lines = CMS.about[lang] || CMS.about.kr || [];
+  el.innerHTML = lines.map(p => `<p>${p}</p>`).join('');
+}
+
+function renderAll() { renderWorks(); renderServices(); renderAbout(); }
+
+function applyHeroBg() {
+  const bg = document.getElementById('ytBg');
+  if (!bg) return;
+  const id = CMS.settings.heroBg;
+  bg.classList.remove('has-image');
+  bg.style.removeProperty('--hero-img');
+  if (id) {
+    const w = CMS.works.find(x => x.id===id);
+    const heroImg = (w && w.images && w.images[0]) || (w && w.image);
+      if (heroImg) {
+        bg.style.setProperty('--hero-img', `url("${heroImg}")`);
+      bg.classList.add('has-image');
+    }
+  }
+}
+function applySvcBg() {
+  const sec = document.getElementById('services');
+  if (!sec) return;
+  const url = CMS.settings.svcBg;
+  if (url) {
+    sec.style.setProperty('--svc-bg-img', `url("${url}")`);
+    sec.classList.add('has-svc-bg');
+  } else {
+    sec.style.removeProperty('--svc-bg-img');
+    sec.classList.remove('has-svc-bg');
+  }
+}
+function applyAboutBg() {
+  const sec = document.getElementById('about');
+  if (!sec) return;
+  const url = CMS.settings.aboutBg;
+  if (url) {
+    sec.style.setProperty('--about-bg-img', `url("${url}")`);
+    sec.classList.add('has-about-bg');
+  } else {
+    sec.style.removeProperty('--about-bg-img');
+    sec.classList.remove('has-about-bg');
+  }
+}
+
+function applyFontSizes(settings) {
+  const s = settings || CMS.settings;
+  const hero    = (s.fsHero    || 100) / 100;
+  const section = (s.fsSection || 100) / 100;
+  const body    = (s.fsBody    || 100) / 100;
+  document.documentElement.style.setProperty('--fs-hero',    hero);
+  document.documentElement.style.setProperty('--fs-section', section);
+  document.documentElement.style.setProperty('--fs-body',    body);
+}
+/* YouTube */
+function setBackgroundVideo(id) {
+  if (!id) return;
+  const bg = document.getElementById('ytBg');
+  const iframe = document.getElementById('ytFrame');
+  if (!iframe || iframe.dataset.loaded===id) return;
+  iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3`;
+  iframe.dataset.loaded = id;
+  /* YouTube 초기 로고·재생버튼이 사라질 때까지 대기 후 페이드인 */
+  setTimeout(() => bg.classList.add('has-video'), 4500);
+}
+window.setBackgroundVideo = setBackgroundVideo;
+/* =================== PREVIEW MODE =================== */
+window.addEventListener('message', e => {
+  if (!e.data || e.data.type !== 'only1_preview') return;
+  const d = e.data.data;
+  if (d) {
+    if (d.works)    CMS.works    = d.works;
+    if (d.services) CMS.services = d.services;
+    if (d.about)    CMS.about    = d.about;
+    if (d.settings) CMS.settings = Object.assign({}, CMS.settings, d.settings);
+  }
+  if (e.data.texts) {
+    ['kr','en','jp'].forEach(lang => {
+      if (e.data.texts[lang]) Object.assign(I18N[lang], e.data.texts[lang]);
+    });
+  }
+  renderAll();
+  applyHeroBg();
+  applySvcBg();
+  applyAboutBg();
+  try { applyFontSizes(); } catch(_) {}
+  applyLang(currentLang());
+});
+/* Init */
+loadCMS();
+
+/* 마키 — 화면 밖에서 애니메이션 정지 */
+if ('IntersectionObserver' in window) {
+  const marqObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      e.target.style.animationPlayState = e.isIntersecting ? 'running' : 'paused';
+    });
+  });
+  document.querySelectorAll('.marquee-track').forEach(t => marqObs.observe(t));
+}
+
+/* ── Contact form AJAX (Netlify) ─────────── */
+(function(){
+  const form = document.querySelector('.cf-form');
+  const modal = document.getElementById('cfModal');
+  if (!form || !modal) return;
+
+  /* 전화번호 자동 하이픈 */
+  const phoneInput = form.querySelector('input[name="phone"]');
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function() {
+      const digits = this.value.replace(/\D/g, '').slice(0, 11);
+      if (digits.length > 7)      this.value = digits.slice(0,3) + '-' + digits.slice(3,7) + '-' + digits.slice(7);
+      else if (digits.length > 3) this.value = digits.slice(0,3) + '-' + digits.slice(3);
+      else                        this.value = digits;
+    });
+  }
+
+  const closeModal = () => modal.classList.remove('open');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = form.querySelector('.cf-submit');
+    btn.disabled = true;
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(new FormData(form)).toString()
+      });
+      if (res.ok) {
+        form.reset();
+        modal.classList.add('open');
+      } else {
+        alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      }
+    } catch {
+      alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('cfModalClose').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+})();
+
+/* ── Lightbox ─────────────────────────────── */
+(function(){
+  const lb    = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  if (!lb || !lbImg) return;
+
+  function openLb(src, alt) {
+    lbImg.src = src;
+    lbImg.alt = alt || '';
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLb() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+    lbImg.src = '';
+  }
+
+  /* 시공사례 — 카드 전체 클릭 */
+  const workGrid = document.getElementById('workGrid');
+  if (workGrid) {
+    workGrid.addEventListener('click', e => {
+      const card = e.target.closest('.work-card');
+      if (!card) return;
+      e.preventDefault();
+      const img = card.querySelector('.wc-img img');
+      if (img && img.src) openLb(img.src, img.alt);
+    });
+  }
+
+  /* 서비스 — 펼쳐진 이미지 클릭 */
+  const svcList = document.getElementById('svcList');
+  if (svcList) {
+    svcList.addEventListener('click', e => {
+      const img = e.target.closest('.svc-body-inner img');
+      if (!img) return;
+      e.stopPropagation();
+      openLb(img.src, img.alt);
+    });
+  }
+
+  /* 닫기 */
+  document.getElementById('lbClose').addEventListener('click', closeLb);
+  lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && lb.classList.contains('open')) closeLb();
+  });
+
+  /* 모바일 스와이프 다운으로 닫기 */
+  let touchY = 0;
+  lb.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    if (e.changedTouches[0].clientY - touchY > 60) closeLb();
+  }, { passive: true });
+})();
+
+</script>
+</body>
+</html>

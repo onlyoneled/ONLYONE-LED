@@ -1,0 +1,130 @@
+{
+  "works": [
+    {
+      "id": "w1",
+      "images": [
+        "/slide2.png"
+      ],
+      "isHero": true,
+      "i18n": {
+        "kr": {
+          "t": "빌딩 로비 LED 큐브",
+          "m": "P3 풀컬러 · 실내"
+        },
+        "en": {
+          "t": "Lobby LED Cube",
+          "m": "P3 Full-color · Indoor"
+        },
+        "jp": {
+          "t": "ビルロビー LEDキューブ",
+          "m": "P3 フルカラー · 屋内"
+        }
+      }
+    },
+    {
+      "id": "w2",
+      "images": [
+        "/slide4.png"
+      ],
+      "isHero": false,
+      "i18n": {
+        "kr": {
+          "t": "연회장 벽면 전광판",
+          "m": "P2.5 풀컬러 · 실내"
+        },
+        "en": {
+          "t": "Banquet Hall Wall",
+          "m": "P2.5 Full-color · Indoor"
+        },
+        "jp": {
+          "t": "宴会場 壁面ディスプレイ",
+          "m": "P2.5 フルカラー · 屋内"
+        }
+      }
+    },
+    {
+      "id": "w3",
+      "images": [
+        "/slide6.png"
+      ],
+      "isHero": false,
+      "i18n": {
+        "kr": {
+          "t": "쇼룸 대형 전광판",
+          "m": "P3 풀컬러 · 실내"
+        },
+        "en": {
+          "t": "Showroom Display",
+          "m": "P3 Full-color · Indoor"
+        },
+        "jp": {
+          "t": "ショールーム 大型ディスプレイ",
+          "m": "P3 フルカラー · 屋内"
+        }
+      }
+    },
+    {
+      "id": "w4",
+      "images": [
+        "/slide3.png"
+      ],
+      "isHero": false,
+      "i18n": {
+        "kr": {
+          "t": "사무공간 가로형 LED",
+          "m": "P4 풀컬러 · 실내"
+        },
+        "en": {
+          "t": "Office Wide LED",
+          "m": "P4 Full-color · Indoor"
+        },
+        "jp": {
+          "t": "オフィス 横型LED",
+          "m": "P4 フルカラー · 屋内"
+        }
+      }
+    },
+    {
+      "id": "w5",
+      "images": [
+        "/slide5.png"
+      ],
+      "isHero": false,
+      "i18n": {
+        "kr": {
+          "t": "공장 와이드 LED 월",
+          "m": "P5 풀컬러 · 실내"
+        },
+        "en": {
+          "t": "Factory Wide LED Wall",
+          "m": "P5 Full-color · Indoor"
+        },
+        "jp": {
+          "t": "工場 ワイドLEDウォール",
+          "m": "P5 フルカラー · 屋内"
+        }
+      }
+    },
+    {
+      "id": "w6",
+      "images": [
+        "/slide1.png"
+      ],
+      "isHero": false,
+      "i18n": {
+        "kr": {
+          "t": "창고형 대형 전광판",
+          "m": "P4 풀컬러 · 실내"
+        },
+        "en": {
+          "t": "Warehouse Display",
+          "m": "P4 Full-color · Indoor"
+        },
+        "jp": {
+          "t": "倉庫 大型ディスプレイ",
+          "m": "P4 フルカラー · 屋内"
+        }
+      }
+    }
+  ]
+}
