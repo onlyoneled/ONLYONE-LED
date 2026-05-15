@@ -1838,45 +1838,294 @@
     },
     {
       "id": "s_ls",
-      "tags": ["P2.6~P10.4", "투명 LED", "실내/실외", "고투과율 85%", "전후면유지보수"],
-      "images": [],
+      "tags": [
+        "P2.6~P10.4",
+        "투명 LED",
+        "실내/실외",
+        "고투과율 85%",
+        "전후면유지보수"
+      ],
+      "images": [
+        "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778831775911_jnrf.jpg"
+      ],
       "i18n": {
-        "kr": {"t": "LS 시리즈 투명 LED 디스플레이", "d": "공항, 기차역, 건물 외관, 극장, 쇼핑센터, 실내외 무대 등 다양한 공간에 활용되는 투과율 최대 85%의 투명 LED 디스플레이입니다."},
-        "en": {"t": "LS Series Transparent LED Display", "d": "Transparent LED display with up to 85% transmittance, widely used in airports, train stations, building facades, theaters, shopping centers, and indoor or outdoor stage activities."},
-        "jp": {"t": "LSシリーズ トランスペアレントLEDディスプレイ", "d": "透過率最大85%のトランスペアレントLEDディスプレイ。空港、鉄道駅、建物外観、劇場、ショッピングセンター、屋内外ステージ等で幅広く活用されています。"}
+        "kr": {
+          "t": "LS 시리즈 투명 LED 디스플레이",
+          "d": "공항, 기차역, 건물 외관, 극장, 쇼핑센터, 실내외 무대 등 다양한 공간에 활용되는 투과율 최대 85%의 투명 LED 디스플레이입니다."
+        },
+        "en": {
+          "t": "LS Series Transparent LED Display",
+          "d": "Transparent LED display with up to 85% transmittance, widely used in airports, train stations, building facades, theaters, shopping centers, and indoor or outdoor stage activities."
+        },
+        "jp": {
+          "t": "LSシリーズ トランスペアレントLEDディスプレイ",
+          "d": "透過率最大85%のトランスペアレントLEDディスプレイ。空港、鉄道駅、建物外観、劇場、ショッピングセンター、屋内外ステージ等で幅広く活用されています。"
+        }
       },
       "spec": {
         "features": [
-          {"title": "고투과율·고휘도", "title_en": "High Transparency, High Brightness", "title_jp": "高透過率・高輝度", "desc": "투과율 최대 85%, 채광 및 원본 디자인에 영향 없음", "desc_en": "Transmittance can reach 85%, without affecting daylighting or original design.", "desc_jp": "透過率最大85%、採光・元のデザインに影響なし"},
-          {"title": "우수한 방열 성능", "title_en": "Excellent Heat Dissipation", "title_jp": "優れた放熱性能", "desc": "정밀 알루미늄 캐비닛으로 자연 방열 우수", "desc_en": "Precise aluminum cabinet with good natural heat dissipation.", "desc_jp": "精密アルミキャビネットによる優れた自然放熱"},
-          {"title": "멀티 잠금 위치", "title_en": "Multi-lock Position", "title_jp": "マルチロック位置", "desc": "심리스 연결, 연결 오차 0.05mm 미만", "desc_en": "Seamless connection with error < 0.05mm.", "desc_jp": "シームレス接続、接続誤差0.05mm未満"},
-          {"title": "경박·투명 설계", "title_en": "Light, Thin and Transparent", "title_jp": "軽薄・透明設計", "desc": "경량 설계로 설치 면적 부담 최소화, 시간·인건비 절감", "desc_en": "Light weight, small installation area burden, saves time and labor cost.", "desc_jp": "軽量設計で設置面積負担を最小化、時間・人件費削減"},
-          {"title": "유연한 설치", "title_en": "Flexible Installation", "title_jp": "柔軟な設置方式", "desc": "현수 및 고정 설치(바닥 스탠딩) 모두 지원", "desc_en": "Hanging and fixed installation (floor standing) available.", "desc_jp": "懸架および固定設置（床置きスタンド）に対応"},
-          {"title": "높은 신뢰성·안정성", "title_en": "High Reliability and Stability", "title_jp": "高信頼性・安定性", "desc": "전후면 유지보수 지원, 이미지 레이턴시 없음", "desc_en": "Provides front/rear maintenance, high reliability and stability, no image latency.", "desc_jp": "前後面メンテナンス対応、高信頼性・安定性、画像遅延なし"}
+          {
+            "title": "고투과율·고휘도",
+            "title_en": "High Transparency, High Brightness",
+            "title_jp": "高透過率・高輝度",
+            "desc": "투과율 최대 85%, 채광 및 원본 디자인에 영향 없음",
+            "desc_en": "Transmittance can reach 85%, without affecting daylighting or original design.",
+            "desc_jp": "透過率最大85%、採光・元のデザインに影響なし"
+          },
+          {
+            "title": "우수한 방열 성능",
+            "title_en": "Excellent Heat Dissipation",
+            "title_jp": "優れた放熱性能",
+            "desc": "정밀 알루미늄 캐비닛으로 자연 방열 우수",
+            "desc_en": "Precise aluminum cabinet with good natural heat dissipation.",
+            "desc_jp": "精密アルミキャビネットによる優れた自然放熱"
+          },
+          {
+            "title": "멀티 잠금 위치",
+            "title_en": "Multi-lock Position",
+            "title_jp": "マルチロック位置",
+            "desc": "심리스 연결, 연결 오차 0.05mm 미만",
+            "desc_en": "Seamless connection with error < 0.05mm.",
+            "desc_jp": "シームレス接続、接続誤差0.05mm未満"
+          },
+          {
+            "title": "경박·투명 설계",
+            "title_en": "Light, Thin and Transparent",
+            "title_jp": "軽薄・透明設計",
+            "desc": "경량 설계로 설치 면적 부담 최소화, 시간·인건비 절감",
+            "desc_en": "Light weight, small installation area burden, saves time and labor cost.",
+            "desc_jp": "軽量設計で設置面積負担を最小化、時間・人件費削減"
+          },
+          {
+            "title": "유연한 설치",
+            "title_en": "Flexible Installation",
+            "title_jp": "柔軟な設置方式",
+            "desc": "현수 및 고정 설치(바닥 스탠딩) 모두 지원",
+            "desc_en": "Hanging and fixed installation (floor standing) available.",
+            "desc_jp": "懸架および固定設置（床置きスタンド）に対応"
+          },
+          {
+            "title": "높은 신뢰성·안정성",
+            "title_en": "High Reliability and Stability",
+            "title_jp": "高信頼性・安定性",
+            "desc": "전후면 유지보수 지원, 이미지 레이턴시 없음",
+            "desc_en": "Provides front/rear maintenance, high reliability and stability, no image latency.",
+            "desc_jp": "前後面メンテナンス対応、高信頼性・安定性、画像遅延なし"
+          }
         ],
         "application": "공항, 기차역, 건물 외관, 극장, 쇼핑센터, 실내외 무대 공연 등 다양한 공간에 폭넓게 활용됩니다.",
         "application_en": "Widely used in airports, train stations, building facades, theaters, shopping centers, and indoor or outdoor stage activities.",
         "application_jp": "空港、鉄道駅、建物外観、劇場、ショッピングセンター、屋内外ステージ公演など様々な空間で幅広く活用されます。",
-        "tableHeaders": ["모델", "P2.6-5.2(실내)", "P3.9-7.8(실내)", "P7.8-7.8(실내)", "P10.4(실내)", "P3.9-7.8(실외)", "P5.2-10.4(실외)", "P10.4(실외)"],
-        "tableHeaders_en": ["Model", "P2.6-5.2(Indoor)", "P3.9-7.8(Indoor)", "P7.8-7.8(Indoor)", "P10.4(Indoor)", "P3.9-7.8(Outdoor)", "P5.2-10.4(Outdoor)", "P10.4(Outdoor)"],
-        "tableHeaders_jp": ["モデル", "P2.6-5.2(屋内)", "P3.9-7.8(屋内)", "P7.8-7.8(屋内)", "P10.4(屋内)", "P3.9-7.8(屋外)", "P5.2-10.4(屋外)", "P10.4(屋外)"],
+        "tableHeaders": [
+          "모델",
+          "P2.6-5.2(실내)",
+          "P3.9-7.8(실내)",
+          "P7.8-7.8(실내)",
+          "P10.4(실내)",
+          "P3.9-7.8(실외)",
+          "P5.2-10.4(실외)",
+          "P10.4(실외)"
+        ],
+        "tableHeaders_en": [
+          "Model",
+          "P2.6-5.2(Indoor)",
+          "P3.9-7.8(Indoor)",
+          "P7.8-7.8(Indoor)",
+          "P10.4(Indoor)",
+          "P3.9-7.8(Outdoor)",
+          "P5.2-10.4(Outdoor)",
+          "P10.4(Outdoor)"
+        ],
+        "tableHeaders_jp": [
+          "モデル",
+          "P2.6-5.2(屋内)",
+          "P3.9-7.8(屋内)",
+          "P7.8-7.8(屋内)",
+          "P10.4(屋内)",
+          "P3.9-7.8(屋外)",
+          "P5.2-10.4(屋外)",
+          "P10.4(屋外)"
+        ],
         "tableRows": [
-          {"label": "픽셀 피치 (mm)", "label_en": "Pixel Pitch (mm)", "label_jp": "ピクセルピッチ (mm)", "values": ["2.6-5.2", "3.91-7.81", "7.81-7.81", "10.42-10.42", "3.91-7.81", "5.21-10.42", "10.4-10.42"]},
-          {"label": "픽셀 밀도 (dots/m²)", "label_en": "Pixel Density (dots/m²)", "label_jp": "ピクセル密度 (dots/m²)", "values": ["73,728", "32,768", "16,384", "9,216", "32,768", "18,432", "9,216"]},
-          {"label": "LED 타입", "label_en": "LED Type", "label_jp": "LEDタイプ", "values": ["SMD2121/1921", "SMD2121/1921", "SMD2121/1921", "SMD2121/1921", "SMD1921", "SMD2727", "SMD2727"]},
-          {"label": "모듈 크기 (mm)", "label_en": "Module Size (mm)", "label_jp": "モジュールサイズ (mm)", "span": true, "value": "500×125"},
-          {"label": "모듈 해상도 (dots)", "label_en": "Module Resolution (dots)", "label_jp": "モジュール解像度 (dots)", "values": ["192×24", "128×16", "64×16", "48×12", "128×16", "96×24", "48×12"]},
-          {"label": "밝기 (cd/m²)", "label_en": "Brightness (cd/m²)", "label_jp": "輝度 (cd/m²)", "values": ["800~5,000", "800~5,000", "800~5,000", "800~5,000", "5,000~8,000", "5,000~8,000", "5,000~8,000"]},
-          {"label": "평균 소비전력 (W/m²)", "label_en": "Avg. Power (W/m²)", "label_jp": "平均消費電力 (W/m²)", "values": ["300", "300", "300", "400", "300", "400", "400"]},
-          {"label": "최대 소비전력 (W/m²)", "label_en": "Max. Power (W/m²)", "label_jp": "最大消費電力 (W/m²)", "span": true, "value": "800"},
-          {"label": "계조 (bit)", "label_en": "Gray Scale (bit)", "label_jp": "階調 (bit)", "span": true, "value": "12~16"},
-          {"label": "캐비닛 무게 (kg)", "label_en": "Cabinet Weight (kg)", "label_jp": "キャビネット重量 (kg)", "values": ["8", "8", "8", "8", "10", "10", "10"]},
-          {"label": "캐비닛 크기 (mm)", "label_en": "Cabinet Size (mm)", "label_jp": "キャビネットサイズ (mm)", "values": ["알루미늄 프로파일: 1,000×1,000 / 1,000×500", "알루미늄 프로파일: 1,000×1,000 / 1,000×500", "알루미늄 프로파일: 1,000×1,000 / 1,000×500", "알루미늄 프로파일: 1,000×1,000 / 1,000×500", "알루미늄 프로파일: 1,000×1,000 / 다이캐스팅: 1,000×500/500×1,000", "알루미늄 프로파일: 1,000×1,000 / 다이캐스팅: 1,000×500/500×1,000", "알루미늄 프로파일: 1,000×1,000 / 다이캐스팅: 1,000×500/500×1,000"]},
-          {"label": "방수 등급", "label_en": "Waterproof Grade", "label_jp": "防水等級", "values": ["IP30", "IP30", "IP30", "IP30", "IP65", "IP65", "IP65"]},
-          {"label": "주사율 (Hz)", "label_en": "Refresh Rate (Hz)", "label_jp": "リフレッシュレート (Hz)", "span": true, "value": "3,840~7,680"},
-          {"label": "유지보수", "label_en": "Maintenance Mode", "label_jp": "メンテナンス", "span": true, "value": "전면 / 후면", "value_en": "Front / Rear", "value_jp": "前面 / 後面"},
-          {"label": "캐비닛 색상", "label_en": "Cabinet Color", "label_jp": "キャビネットカラー", "span": true, "value": "블랙 / 화이트 / 실버", "value_en": "Black / White / Silver", "value_jp": "ブラック / ホワイト / シルバー"},
-          {"label": "인증", "label_en": "Certification", "label_jp": "認証", "span": true, "value": "CE, ETL, FCC, RoHS"}
+          {
+            "label": "픽셀 피치 (mm)",
+            "label_en": "Pixel Pitch (mm)",
+            "label_jp": "ピクセルピッチ (mm)",
+            "values": [
+              "2.6-5.2",
+              "3.91-7.81",
+              "7.81-7.81",
+              "10.42-10.42",
+              "3.91-7.81",
+              "5.21-10.42",
+              "10.4-10.42"
+            ]
+          },
+          {
+            "label": "픽셀 밀도 (dots/m²)",
+            "label_en": "Pixel Density (dots/m²)",
+            "label_jp": "ピクセル密度 (dots/m²)",
+            "values": [
+              "73,728",
+              "32,768",
+              "16,384",
+              "9,216",
+              "32,768",
+              "18,432",
+              "9,216"
+            ]
+          },
+          {
+            "label": "LED 타입",
+            "label_en": "LED Type",
+            "label_jp": "LEDタイプ",
+            "values": [
+              "SMD2121/1921",
+              "SMD2121/1921",
+              "SMD2121/1921",
+              "SMD2121/1921",
+              "SMD1921",
+              "SMD2727",
+              "SMD2727"
+            ]
+          },
+          {
+            "label": "모듈 크기 (mm)",
+            "label_en": "Module Size (mm)",
+            "label_jp": "モジュールサイズ (mm)",
+            "span": true,
+            "value": "500×125"
+          },
+          {
+            "label": "모듈 해상도 (dots)",
+            "label_en": "Module Resolution (dots)",
+            "label_jp": "モジュール解像度 (dots)",
+            "values": [
+              "192×24",
+              "128×16",
+              "64×16",
+              "48×12",
+              "128×16",
+              "96×24",
+              "48×12"
+            ]
+          },
+          {
+            "label": "밝기 (cd/m²)",
+            "label_en": "Brightness (cd/m²)",
+            "label_jp": "輝度 (cd/m²)",
+            "values": [
+              "800~5,000",
+              "800~5,000",
+              "800~5,000",
+              "800~5,000",
+              "5,000~8,000",
+              "5,000~8,000",
+              "5,000~8,000"
+            ]
+          },
+          {
+            "label": "평균 소비전력 (W/m²)",
+            "label_en": "Avg. Power (W/m²)",
+            "label_jp": "平均消費電力 (W/m²)",
+            "values": [
+              "300",
+              "300",
+              "300",
+              "400",
+              "300",
+              "400",
+              "400"
+            ]
+          },
+          {
+            "label": "최대 소비전력 (W/m²)",
+            "label_en": "Max. Power (W/m²)",
+            "label_jp": "最大消費電力 (W/m²)",
+            "span": true,
+            "value": "800"
+          },
+          {
+            "label": "계조 (bit)",
+            "label_en": "Gray Scale (bit)",
+            "label_jp": "階調 (bit)",
+            "span": true,
+            "value": "12~16"
+          },
+          {
+            "label": "캐비닛 무게 (kg)",
+            "label_en": "Cabinet Weight (kg)",
+            "label_jp": "キャビネット重量 (kg)",
+            "values": [
+              "8",
+              "8",
+              "8",
+              "8",
+              "10",
+              "10",
+              "10"
+            ]
+          },
+          {
+            "label": "캐비닛 크기 (mm)",
+            "label_en": "Cabinet Size (mm)",
+            "label_jp": "キャビネットサイズ (mm)",
+            "values": [
+              "알루미늄 프로파일: 1,000×1,000 / 1,000×500",
+              "알루미늄 프로파일: 1,000×1,000 / 1,000×500",
+              "알루미늄 프로파일: 1,000×1,000 / 1,000×500",
+              "알루미늄 프로파일: 1,000×1,000 / 1,000×500",
+              "알루미늄 프로파일: 1,000×1,000 / 다이캐스팅: 1,000×500/500×1,000",
+              "알루미늄 프로파일: 1,000×1,000 / 다이캐스팅: 1,000×500/500×1,000",
+              "알루미늄 프로파일: 1,000×1,000 / 다이캐스팅: 1,000×500/500×1,000"
+            ]
+          },
+          {
+            "label": "방수 등급",
+            "label_en": "Waterproof Grade",
+            "label_jp": "防水等級",
+            "values": [
+              "IP30",
+              "IP30",
+              "IP30",
+              "IP30",
+              "IP65",
+              "IP65",
+              "IP65"
+            ]
+          },
+          {
+            "label": "주사율 (Hz)",
+            "label_en": "Refresh Rate (Hz)",
+            "label_jp": "リフレッシュレート (Hz)",
+            "span": true,
+            "value": "3,840~7,680"
+          },
+          {
+            "label": "유지보수",
+            "label_en": "Maintenance Mode",
+            "label_jp": "メンテナンス",
+            "span": true,
+            "value": "전면 / 후면",
+            "value_en": "Front / Rear",
+            "value_jp": "前面 / 後面"
+          },
+          {
+            "label": "캐비닛 색상",
+            "label_en": "Cabinet Color",
+            "label_jp": "キャビネットカラー",
+            "span": true,
+            "value": "블랙 / 화이트 / 실버",
+            "value_en": "Black / White / Silver",
+            "value_jp": "ブラック / ホワイト / シルバー"
+          },
+          {
+            "label": "인증",
+            "label_en": "Certification",
+            "label_jp": "認証",
+            "span": true,
+            "value": "CE, ETL, FCC, RoHS"
+          }
         ]
       }
     },
