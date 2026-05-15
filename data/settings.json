@@ -1,9 +1,7 @@
 {
   "heroBg": null,
   "videoId": "Q9nGY5CXIaA",
-  "heroVideos": [
-    "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/videos/hero_1778817686059.mp4"
-  ],
+  "heroVideos": [],
   "svcBg": null,
   "aboutBg": null,
   "fsHero": 70,
