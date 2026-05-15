@@ -514,6 +514,17 @@
         <div class="heropick" id="heroPick"></div>
       </div>
       <div class="panel" style="margin-top: 20px;">
+        <h3>히어로 배경 — 동영상 직접 업로드</h3>
+        <div class="form">
+          <p style="font-size:13px;color:var(--mute);margin:0 0 12px;">MP4·WebM·MOV 파일을 업로드하면 히어로 배경에서 순서대로 재생됩니다. 파일 크기는 50MB 이하를 권장합니다.</p>
+          <div id="heroVideoList" style="display:grid;gap:10px;margin-bottom:14px;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label class="btn primary" style="cursor:pointer;">동영상 추가 (다중 가능)<input type="file" id="heroVideoFile" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" multiple style="display:none"/></label>
+          </div>
+          <p style="font-size:12px;color:var(--mute);margin:8px 0 0;">동영상이 없으면 아래 이미지 배경이 표시됩니다.</p>
+        </div>
+      </div>
+      <div class="panel" style="margin-top: 20px;">
         <h3>히어로 배경 — YouTube 영상으로</h3>
         <div class="form">
           <div class="field">
@@ -750,7 +761,7 @@ const DEFAULT_DATA = {
     en: ['Since 2009, ONLYONE LED has designed and installed LED displays on more than 500 sites across Korea.','Design, manufacturing, installation, and service are all done in-house. No middlemen — clear quality, clear cost.'],
     jp: ['オンリーワンLEDは2009年から、全国500か所以上の現場でLEDディスプレイを設計・設置してきました。','設計・製造・設置・メンテナンスをすべて自社で行います。中間工程がないため品質もコストも明確です。']
   },
-  settings: { heroBg: 'w1', videoId: '', svcBg: null, aboutBg: null }
+  settings: { heroBg: 'w1', videoId: '', heroVideos: [], svcBg: null, aboutBg: null }
 };
 
 /* =================== NORMALIZE (flat → nested) =================== */
@@ -886,8 +897,7 @@ async function uploadImageToGitHub(dataUrl, filename) {
     body: JSON.stringify(payload)
   });
   if (!res.ok) return dataUrl;
-  // 캐시 없는 깔끔한 URL 반환
-  return `/images/uploads/${filename}`;
+  return `https://raw.githubusercontent.com/${REPO}/main/${path}`;
 }
 async function publishToSite() {
   const token = getToken();
@@ -1075,6 +1085,72 @@ function renderHeroPick(){
   $('#ytIdInput').value=DATA.settings.videoId||'';
 }
 
+function renderHeroVideos(){
+  const wrap=document.getElementById('heroVideoList'); if(!wrap) return;
+  const vids=DATA.settings.heroVideos||[];
+  if(!vids.length){wrap.innerHTML='<p style="font-size:12px;color:var(--mute);margin:0;">등록된 동영상 없음</p>';return;}
+  wrap.innerHTML=vids.map((url,i)=>{
+    const name=url.split('/').pop()||`동영상 ${i+1}`;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:.6;"><path d="M4 3h8l4 4v10H4V3z" stroke="currentColor" stroke-width="1.3"/><path d="M12 3v4h4" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span style="flex:1;font-family:var(--mono);font-size:11px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</span>
+      <div style="display:flex;gap:6px;">
+        ${i>0?`<button class="iconbtn" onclick="moveHeroVideo(${i},-1)" title="위로"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 9l4-4 4 4" stroke="currentColor" stroke-width="1.4" fill="none"/></svg></button>`:''}
+        ${i<vids.length-1?`<button class="iconbtn" onclick="moveHeroVideo(${i},1)" title="아래로"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.4" fill="none"/></svg></button>`:''}
+        <button class="iconbtn danger" onclick="removeHeroVideo(${i})" title="삭제"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 4h8M5 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4l1 8h4l1-8" stroke="currentColor" stroke-width="1.4" fill="none"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function removeHeroVideo(idx){
+  if(!confirm('이 동영상을 삭제할까요?')) return;
+  DATA.settings.heroVideos.splice(idx,1); saveData();
+}
+function moveHeroVideo(idx,dir){
+  const v=DATA.settings.heroVideos, j=idx+dir;
+  if(j<0||j>=v.length) return;
+  [v[idx],v[j]]=[v[j],v[idx]]; saveData();
+}
+async function uploadVideoToGitHub(file){
+  const token=getToken();
+  if(!token){alert('GitHub 토큰을 먼저 설정해주세요.');return null;}
+  if(file.size>52428800){alert('파일 크기가 50MB를 초과합니다. 더 작은 파일을 사용해주세요.');return null;}
+  const ext=file.name.split('.').pop().toLowerCase()||'mp4';
+  const filename=`hero_${Date.now()}.${ext}`;
+  const path=`videos/${filename}`;
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      const base64=e.target.result.split(',')[1];
+      let sha=null;
+      try{const cur=await ghGet(path);if(cur&&cur.sha)sha=cur.sha;}catch(_){}
+      const payload={message:`Upload hero video ${filename}`,content:base64};
+      if(sha)payload.sha=sha;
+      const res=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`,{
+        method:'PUT',
+        headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      resolve(res.ok?`https://raw.githubusercontent.com/${REPO}/main/${path}`:null);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+document.getElementById('heroVideoFile').addEventListener('change',async e=>{
+  const files=Array.from(e.target.files); if(!files.length) return;
+  toast(`동영상 업로드 중 (0/${files.length})...`);
+  if(!DATA.settings.heroVideos) DATA.settings.heroVideos=[];
+  let done=0;
+  for(const f of files){
+    const url=await uploadVideoToGitHub(f);
+    if(url){DATA.settings.heroVideos.push(url);done++;}
+    toast(`동영상 업로드 중 (${done}/${files.length})...`);
+  }
+  e.target.value='';
+  saveData();
+  toast(`동영상 업로드 완료 (${done}/${files.length}) ✓`);
+});
+
 function renderSvcBg(){
   const preview=$('#svcBgPreview'); if(!preview) return;
   const url=DATA.settings.svcBg;
@@ -1096,7 +1172,7 @@ function renderAboutBg(){
 }
 
 function renderAll(){
-  renderDashboard(); renderWorks(); renderServicesAdmin(); renderAbout(); renderHeroPick(); renderSvcBg(); renderAboutBg();
+  renderDashboard(); renderWorks(); renderServicesAdmin(); renderAbout(); renderHeroPick(); renderHeroVideos(); renderSvcBg(); renderAboutBg();
   loadFontSizes();
 }
 
