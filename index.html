@@ -165,6 +165,21 @@ body[data-lang="jp"]{font-family:var(--font-jp);}
 .hero-nav:hover{background:rgba(0,0,0,.75);}
 #heroPrev{left:20px;}
 #heroNext{right:20px;}
+.hero-dots{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  display:none;gap:6px;align-items:center;z-index:3;
+  user-select:none;-webkit-user-select:none;
+}
+.hero-dots.visible{display:flex;}
+.hero-dot{
+  height:3px;border-radius:2px;cursor:pointer;
+  background:rgba(246,244,239,.3);
+  transition:background .35s,width .35s,transform .15s;
+  flex-shrink:0;
+}
+.hero-dot.active{
+  background:rgba(246,244,239,.92);
+}
 .hero-bg::after{
   content:"";position:absolute;inset:0;
   background:
@@ -745,6 +760,7 @@ footer .logo{font-size:15px;}
   <button class="hero-nav" id="heroNext" aria-label="다음 배경">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
+  <div class="hero-dots" id="heroDots"></div>
 
   <div class="hero-grid">
     <div class="hero-left">
@@ -1260,40 +1276,114 @@ function renderAbout() {
 function renderAll() { renderWorks(); renderServices(); renderAbout(); }
 
 /* ── Hero video cycling ───────────────────── */
-let _heroVids = [], _heroIdx = 0;
+let _heroVids = [], _heroIdx = 0, _heroImgTimer = null;
+
+/* ── 도트 빌드 ─────────────────────────────────────────────── */
+function _buildHeroDots(count) {
+  const wrap = document.getElementById('heroDots');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (count < 2) { wrap.classList.remove('visible'); return; }
+  wrap.classList.add('visible');
+  for (let i = 0; i < count; i++) {
+    const d = document.createElement('button');
+    d.className = 'hero-dot' + (i === 0 ? ' active' : '');
+    d.style.width = i === 0 ? '32px' : '20px';
+    d.setAttribute('aria-label', `배경 ${i + 1}`);
+    d.addEventListener('click', () => _goHero(i));
+    wrap.appendChild(d);
+  }
+}
+
+function _updateHeroDots(idx) {
+  const dots = document.querySelectorAll('.hero-dot');
+  dots.forEach((d, i) => {
+    const active = i === idx;
+    d.classList.toggle('active', active);
+    d.style.width = active ? '32px' : '20px';
+  });
+}
+
+/* ── 이미지 여부 판단 ──────────────────────────────────────── */
+function _isImage(url) {
+  return /\.(jpg|jpeg|png|webp|gif|avif|svg)(\?|$)/i.test(url);
+}
+
+/* ── 슬라이드 이동 ─────────────────────────────────────────── */
+function _goHero(idx) {
+  if (!_heroVids.length) return;
+  _playHeroSlide((idx + _heroVids.length) % _heroVids.length);
+}
+
+function _playHeroSlide(idx) {
+  const bg  = document.getElementById('ytBg');
+  const vid = document.getElementById('heroBgVideo');
+  if (!bg || !vid || !_heroVids.length) return;
+  clearTimeout(_heroImgTimer);
+  vid.onended = null;
+
+  _heroIdx = (idx + _heroVids.length) % _heroVids.length;
+  const src = _heroVids[_heroIdx];
+  _updateHeroDots(_heroIdx);
+
+  if (_isImage(src)) {
+    // 이미지: CSS 배경으로 표시, 5초 후 다음으로
+    vid.src = ''; vid.style.opacity = 0;
+    bg.classList.remove('has-video');
+    bg.style.setProperty('--hero-img', `url("${src}")`);
+    bg.classList.add('has-image');
+    if (_heroVids.length > 1) {
+      _heroImgTimer = setTimeout(() => _playHeroSlide(_heroIdx + 1), 5000);
+    }
+  } else {
+    // 동영상
+    bg.style.removeProperty('--hero-img');
+    bg.classList.remove('has-image');
+    vid.src = src;
+    vid.style.opacity = 0;
+    vid.load();
+    vid.play().catch(() => {});
+    bg.classList.add('has-video');
+    setTimeout(() => { vid.style.opacity = ''; }, 100);
+    vid.onended = () => _playHeroSlide(_heroIdx + 1);
+  }
+}
+
+/* ── applyHeroBg ───────────────────────────────────────────── */
 function applyHeroBg() {
-  const bg    = document.getElementById('ytBg');
-  const vid   = document.getElementById('heroBgVideo');
-  const prev  = document.getElementById('heroPrev');
-  const next  = document.getElementById('heroNext');
+  const bg   = document.getElementById('ytBg');
+  const vid  = document.getElementById('heroBgVideo');
+  const prev = document.getElementById('heroPrev');
+  const next = document.getElementById('heroNext');
   if (!bg) return;
 
-  const videos = (CMS.settings.heroVideos || []).filter(Boolean);
-  _heroVids = videos;
+  clearTimeout(_heroImgTimer);
+  const items = (CMS.settings.heroVideos || []).filter(Boolean);
+  _heroVids = items;
   _heroIdx  = 0;
 
-  // Reset both backgrounds
-  bg.classList.remove('has-image','has-video');
+  bg.classList.remove('has-image', 'has-video');
   bg.style.removeProperty('--hero-img');
-  if (vid) { vid.src=''; vid.style.opacity=0; }
+  if (vid) { vid.src = ''; vid.onended = null; }
 
-  if (videos.length) {
-    // Video mode
-    if (prev) prev.classList.toggle('visible', videos.length > 1);
-    if (next) next.classList.toggle('visible', videos.length > 1);
-    _playHeroVideo(0);
+  if (items.length) {
+    const multi = items.length > 1;
+    if (prev) prev.classList.toggle('visible', multi);
+    if (next) next.classList.toggle('visible', multi);
+    _buildHeroDots(items.length);
+    _playHeroSlide(0);
   } else if (CMS.settings.videoId) {
-    // YouTube mode
     if (prev) prev.classList.remove('visible');
     if (next) next.classList.remove('visible');
+    _buildHeroDots(0);
     setBackgroundVideo(CMS.settings.videoId);
   } else {
-    // Static image mode
     if (prev) prev.classList.remove('visible');
     if (next) next.classList.remove('visible');
+    _buildHeroDots(0);
     const id = CMS.settings.heroBg;
     if (id) {
-      const w = CMS.works.find(x => x.id===id);
+      const w = CMS.works.find(x => x.id === id);
       const heroImg = (w && w.images && w.images[0]) || (w && w.image);
       if (heroImg) {
         bg.style.setProperty('--hero-img', `url("${heroImg}")`);
@@ -1302,24 +1392,39 @@ function applyHeroBg() {
     }
   }
 }
-function _playHeroVideo(idx) {
-  const bg  = document.getElementById('ytBg');
-  const vid = document.getElementById('heroBgVideo');
-  if (!vid || !_heroVids.length) return;
-  _heroIdx = (idx + _heroVids.length) % _heroVids.length;
-  vid.src  = _heroVids[_heroIdx];
-  vid.style.opacity = 0;
-  vid.load();
-  vid.play().catch(()=>{});
-  bg.classList.add('has-video');
-  setTimeout(() => { vid.style.opacity = ''; }, 100);
-  vid.onended = () => _playHeroVideo(_heroIdx + 1);
-}
-(function(){
+
+/* ── 이전/다음 버튼 + 드래그/스와이프 ─────────────────────── */
+(function () {
   const prev = document.getElementById('heroPrev');
   const next = document.getElementById('heroNext');
-  if (prev) prev.addEventListener('click', () => _playHeroVideo(_heroIdx - 1));
-  if (next) next.addEventListener('click', () => _playHeroVideo(_heroIdx + 1));
+  if (prev) prev.addEventListener('click', () => _goHero(_heroIdx - 1));
+  if (next) next.addEventListener('click', () => _goHero(_heroIdx + 1));
+
+  const hero = document.getElementById('hero');
+  if (!hero) return;
+  let startX = null, dragging = false, moved = false;
+  const THRESHOLD = 50;
+
+  function onStart(x) { startX = x; dragging = true; moved = false; }
+  function onMove(x)  { if (dragging && Math.abs(x - startX) > 8) moved = true; }
+  function onEnd(x) {
+    if (!dragging) return;
+    dragging = false;
+    if (!moved || _heroVids.length < 2) return;
+    const dx = x - startX;
+    if (Math.abs(dx) >= THRESHOLD) {
+      dx < 0 ? _goHero(_heroIdx + 1) : _goHero(_heroIdx - 1);
+    }
+  }
+
+  hero.addEventListener('touchstart', e => onStart(e.touches[0].clientX), { passive: true });
+  hero.addEventListener('touchmove',  e => onMove(e.touches[0].clientX),  { passive: true });
+  hero.addEventListener('touchend',   e => onEnd(e.changedTouches[0].clientX));
+
+  hero.addEventListener('mousedown', e => { if (e.button === 0) onStart(e.clientX); });
+  hero.addEventListener('mousemove', e => onMove(e.clientX));
+  hero.addEventListener('mouseup',   e => onEnd(e.clientX));
+  hero.addEventListener('mouseleave', () => { dragging = false; });
 })();
 function applySvcBg() {
   const sec = document.getElementById('services');
