@@ -1366,36 +1366,48 @@ function applyHeroBg() {
   bg.style.removeProperty('--hero-img');
   if (vid) { vid.src = ''; vid.onended = null; }
 
-  // 우선순위: 동영상 > 유튜브 > 이미지(heroImages) > 레거시(heroBg)
-  const imgItems = (CMS.settings.heroImages || []).filter(Boolean);
+  const s = CMS.settings;
 
-  if (items.length) {
-    // 동영상 모드
+  // 활성화된 이미지 + 동영상을 순서대로 합산 (이미지 먼저, 그 다음 동영상)
+  const playlist = [
+    ...(s.heroImageEnabled ? (s.heroImages || []).filter(Boolean) : []),
+    ...(s.heroVideoEnabled ? (s.heroVideos || []).filter(Boolean) : []),
+  ];
+
+  if (playlist.length) {
+    // 합산 플레이리스트 모드
+    _heroVids = playlist;
+    const multi = playlist.length > 1;
+    if (prev) prev.classList.toggle('visible', multi);
+    if (next) next.classList.toggle('visible', multi);
+    _buildHeroDots(playlist.length);
+    _playHeroSlide(0);
+  } else if (s.heroYoutubeEnabled && s.videoId) {
+    // 유튜브 단독 모드
+    if (prev) prev.classList.remove('visible');
+    if (next) next.classList.remove('visible');
+    _buildHeroDots(0);
+    setBackgroundVideo(s.videoId);
+  } else if (items.length) {
+    // 하위호환: 플래그 없이 heroVideos만 있는 경우
+    _heroVids = items;
     const multi = items.length > 1;
     if (prev) prev.classList.toggle('visible', multi);
     if (next) next.classList.toggle('visible', multi);
     _buildHeroDots(items.length);
     _playHeroSlide(0);
-  } else if (CMS.settings.videoId) {
-    // 유튜브 모드
+  } else if (s.videoId) {
+    // 하위호환: 플래그 없이 videoId만 있는 경우
     if (prev) prev.classList.remove('visible');
     if (next) next.classList.remove('visible');
     _buildHeroDots(0);
-    setBackgroundVideo(CMS.settings.videoId);
-  } else if (imgItems.length) {
-    // 이미지 모드 (heroImages[])
-    _heroVids = imgItems;
-    const multi = imgItems.length > 1;
-    if (prev) prev.classList.toggle('visible', multi);
-    if (next) next.classList.toggle('visible', multi);
-    _buildHeroDots(imgItems.length);
-    _playHeroSlide(0);
+    setBackgroundVideo(s.videoId);
   } else {
     // 레거시: heroBg (단일 시공사례 이미지)
     if (prev) prev.classList.remove('visible');
     if (next) next.classList.remove('visible');
     _buildHeroDots(0);
-    const id = CMS.settings.heroBg;
+    const id = s.heroBg;
     if (id) {
       const w = CMS.works.find(x => x.id === id);
       const heroImg = (w && w.images && w.images[0]) || (w && w.image);
