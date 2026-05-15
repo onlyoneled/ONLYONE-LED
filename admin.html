@@ -899,12 +899,40 @@ async function uploadImageToGitHub(dataUrl, filename) {
   if (!res.ok) return dataUrl;
   return `https://raw.githubusercontent.com/${REPO}/main/${path}`;
 }
+
+async function migrateDataUrls() {
+  const allItems = [
+    ...DATA.services.map(s => ({ obj: s, key: 'images' })),
+    ...DATA.works.map(w => ({ obj: w, key: 'images' })),
+  ];
+  let migrated = 0;
+  for (const { obj, key } of allItems) {
+    const imgs = obj[key];
+    if (!Array.isArray(imgs)) continue;
+    for (let i = 0; i < imgs.length; i++) {
+      if (typeof imgs[i] === 'string' && imgs[i].startsWith('data:')) {
+        const ext = imgs[i].includes('image/png') ? 'png' : 'jpg';
+        const filename = `svc_${Date.now()}_${Math.random().toString(36).slice(2,6)}.${ext}`;
+        const url = await uploadImageToGitHub(imgs[i], filename);
+        if (!url.startsWith('data:')) { imgs[i] = url; migrated++; }
+        await new Promise(r => setTimeout(r, 200));
+      }
+    }
+  }
+  if (migrated > 0) {
+    localStorage.setItem('only1.cms.v2', JSON.stringify(DATA));
+    toast(`이미지 ${migrated}개 GitHub에 업로드 완료`);
+  }
+}
+
 async function publishToSite() {
   const token = getToken();
   if (!token) { alert('설정 탭에서 GitHub 토큰을 먼저 입력해주세요.'); goPage('settings'); return; }
   const btn = document.getElementById('btnPublish');
   const btnD = document.getElementById('btnPublishDash');
   btn.disabled = true; btnD.disabled = true;
+  toast('이미지 확인 중...');
+  await migrateDataUrls();
   toast('사이트에 발행 중...');
   try {
     const jobs = [

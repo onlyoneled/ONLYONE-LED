@@ -1,4 +1,4 @@
-{
+﻿{
   "services": [
     {
       "id": "s1",
@@ -101,7 +101,7 @@
         "실시간업데이트"
       ],
       "images": [
-        "/images/uploads/svc_1778730186371.jpg"
+        "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778730186371.jpg"
       ],
       "i18n": {
         "kr": {
