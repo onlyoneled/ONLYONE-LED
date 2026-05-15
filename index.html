@@ -215,14 +215,15 @@ body[data-lang="en"] .hero-title .row+.row{margin-top:-.08em;}
 /* ══════════════════════════════════════════════
    MARQUEE
 ══════════════════════════════════════════════ */
-.marquee{display:flex;overflow:hidden;border-block:1px solid var(--line);padding:14px 0;}
+.marquee{overflow:hidden;border-block:1px solid var(--line);padding:14px 0;}
 .marquee-track{
-  display:flex;flex-shrink:0;gap:48px;padding-right:48px;
+  display:inline-flex;flex-shrink:0;gap:48px;
   animation:scroll-left 30s linear infinite;white-space:nowrap;
+  will-change:transform;
 }
 .marquee-track span{font-family:var(--font-en);font-size:26px;letter-spacing:-.01em;line-height:1;}
 .marquee-track .dot{color:var(--accent);}
-@keyframes scroll-left{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+@keyframes scroll-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* ══════════════════════════════════════════════
    WORKS
@@ -532,13 +533,29 @@ body[data-lang="jp"] .cf-title{font-family:var(--font-jp);}
 }
 .lb-bg.open .lb-wrap{transform:scale(1);}
 .lb-close{
-  position:absolute;top:10px;right:10px;z-index:1;
+  position:absolute;top:10px;right:10px;z-index:2;
   width:36px;height:36px;border-radius:50%;
   background:rgba(0,0,0,.55);border:1px solid rgba(246,244,239,.35);
   color:#f6f4ef;cursor:pointer;display:grid;place-items:center;
   transition:background .15s,transform .15s;touch-action:manipulation;
 }
 .lb-close:hover{background:rgba(0,0,0,.8);transform:scale(1.1);}
+.lb-nav{
+  position:fixed;top:50%;transform:translateY(-50%);
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:1px solid rgba(246,244,239,.35);
+  color:#f6f4ef;cursor:pointer;display:grid;place-items:center;
+  transition:background .15s,opacity .15s;touch-action:manipulation;z-index:302;
+}
+.lb-nav:hover{background:rgba(0,0,0,.85);}
+.lb-nav:disabled{opacity:.2;cursor:default;pointer-events:none;}
+#lbPrev{left:20px;}
+#lbNext{right:20px;}
+.lb-counter{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:12px;color:rgba(246,244,239,.65);
+  letter-spacing:.12em;white-space:nowrap;pointer-events:none;
+}
 .work-card{cursor:zoom-in;}
 .svc-body-inner img{cursor:zoom-in;transition:opacity .2s;}
 .svc-body-inner img:hover{opacity:.78;}
@@ -720,7 +737,6 @@ footer .logo{font-size:15px;}
 ═══════════════════════════════════════ -->
 <div class="marquee" aria-hidden="true">
   <div class="marquee-track" id="marqueeTrack1"></div>
-  <div class="marquee-track" id="marqueeTrack2" aria-hidden="true"></div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -740,7 +756,6 @@ footer .logo{font-size:15px;}
 <section id="services" class="svc-section">
   <div class="section-head">
     <h2 class="rgb-led" data-i="services.title">LED 전광판</h2>
-    <div class="count"><b id="svcCount">04</b> <span data-i="services.count">SERVICES</span></div>
   </div>
   <div class="svc-list" id="svcList"></div>
 </section>
@@ -888,6 +903,9 @@ footer .logo{font-size:15px;}
      LIGHTBOX
 ═══════════════════════════════════════ -->
 <div class="lb-bg" id="lightbox" role="dialog" aria-modal="true" aria-label="이미지 확대">
+  <button class="lb-nav" id="lbPrev" aria-label="이전">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
   <div class="lb-wrap">
     <button class="lb-close" id="lbClose" aria-label="닫기">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -896,6 +914,10 @@ footer .logo{font-size:15px;}
     </button>
     <img class="lb-img" id="lbImg" src="" alt="" />
   </div>
+  <button class="lb-nav" id="lbNext" aria-label="다음">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="lb-counter" id="lbCounter"></div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -1022,15 +1044,13 @@ function applyLang(lang) {
   });
   renderWorks(); renderServices(); renderAbout();
   try { localStorage.setItem('only1.lang', lang); } catch(_) {}
-   // 마퀴 렌더
+   // 마퀴 렌더 — 내용을 두 배로 복제하여 -50% 애니메이션으로 끊김 없이 루프
   const mq = (I18N[lang] && I18N[lang]['marquee']) || I18N.kr['marquee'] || '';
   if (mq) {
     const items = mq.split('●').map(s => s.trim()).filter(Boolean);
     const html = items.map(t => `<span>${t}</span><span class="dot"> ● </span>`).join('');
     const t1 = document.getElementById('marqueeTrack1');
-    const t2 = document.getElementById('marqueeTrack2');
-    if (t1) t1.innerHTML = html;
-    if (t2) t2.innerHTML = html;
+    if (t1) t1.innerHTML = html + html;
   }
 }
 
@@ -1124,7 +1144,7 @@ function renderWorks() {
   grid.innerHTML = CMS.works.map((w,i) => {
     const {t,m} = wText(w, lang);
     const n = String(i+1).padStart(2,'0');
-    return `<a class="work-card ${SIZES[i%SIZES.length]}" href="#${w.id}">
+    return `<a class="work-card ${SIZES[i%SIZES.length]}" href="#${w.id}" data-wid="${w.id}">
       <div class="wc-img"><img src="${(w.images&&w.images[0])||w.image||''}" alt="${t}" loading="lazy"/></div>
       <div class="wc-veil"></div>
       <span class="wc-num">${n}</span>
@@ -1137,7 +1157,6 @@ function renderServices() {
   const list = document.getElementById('svcList');
   if (!list) return;
   const lang = currentLang();
-  document.getElementById('svcCount').textContent = String(CMS.services.length).padStart(2,'0');
   list.innerHTML = CMS.services.map((s,i) => {
     const {t,d} = sText(s, lang);
     const n = String(i+1).padStart(2,'0');
@@ -1321,13 +1340,28 @@ if ('IntersectionObserver' in window) {
 
 /* ── Lightbox ─────────────────────────────── */
 (function(){
-  const lb    = document.getElementById('lightbox');
-  const lbImg = document.getElementById('lbImg');
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lbImg');
+  const lbPrev  = document.getElementById('lbPrev');
+  const lbNext  = document.getElementById('lbNext');
+  const lbCtr   = document.getElementById('lbCounter');
   if (!lb || !lbImg) return;
 
-  function openLb(src, alt) {
-    lbImg.src = src;
+  let _imgs = [], _idx = 0;
+
+  function updateSlide() {
+    lbImg.src = _imgs[_idx] || '';
+    const multi = _imgs.length > 1;
+    if (lbPrev) { lbPrev.style.display = multi ? '' : 'none'; lbPrev.disabled = _idx === 0; }
+    if (lbNext) { lbNext.style.display = multi ? '' : 'none'; lbNext.disabled = _idx === _imgs.length - 1; }
+    if (lbCtr)  lbCtr.textContent = multi ? `${_idx + 1} / ${_imgs.length}` : '';
+  }
+
+  function openLb(imgs, startIdx, alt) {
+    _imgs = Array.isArray(imgs) ? imgs.filter(Boolean) : [imgs].filter(Boolean);
+    _idx  = startIdx || 0;
     lbImg.alt = alt || '';
+    updateSlide();
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -1335,7 +1369,13 @@ if ('IntersectionObserver' in window) {
     lb.classList.remove('open');
     document.body.style.overflow = '';
     lbImg.src = '';
+    if (lbCtr) lbCtr.textContent = '';
   }
+  function prev() { if (_idx > 0) { _idx--; updateSlide(); } }
+  function next() { if (_idx < _imgs.length - 1) { _idx++; updateSlide(); } }
+
+  if (lbPrev) lbPrev.addEventListener('click', e => { e.stopPropagation(); prev(); });
+  if (lbNext) lbNext.addEventListener('click', e => { e.stopPropagation(); next(); });
 
   /* 시공사례 — 카드 전체 클릭 */
   const workGrid = document.getElementById('workGrid');
@@ -1344,8 +1384,11 @@ if ('IntersectionObserver' in window) {
       const card = e.target.closest('.work-card');
       if (!card) return;
       e.preventDefault();
-      const img = card.querySelector('.wc-img img');
-      if (img && img.src) openLb(img.src, img.alt);
+      const wid = card.dataset.wid;
+      const work = wid && CMS.works.find(w => w.id === wid);
+      const imgs = work ? (work.images && work.images.length ? work.images : [work.image]) : [];
+      const alt  = card.querySelector('.wc-info h3')?.textContent || '';
+      if (imgs.filter(Boolean).length) openLb(imgs, 0, alt);
     });
   }
 
@@ -1356,7 +1399,7 @@ if ('IntersectionObserver' in window) {
       const img = e.target.closest('.svc-body-inner img');
       if (!img) return;
       e.stopPropagation();
-      openLb(img.src, img.alt);
+      openLb([img.src], 0, img.alt);
     });
   }
 
@@ -1364,14 +1407,20 @@ if ('IntersectionObserver' in window) {
   document.getElementById('lbClose').addEventListener('click', closeLb);
   lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && lb.classList.contains('open')) closeLb();
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLb();
+    if (e.key === 'ArrowLeft') prev();
+    if (e.key === 'ArrowRight') next();
   });
 
-  /* 모바일 스와이프 다운으로 닫기 */
-  let touchY = 0;
-  lb.addEventListener('touchstart', e => { touchY = e.touches[0].clientY; }, { passive: true });
+  /* 모바일 스와이프 */
+  let touchX = 0, touchY = 0;
+  lb.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, { passive: true });
   lb.addEventListener('touchend', e => {
-    if (e.changedTouches[0].clientY - touchY > 60) closeLb();
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+    if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) { closeLb(); return; }
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); }
   }, { passive: true });
 })();
 
