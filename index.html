@@ -342,7 +342,7 @@ body[data-lang="jp"] .work-card .wc-info h3{font-family:var(--font-jp);}
 .svc-row[aria-expanded="true"] .svc-ico{background:var(--accent);border-color:var(--accent);color:#000;transform:rotate(45deg);}
 .svc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease;}
 .svc-row[aria-expanded="true"] .svc-body{grid-template-rows:1fr;}
-.svc-body>div{overflow:clip;}
+.svc-body>div{overflow:hidden;}
 .svc-body-inner{display:grid;grid-template-columns:1fr auto;gap:36px;padding:4px 0 28px 70px;}
 .svc-body-inner p{margin:0;font-size:15px;line-height:1.68;color:var(--mute);max-width:540px;}
 .svc-body-img{width:160px;flex-shrink:0;}
@@ -699,6 +699,15 @@ footer .logo{font-size:15px;}
   .svc-body-inner{grid-template-columns:1fr;padding:4px 0 22px 46px;}
   .svc-body-img{width:100%;}
   .svc-spec-feats{grid-template-columns:repeat(2,1fr);}
+  .svc-spec-tbl{min-width:0;}
+  .svc-spec-tbl thead{display:none;}
+  .svc-spec-tbl,.svc-spec-tbl tbody,.svc-spec-tbl tr{display:block;}
+  .svc-spec-tbl tbody tr{border:1px solid var(--line);margin-bottom:4px;border-radius:4px;overflow:hidden;}
+  .svc-spec-tbl th,.svc-spec-tbl td{display:block;text-align:left;border:none;border-bottom:1px solid rgba(246,244,239,.06);}
+  .svc-spec-tbl tbody th{background:rgba(246,244,239,.06);font-size:10px;padding:5px 8px;}
+  .svc-spec-tbl tbody td{font-size:10px;padding:4px 8px 4px 16px;}
+  .svc-spec-tbl tbody td[data-h]::before{content:attr(data-h) " — ";color:var(--accent);font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;}
+  .svc-spec-tbl .span-all{padding-left:8px;}
 
   /* About */
   .about-section{padding:56px var(--pad) 72px;}
@@ -1244,22 +1253,31 @@ function renderWorks() {
   }).join('');
 }
 
-function renderSpec(spec) {
-  const featsHtml = (spec.features||[]).map(f =>
-    `<div class="svc-spec-feat"><strong>${f.title}</strong><span>${f.desc}</span></div>`
-  ).join('');
-  const appHtml = spec.application
-    ? `<div class="svc-spec-app">${spec.application}</div>` : '';
+function renderSpec(spec, lang) {
+  if (!spec) return '';
+  const l = lang || 'kr';
+  const featsHtml = (spec.features||[]).map(f => {
+    const title = f['title_'+l] || f.title || '';
+    const desc  = f['desc_'+l]  || f.desc  || '';
+    return `<div class="svc-spec-feat"><strong>${title}</strong><span>${desc}</span></div>`;
+  }).join('');
+  const app = spec['application_'+l] || spec.application || '';
+  const appHtml = app ? `<div class="svc-spec-app">${app}</div>` : '';
   let tblHtml = '';
-  if (spec.tableHeaders && spec.tableRows) {
-    const hdrs = spec.tableHeaders.map(h => `<th>${h}</th>`).join('');
+  if (spec.tableRows) {
+    const hdrs = spec['tableHeaders_'+l] || spec.tableHeaders || [];
+    const modelCols = hdrs.slice(1);
+    const colspan = hdrs.length - 1 || 1;
+    const hdrHtml = hdrs.map(h=>`<th>${h}</th>`).join('');
     const rows = spec.tableRows.map(r => {
+      const label = r['label_'+l] || r.label || '';
       if (r.span) {
-        return `<tr><th>${r.label}</th><td colspan="${spec.tableHeaders.length-1}" class="span-all">${r.value}</td></tr>`;
+        const val = r['value_'+l] || r.value || '';
+        return `<tr><th>${label}</th><td colspan="${colspan}" class="span-all">${val}</td></tr>`;
       }
-      return `<tr><th>${r.label}</th>${r.values.map(v=>`<td>${v}</td>`).join('')}</tr>`;
+      return `<tr><th>${label}</th>${(r.values||[]).map((v,i)=>`<td data-h="${modelCols[i]||''}">${v}</td>`).join('')}</tr>`;
     }).join('');
-    tblHtml = `<div class="svc-spec-tbl-wrap"><table class="svc-spec-tbl"><thead><tr>${hdrs}</tr></thead><tbody>${rows}</tbody></table></div>`;
+    tblHtml = `<div class="svc-spec-tbl-wrap"><table class="svc-spec-tbl"><thead><tr>${hdrHtml}</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
   return `<div class="svc-spec">${featsHtml?`<div class="svc-spec-feats">${featsHtml}</div>`:''}${appHtml}${tblHtml}</div>`;
 }
@@ -1272,8 +1290,8 @@ function renderServices() {
     const {t,d} = sText(s, lang);
     const n = String(i+1).padStart(2,'0');
     const tags = (s.tags||[]).map(x=>`<span>${x}</span>`).join('');
-    const specBlock = s.spec ? renderSpec(s.spec) : '';
-    return `<div class="svc-row" aria-expanded="false">
+    const specBlock = s.spec ? renderSpec(s.spec, lang) : '';
+    return `<div class="svc-row" aria-expanded="${i===0?'true':'false'}">
       <div class="svc-trigger">
         <span class="svc-n">${n}</span>
         <h3>${t}</h3>

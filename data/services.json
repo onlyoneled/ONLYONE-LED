@@ -28,186 +28,39 @@
       },
       "spec": {
         "features": [
-          {
-            "title": "슬림 경량 설계",
-            "desc": "경량화 디자인을 채택하여 외부 쉘이 얇고 가볍습니다."
-          },
-          {
-            "title": "우수한 방열 성능",
-            "desc": "다이캐스팅 캐비닛으로 탁월한 방열 성능을 제공합니다."
-          },
-          {
-            "title": "다양한 설치 방식",
-            "desc": "고정, 호이스팅, 벽면 부착 등 다양한 설치 방식을 지원합니다."
-          },
-          {
-            "title": "전면 유지보수",
-            "desc": "전면에서 조립 및 유지보수를 지원합니다."
-          },
-          {
-            "title": "다양한 규격 캐비닛",
-            "desc": "다이캐스팅 알루미늄 프레임으로 변형이 없으며, 다양한 사이즈로 각 설치 환경에 대응합니다."
-          },
-          {
-            "title": "GOB 모듈",
-            "desc": "GOB 모듈로 전면 방수 및 충격 방지를 실현합니다."
-          }
+          {"title": "슬림 경량 설계", "title_en": "Slim Lightweight Design", "title_jp": "スリム軽量設計", "desc": "경량화 디자인을 채택하여 외부 쉘이 얇고 가볍습니다.", "desc_en": "Adopting a lightweight design, the outer shell is thin and lightweight.", "desc_jp": "軽量化デザインを採用し、外部シェルは薄く軽量です。"},
+          {"title": "우수한 방열 성능", "title_en": "Excellent Heat Dissipation", "title_jp": "優れた放熱性能", "desc": "다이캐스팅 캐비닛으로 탁월한 방열 성능을 제공합니다.", "desc_en": "The die-cast cabinet provides excellent heat dissipation.", "desc_jp": "ダイキャストキャビネットにより優れた放熱性能を提供します。"},
+          {"title": "다양한 설치 방식", "title_en": "Versatile Installation", "title_jp": "多様な設置方式", "desc": "고정, 호이스팅, 벽면 부착 등 다양한 설치 방식을 지원합니다.", "desc_en": "Supports fixed, hoisted, and wall-mounted installation methods.", "desc_jp": "固定、ホイスト、壁面取り付けなど多様な設置方式に対応します。"},
+          {"title": "전면 유지보수", "title_en": "Front Serviceability", "title_jp": "フロントメンテナンス", "desc": "전면에서 조립 및 유지보수를 지원합니다.", "desc_en": "Supports front assembly and maintenance.", "desc_jp": "前面からの組み立て・メンテナンスに対応します。"},
+          {"title": "다양한 규격 캐비닛", "title_en": "Multiple Cabinet Sizes", "title_jp": "多様な規格キャビネット", "desc": "다이캐스팅 알루미늄 프레임으로 변형이 없으며, 다양한 사이즈로 각 설치 환경에 대응합니다.", "desc_en": "Die-cast aluminum frame ensures no deformation; multiple sizes for various installation environments.", "desc_jp": "ダイキャストアルミフレームで変形なし。多様なサイズで各設置環境に対応します。"},
+          {"title": "GOB 모듈", "title_en": "GOB Module", "title_jp": "GOBモジュール", "desc": "GOB 모듈로 전면 방수 및 충격 방지를 실현합니다.", "desc_en": "GOB module achieves front waterproofing and anti-collision protection.", "desc_jp": "GOBモジュールで前面防水・耐衝撃を実現します。"}
         ],
         "application": "회의실, 호텔, 쇼핑몰, 상황실, 모니터링룸, 무대 배경, 스튜디오 등 다양한 실내 공간에 광범위하게 사용됩니다.",
-        "tableHeaders": [
-          "모델",
-          "P1.2",
-          "P1.5",
-          "P1.8",
-          "P2",
-          "P2.5"
-        ],
+        "application_en": "Widely used in conference rooms, hotels, shopping malls, dispatching rooms, monitoring rooms, stage backgrounds, studios and other indoor places.",
+        "application_jp": "会議室、ホテル、ショッピングモール、指令室、モニタリングルーム、ステージ背景、スタジオなど様々な屋内空間に広く使用されています。",
+        "tableHeaders": ["모델", "P1.2", "P1.5", "P1.8", "P2", "P2.5"],
+        "tableHeaders_en": ["Model", "P1.2", "P1.5", "P1.8", "P2", "P2.5"],
+        "tableHeaders_jp": ["モデル", "P1.2", "P1.5", "P1.8", "P2", "P2.5"],
         "tableRows": [
-          {
-            "label": "픽셀 피치 (mm)",
-            "values": [
-              "1.25",
-              "1.538",
-              "1.86",
-              "2",
-              "2.5"
-            ]
-          },
-          {
-            "label": "픽셀 밀도 (dots/m²)",
-            "values": [
-              "640,000",
-              "422,753",
-              "289,050",
-              "250,000",
-              "160,000"
-            ]
-          },
-          {
-            "label": "LED 구성",
-            "values": [
-              "SMD1010",
-              "SMD1212",
-              "SMD1415",
-              "SMD1415",
-              "SMD2020"
-            ]
-          },
-          {
-            "label": "모듈 크기 (mm)",
-            "values": [
-              "320×160",
-              "320×160",
-              "320×160",
-              "320×160",
-              "320×160"
-            ]
-          },
-          {
-            "label": "모듈 해상도 (dots)",
-            "values": [
-              "256×128",
-              "208×104",
-              "172×86",
-              "160×80",
-              "128×64"
-            ]
-          },
-          {
-            "label": "캐비닛 크기 (mm)",
-            "span": true,
-            "value": "640×640 / 640×480 / 320×640 / 320×480 (두께 63mm)"
-          },
-          {
-            "label": "캐비닛 무게",
-            "span": true,
-            "value": "22kg/m²"
-          },
-          {
-            "label": "캐비닛 소재",
-            "span": true,
-            "value": "다이캐스팅 알루미늄"
-          },
-          {
-            "label": "서비스 방식",
-            "span": true,
-            "value": "전면 유지보수"
-          },
-          {
-            "label": "밝기 (nits)",
-            "values": [
-              "600~3,000",
-              "600~3,000",
-              "600~3,000",
-              "600~3,000",
-              "600~3,000"
-            ]
-          },
-          {
-            "label": "주사율 (Hz)",
-            "values": [
-              "3,840~7,680",
-              "3,840~7,680",
-              "3,840~7,680",
-              "3,840~7,680",
-              "3,840~7,680"
-            ]
-          },
-          {
-            "label": "계조 (bit)",
-            "values": [
-              "14~16",
-              "14~16",
-              "14~16",
-              "14~16",
-              "14~16"
-            ]
-          },
-          {
-            "label": "평균 소비전력 (W/m²)",
-            "values": [
-              "180",
-              "180",
-              "180",
-              "180",
-              "180"
-            ]
-          },
-          {
-            "label": "최대 소비전력 (W/m²)",
-            "values": [
-              "600",
-              "600",
-              "600",
-              "600",
-              "600"
-            ]
-          },
-          {
-            "label": "입력 전압",
-            "span": true,
-            "value": "AC100-240V / 50~60Hz"
-          },
-          {
-            "label": "동작 온도",
-            "span": true,
-            "value": "-20℃ ~ 60℃"
-          },
-          {
-            "label": "수명",
-            "span": true,
-            "value": "100,000 시간"
-          },
-          {
-            "label": "MTBF",
-            "span": true,
-            "value": ">100,000 시간"
-          },
-          {
-            "label": "인증",
-            "span": true,
-            "value": "CE, ETL, FCC, RoHS"
-          }
+          {"label": "픽셀 피치 (mm)", "label_en": "Pixel Pitch (mm)", "label_jp": "ピクセルピッチ (mm)", "values": ["1.25", "1.538", "1.86", "2", "2.5"]},
+          {"label": "픽셀 밀도 (dots/m²)", "label_en": "Pixel Density (dots/m²)", "label_jp": "ピクセル密度 (dots/m²)", "values": ["640,000", "422,753", "289,050", "250,000", "160,000"]},
+          {"label": "LED 구성", "label_en": "LED Config", "label_jp": "LED構成", "values": ["SMD1010", "SMD1212", "SMD1415", "SMD1415", "SMD2020"]},
+          {"label": "모듈 크기 (mm)", "label_en": "Module Size (mm)", "label_jp": "モジュールサイズ (mm)", "values": ["320×160", "320×160", "320×160", "320×160", "320×160"]},
+          {"label": "모듈 해상도 (dots)", "label_en": "Module Resolution (dots)", "label_jp": "モジュール解像度 (dots)", "values": ["256×128", "208×104", "172×86", "160×80", "128×64"]},
+          {"label": "캐비닛 크기 (mm)", "label_en": "Cabinet Size (mm)", "label_jp": "キャビネットサイズ (mm)", "span": true, "value": "640×640 / 640×480 / 320×640 / 320×480 (두께 63mm)", "value_en": "640×640 / 640×480 / 320×640 / 320×480 (63mm thickness)", "value_jp": "640×640 / 640×480 / 320×640 / 320×480 (厚さ63mm)"},
+          {"label": "캐비닛 무게", "label_en": "Cabinet Weight", "label_jp": "キャビネット重量", "span": true, "value": "22kg/m²"},
+          {"label": "캐비닛 소재", "label_en": "Cabinet Material", "label_jp": "キャビネット素材", "span": true, "value": "다이캐스팅 알루미늄", "value_en": "Die-casting aluminium", "value_jp": "ダイキャストアルミニウム"},
+          {"label": "서비스 방식", "label_en": "Service", "label_jp": "サービス方式", "span": true, "value": "전면 유지보수", "value_en": "Front service", "value_jp": "フロントサービス"},
+          {"label": "밝기 (nits)", "label_en": "Brightness (nits)", "label_jp": "輝度 (nits)", "values": ["600~3,000", "600~3,000", "600~3,000", "600~3,000", "600~3,000"]},
+          {"label": "주사율 (Hz)", "label_en": "Refresh Rate (Hz)", "label_jp": "リフレッシュレート (Hz)", "values": ["3,840~7,680", "3,840~7,680", "3,840~7,680", "3,840~7,680", "3,840~7,680"]},
+          {"label": "계조 (bit)", "label_en": "Gray Scale (bit)", "label_jp": "階調 (bit)", "values": ["14~16", "14~16", "14~16", "14~16", "14~16"]},
+          {"label": "평균 소비전력 (W/m²)", "label_en": "Ave. Power (W/m²)", "label_jp": "平均消費電力 (W/m²)", "values": ["180", "180", "180", "180", "180"]},
+          {"label": "최대 소비전력 (W/m²)", "label_en": "Max. Power (W/m²)", "label_jp": "最大消費電力 (W/m²)", "values": ["600", "600", "600", "600", "600"]},
+          {"label": "입력 전압", "label_en": "Input Voltage", "label_jp": "入力電圧", "span": true, "value": "AC100-240V / 50~60Hz"},
+          {"label": "동작 온도", "label_en": "Working Temperature", "label_jp": "動作温度", "span": true, "value": "-20℃ ~ 60℃"},
+          {"label": "수명", "label_en": "Life Span", "label_jp": "寿命", "span": true, "value": "100,000 시간", "value_en": "100,000 hours", "value_jp": "100,000 時間"},
+          {"label": "MTBF", "label_en": "MTBF", "label_jp": "MTBF", "span": true, "value": ">100,000 시간", "value_en": ">100,000 hours", "value_jp": ">100,000 時間"},
+          {"label": "인증", "label_en": "Certification", "label_jp": "認証", "span": true, "value": "CE, ETL, FCC, RoHS"}
         ]
       }
     },
