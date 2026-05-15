@@ -1174,7 +1174,7 @@ async function loadCMS() {
   applySvcBg();
   applyAboutBg();
   applyFontSizes();
-  if (CMS.settings.videoId) setBackgroundVideo(CMS.settings.videoId);
+  // videoId가 있어도 heroYoutubeEnabled가 false면 로드하지 않음 (applyHeroBg에서 처리)
   try {
     const lang = localStorage.getItem('only1.lang');
     if (lang && I18N[lang]) applyLang(lang);
@@ -1365,6 +1365,9 @@ function applyHeroBg() {
   bg.classList.remove('has-image', 'has-video');
   bg.style.removeProperty('--hero-img');
   if (vid) { vid.src = ''; vid.onended = null; }
+  // iframe 항상 초기화 — 이후 YouTube 모드일 때만 다시 세팅
+  const iframe = document.getElementById('ytFrame');
+  if (iframe) { iframe.src = ''; delete iframe.dataset.loaded; }
 
   const s = CMS.settings;
 

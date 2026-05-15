@@ -851,6 +851,7 @@ function normalizeService(s) {
 
 /* =================== DATA INIT =================== */
 let DATA = structuredClone(DEFAULT_DATA);
+let _heroActiveTab = null;
 let EDIT_LANG = 'kr';
 
 async function initData() {
@@ -1172,6 +1173,7 @@ function getHeroMode(){
 }
 
 function _setHeroModeUI(mode){
+  _heroActiveTab = mode;
   $$('.hero-mode-tab').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===mode?'true':'false'));
   $$('.hero-mode-panel').forEach(p=>p.classList.remove('active'));
   const panel=document.getElementById('heroMode'+mode.charAt(0).toUpperCase()+mode.slice(1));
@@ -1321,15 +1323,15 @@ function _cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 /* ── 히어로 섹션 전체 렌더 ───────────────────── */
 function renderHeroBgSection(){
   const s = DATA.settings;
-  // 이미 탭이 열려있으면 탭 전환 안 함 — 사용자가 선택한 탭 유지
-  const hasActivePanel = document.querySelector('.hero-mode-panel.active');
-  if (!hasActivePanel) {
-    _setHeroModeUI(
-      (s.heroVideos||[]).length ? 'video' :
-      s.videoId                 ? 'youtube' :
-      'image'
-    );
+  // 최초 1회만 초기 탭 결정 — 이후엔 사용자가 선택한 탭(_heroActiveTab) 유지
+  if (_heroActiveTab === null) {
+    _heroActiveTab =
+      (s.heroImageEnabled && (s.heroImages||[]).length) ? 'image' :
+      (s.heroVideoEnabled && (s.heroVideos||[]).length) ? 'video' :
+      s.heroYoutubeEnabled ? 'youtube' :
+      'image';
   }
+  _setHeroModeUI(_heroActiveTab);
   _syncHeroUseBtn('image',   !!s.heroImageEnabled);
   _syncHeroUseBtn('video',   !!s.heroVideoEnabled);
   _syncHeroUseBtn('youtube', !!s.heroYoutubeEnabled);
