@@ -2,29 +2,12 @@
   "services": [
     {
       "id": "s_ki",
-      "tags": [
-        "P1.2~P2.5",
-        "실내형",
-        "GOB 모듈",
-        "전면유지보수",
-        "다이캐스팅"
-      ],
-      "images": [
-        "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778826840596_sx2d.jpg"
-      ],
+      "tags": ["P1.2~P2.5", "실내형", "GOB 모듈", "전면유지보수", "다이캐스팅"],
+      "images": ["https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778826840596_sx2d.jpg"],
       "i18n": {
-        "kr": {
-          "t": "KI 시리즈 실내 LED 디스플레이",
-          "d": "회의실, 호텔, 쇼핑몰, 상황실, 모니터링룸, 무대 배경, 스튜디오 등 다양한 실내 공간에 최적화된 고해상도 LED 디스플레이입니다."
-        },
-        "en": {
-          "t": "KI Series Indoor LED Display",
-          "d": "High-resolution indoor LED display optimized for conference rooms, hotels, shopping malls, dispatching rooms, monitoring rooms, and studio applications."
-        },
-        "jp": {
-          "t": "KIシリーズ 屋内LEDディスプレイ",
-          "d": "会議室、ホテル、ショッピングモール、指令室、モニタリングルーム、ステージ背景、スタジオなど様々な屋内空間に最適化されています。"
-        }
+        "kr": {"t": "KI 시리즈 실내 LED 디스플레이", "d": "회의실, 호텔, 쇼핑몰, 상황실, 모니터링룸, 무대 배경, 스튜디오 등 다양한 실내 공간에 최적화된 고해상도 LED 디스플레이입니다."},
+        "en": {"t": "KI Series Indoor LED Display", "d": "High-resolution indoor LED display optimized for conference rooms, hotels, shopping malls, dispatching rooms, monitoring rooms, and studio applications."},
+        "jp": {"t": "KIシリーズ 屋内LEDディスプレイ", "d": "会議室、ホテル、ショッピングモール、指令室、モニタリングルーム、ステージ背景、スタジオなど様々な屋内空間に最適化されています。"}
       },
       "spec": {
         "features": [
@@ -65,16 +48,246 @@
       }
     },
     {
+      "id": "s_lc",
+      "tags": ["P0.7~P1.5", "COB", "마이크로 LED", "IP65", "전면유지보수"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "LC 시리즈 COB 마이크로 LED 디스플레이", "d": "모니터링 센터, 회의실, AV센터, 전시관, 방송센터 등 초정밀 화질이 요구되는 실내 공간에 최적화된 COB 기반 마이크로 LED 디스플레이입니다."},
+        "en": {"t": "LC Series COB Micro LED Display", "d": "COB-based micro LED display optimized for monitoring centers, conference rooms, AV centers, exhibition halls, and broadcasting centers requiring ultra-precise image quality."},
+        "jp": {"t": "LCシリーズ COBマイクロLEDディスプレイ", "d": "モニタリングセンター、会議室、AVセンター、展示ホール、放送センターなど超精密な画質が求められる屋内空間に最適化されたCOBベースのマイクロLEDディスプレイです。"}
+      },
+      "spec": {
+        "features": [
+          {"title": "필름 인캡슐레이션", "title_en": "Film Encapsulation", "title_jp": "フィルム封止", "desc": "초박형 다기능 복합 광학 패키징 솔루션", "desc_en": "Ultra-thin multifunctional composite optical packaging solution", "desc_jp": "超薄型多機能複合光学パッケージングソリューション"},
+          {"title": "플립칩 & 공통 음극", "title_en": "Flip-chip & Common Cathode", "title_jp": "フリップチップ・共通カソード", "desc": "일반 애노드 설계 대비 전체 구동 전력 소비 절감", "desc_en": "Reduces overall drive power consumption more than the common anode design", "desc_jp": "共通アノード設計に比べ全体の駆動電力消費を削減"},
+          {"title": "저전력 소비", "title_en": "Lower Energy Consumption", "title_jp": "低エネルギー消費", "desc": "소비전력 10% 이상, 온도 5℃ 이상 절감", "desc_en": "Reduces power consumption by more than 10% and temperature by more than 5°C", "desc_jp": "消費電力10%以上・温度5℃以上削減"},
+          {"title": "강력한 보호", "title_en": "High Protection", "title_jp": "高保護性能", "desc": "전면 IP65 방수·방진, 습기·정전기·스크래치 방지", "desc_en": "Front IP65 waterproof, dustproof, moisture-proof, anti-static, anti-scratch", "desc_jp": "前面IP65防水・防塵、耐湿・耐静電気・耐スクラッチ"},
+          {"title": "곡면 스플라이스", "title_en": "Curved Splice", "title_jp": "曲面スプライス", "desc": "내부 아크 스플라이싱, 멀티앵글 호환, 2° 이내 아크 프로젝트 지원", "desc_en": "Internal arc splicing, multi-angle compatibility, supports arc splicing within 2°", "desc_jp": "内部アークスプライシング、マルチアングル対応、2°以内のアーク対応"},
+          {"title": "심리스", "title_en": "Seamlessness", "title_jp": "シームレス", "desc": "높은 수준의 평탄도와 이음새 없는 연결", "desc_en": "High level of flatness and seamless connection", "desc_jp": "高水準の平坦度とシームレスな接続"}
+        ],
+        "application": "모니터링 센터, 회의실, AV센터, 기업 쇼룸, 전시관, 브랜드 체인스토어, 상업 센터, 강당, 방송센터, 영화관, 자동차 4S 매장",
+        "application_en": "Monitoring center, Conference room, Audio-visual center, Enterprise show room, Exhibition hall, Brand chain store, Commercial center, Lecture hall, Broadcasting center, Cinema, Automotive 4S store.",
+        "application_jp": "モニタリングセンター、会議室、AVセンター、企業ショールーム、展示ホール、ブランドチェーンストア、商業センター、講堂、放送センター、映画館、自動車4Sショップ",
+        "tableHeaders": ["모델", "P0.7", "P0.9", "P1.2", "P1.5"],
+        "tableHeaders_en": ["Model", "P0.7", "P0.9", "P1.2", "P1.5"],
+        "tableHeaders_jp": ["モデル", "P0.7", "P0.9", "P1.2", "P1.5"],
+        "tableRows": [
+          {"label": "픽셀 피치 (mm)", "label_en": "Pixel Pitch (mm)", "label_jp": "ピクセルピッチ (mm)", "values": ["0.78125", "0.9375", "1.25", "1.5625"]},
+          {"label": "모듈 해상도 (dots)", "label_en": "Module Resolution (dots)", "label_jp": "モジュール解像度 (dots)", "values": ["192×216", "160×180", "120×135", "96×108"]},
+          {"label": "모듈 크기 (mm)", "label_en": "Module Size (mm)", "label_jp": "モジュールサイズ (mm)", "span": true, "value": "150×168.75"},
+          {"label": "모듈 레이아웃 (pcs)", "label_en": "Module Layout (pcs)", "label_jp": "モジュールレイアウト (pcs)", "span": true, "value": "4×2"},
+          {"label": "캐비닛 크기 (mm)", "label_en": "Cabinet Size (mm)", "label_jp": "キャビネットサイズ (mm)", "span": true, "value": "600×337.5×37.4"},
+          {"label": "픽셀 밀도 (dots/m²)", "label_en": "Pixel Density (dots/m²)", "label_jp": "ピクセル密度 (dots/m²)", "values": ["1,638,400", "1,137,777", "640,000", "409,600"]},
+          {"label": "이음새 (mm)", "label_en": "Seam (mm)", "label_jp": "シーム (mm)", "span": true, "value": "≤0.15"},
+          {"label": "유지보수", "label_en": "Maintenance", "label_jp": "メンテナンス", "span": true, "value": "전면", "value_en": "Front", "value_jp": "フロント"},
+          {"label": "밝기 (cd/m²)", "label_en": "Brightness (cd/m²)", "label_jp": "輝度 (cd/m²)", "span": true, "value": "500~1,000"},
+          {"label": "밝기 균일도", "label_en": "Brightness Uniformity", "label_jp": "輝度均一性", "span": true, "value": "97%"},
+          {"label": "암 대비", "label_en": "Dark Contrast", "label_jp": "ダークコントラスト", "span": true, "value": "1,000,000:1"},
+          {"label": "색 영역", "label_en": "Color Gamut", "label_jp": "色域", "span": true, "value": "NTSC 110%"},
+          {"label": "주사율 (Hz)", "label_en": "Refresh Rate (Hz)", "label_jp": "リフレッシュレート (Hz)", "span": true, "value": "3,840"},
+          {"label": "최대 소비전력 500nit (W/m²)", "label_en": "Max. Power at 500nit (W/m²)", "label_jp": "最大消費電力500nit (W/m²)", "values": ["320", "310", "310", "230"]},
+          {"label": "계조 (bit)", "label_en": "Gray Scale (bit)", "label_jp": "階調 (bit)", "span": true, "value": "12~16"},
+          {"label": "입력 전압", "label_en": "Input Voltage", "label_jp": "入力電圧", "span": true, "value": "AC100-240V / 50-60Hz"},
+          {"label": "동작 온도", "label_en": "Working Temperature", "label_jp": "動作温度", "span": true, "value": "-20℃ ~ 60℃"},
+          {"label": "수명", "label_en": "Life Span", "label_jp": "寿命", "span": true, "value": "100,000 시간", "value_en": "100,000 hours", "value_jp": "100,000 時間"},
+          {"label": "MTBF", "label_en": "Mtbf", "label_jp": "MTBF", "span": true, "value": ">100,000 시간", "value_en": ">100,000 hours", "value_jp": ">100,000 時間"},
+          {"label": "인증", "label_en": "Certification", "label_jp": "認証", "span": true, "value": "CE, ETL, FCC, RoHS"}
+        ]
+      }
+    },
+    {
+      "id": "s_kah",
+      "tags": ["P4~P10", "실외형", "IP65", "전후면유지보수", "다이캐스팅"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "KAH 시리즈 실외 LED 디스플레이", "d": "실외 빌보드, 쇼핑몰, 복합상업시설, 주차장, 테마파크, 스포츠 경기장 등 다양한 실외 공간에 최적화된 고휘도 실외 LED 디스플레이입니다."},
+        "en": {"t": "KAH Series Outdoor LED Display", "d": "High-brightness outdoor LED display optimized for outdoor billboards, shopping malls, commercial complexes, parking areas, theme parks, and sports stadiums."},
+        "jp": {"t": "KAHシリーズ 屋外LEDディスプレイ", "d": "屋外ビルボード、ショッピングモール、複合商業施設、駐車場、テーマパーク、スポーツスタジアムなど様々な屋外空間に最適化された高輝度LEDディスプレイです。"}
+      },
+      "spec": {
+        "features": [
+          {"title": "초절전 설계", "title_en": "Super Energy-saving", "title_jp": "超省エネ設計", "desc": "타 5V 입력 제품 대비 소비전력 30% 절감", "desc_en": "Compared with other 5V inputs, power consumption is significantly reduced by 30%.", "desc_jp": "他の5V入力製品と比較して消費電力を30%大幅削減"},
+          {"title": "고휘도", "title_en": "High Brightness", "title_jp": "高輝度", "desc": "8,000nits 이상의 고휘도로 어떤 조명 환경에서도 선명한 화면 표시", "desc_en": "8000+nits brightness supports gorgeous images under any lighting conditions.", "desc_jp": "8000nits以上の高輝度でいかなる照明環境でも鮮明な画像表示"},
+          {"title": "고대비", "title_en": "High Contrast", "title_jp": "高コントラスト", "desc": "1820 LED 비즈 사용으로 높은 표면 균일성과 향상된 명암비 실현", "desc_en": "1820 LED beads achieve higher surface uniformity and enhanced contrast ratio.", "desc_jp": "1820 LEDビーズにより高い表面均一性と向上したコントラスト比を実現"},
+          {"title": "강력한 방호 기능", "title_en": "High Protection", "title_jp": "高保護機能", "desc": "다이캐스팅 완전 밀폐 모듈, IP65+ 방수등급, 5VB 내화등급, EMC-Class B 인증", "desc_en": "Die-casting fully enclosed module, IP65+ waterproof, 5VB fire protection, EMC-Class B.", "desc_jp": "ダイキャスト完全密閉モジュール、IP65+防水、5VB耐火等級、EMC-Class B認証"},
+          {"title": "전·후면 유지보수", "title_en": "Front & Rear Maintenance", "title_jp": "前後面メンテナンス", "desc": "모듈·전원부 전후면 서비스 설계로 현장 상황에 맞는 유지보수 가능", "desc_en": "Front-Rear service design for both modules & PSUs meets any project-site needs.", "desc_jp": "モジュール・電源部の前後面サービス設計でどの現場環境にも対応"},
+          {"title": "곡면 스플라이싱", "title_en": "Curved Splicing", "title_jp": "曲面スプライシング", "desc": "건물 외관에 맞는 곡면 스플라이싱으로 공간 활용과 시각적 완성도 극대화", "desc_en": "Curved splicing fits the building contour, reducing space waste and installation costs.", "desc_jp": "建物の輪郭に合わせた曲面スプライシングでスペース効率と視覚的完成度を最大化"}
+        ],
+        "application": "실외 빌보드, 쇼핑몰, 복합상업시설, 주차장, 테마파크, 스포츠 경기장, 놀이공원, 엔터테인먼트 시설 외벽 등",
+        "application_en": "Outdoor billboards, Shopping mall, Commercial complex, Parking area, Theme parks, Sports stadium, Playgrounds, Entertainment venue facades, etc.",
+        "application_jp": "屋外ビルボード、ショッピングモール、複合商業施設、駐車場、テーマパーク、スポーツスタジアム、遊園地、エンターテインメント施設外壁など",
+        "tableHeaders": ["모델", "P4", "P5.7", "P6.6", "P8", "P10", "P8 (대형)"],
+        "tableHeaders_en": ["Model", "P4", "P5.7", "P6.6", "P8", "P10", "P8 (Large)"],
+        "tableHeaders_jp": ["モデル", "P4", "P5.7", "P6.6", "P8", "P10", "P8 (大型)"],
+        "tableRows": [
+          {"label": "픽셀 피치 (mm)", "label_en": "Pixel Pitch (mm)", "label_jp": "ピクセルピッチ (mm)", "values": ["4", "5.7", "6.67", "8", "10", "8"]},
+          {"label": "픽셀 구성", "label_en": "Pixel Composition", "label_jp": "ピクセル構成", "span": true, "value": "1R1G1B"},
+          {"label": "LED 타입", "label_en": "LED Type", "label_jp": "LEDタイプ", "values": ["SMD1820", "SMD1820", "SMD1820", "SMD1820", "SMD2727", "SMD2727"]},
+          {"label": "픽셀 밀도 (dots/m²)", "label_en": "Pixel Density (dots/m²)", "label_jp": "ピクセル密度 (dots/m²)", "values": ["62,500", "30,780", "22,500", "15,625", "10,000", "15,625"]},
+          {"label": "모듈 크기 (mm)", "label_en": "Module Size (mm)", "label_jp": "モジュールサイズ (mm)", "values": ["480×320", "480×320", "480×320", "480×320", "480×320", "512×256"]},
+          {"label": "모듈 해상도 (dots)", "label_en": "Module Resolution (dots)", "label_jp": "モジュール解像度 (dots)", "values": ["120×80", "84×56", "72×48", "60×40", "48×32", "64×32"]},
+          {"label": "캐비닛 크기 (mm)", "label_en": "Cabinet Size (mm)", "label_jp": "キャビネットサイズ (mm)", "values": ["960×960×90", "960×960×90", "960×960×90", "960×960×90", "960×960×90", "1024×1024×100"]},
+          {"label": "캐비닛 해상도 (dots)", "label_en": "Cabinet Resolution (dots)", "label_jp": "キャビネット解像度 (dots)", "values": ["240×240", "168×168", "144×144", "120×120", "96×96", "128×128"]},
+          {"label": "밝기 (cd/m²)", "label_en": "Brightness (cd/m²)", "label_jp": "輝度 (cd/m²)", "values": ["7,000", "8,000", "8,000", "8,000", "8,000", "8,000"]},
+          {"label": "평균 소비전력 (W/m²)", "label_en": "Ave. Power (W/m²)", "label_jp": "平均消費電力 (W/m²)", "values": ["180", "152", "140", "138", "135", "180"]},
+          {"label": "최대 소비전력 (W/m²)", "label_en": "Max. Power (W/m²)", "label_jp": "最大消費電力 (W/m²)", "values": ["595", "595", "595", "595", "595", "450"]},
+          {"label": "캐비닛 소재", "label_en": "Cabinet Material", "label_jp": "キャビネット素材", "values": ["다이캐스팅 알루미늄", "다이캐스팅 알루미늄", "다이캐스팅 알루미늄", "다이캐스팅 알루미늄", "다이캐스팅 알루미늄", "프로파일 캐비닛"]},
+          {"label": "캐비닛 무게", "label_en": "Cabinet Weight", "label_jp": "キャビネット重量", "values": ["27.5Kg/pc", "27.5Kg/pc", "27.5Kg/pc", "27.5Kg/pc", "27.5Kg/pc", "30Kg/m²"]},
+          {"label": "주사율 (Hz)", "label_en": "Refresh Rate (Hz)", "label_jp": "リフレッシュレート (Hz)", "span": true, "value": "3,840~7,680"},
+          {"label": "계조 (bit)", "label_en": "Gray Scale (bit)", "label_jp": "階調 (bit)", "values": ["14~16", "14~16", "14~16", "14~16", "14~16", "13~16"]},
+          {"label": "방수 등급", "label_en": "Waterproof Grade", "label_jp": "防水等級", "values": ["IP65(전)/IP54(후)", "IP65(전)/IP54(후)", "IP65(전)/IP54(후)", "IP65(전)/IP54(후)", "IP65(전)/IP54(후)", "IP65"]},
+          {"label": "설치/유지보수", "label_en": "Installation / Maintenance", "label_jp": "設置/メンテナンス", "span": true, "value": "전면 / 후면", "value_en": "Front / Rear", "value_jp": "前面 / 後面"},
+          {"label": "수명", "label_en": "Life Span", "label_jp": "寿命", "span": true, "value": "100,000 시간", "value_en": "100,000 hours", "value_jp": "100,000 時間"},
+          {"label": "MTBF", "label_en": "Mtbf", "label_jp": "MTBF", "span": true, "value": ">100,000 시간", "value_en": ">100,000 hours", "value_jp": ">100,000 時間"},
+          {"label": "인증", "label_en": "Certificate", "label_jp": "認証", "span": true, "value": "CE, ETL, FCC, RoHS"}
+        ]
+      }
+    },
+    {
+      "id": "s_kph",
+      "tags": ["P4~P10", "실외형", "IP65", "전후면유지보수", "플라스틱쉘"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "KPH 시리즈 실외 LED 디스플레이", "d": "실외 빌보드, 쇼핑몰, 복합상업시설, 스포츠 경기장 등 다양한 실외 환경에 적합한 플라스틱 쉘 구조의 고성능 실외 LED 디스플레이입니다."},
+        "en": {"t": "KPH Series Outdoor LED Display", "d": "High-performance outdoor LED display with plastic shell structure, suitable for outdoor billboards, shopping malls, commercial complexes, and sports stadiums."},
+        "jp": {"t": "KPHシリーズ 屋外LEDディスプレイ", "d": "プラスチックシェル構造の高性能屋外LEDディスプレイ。屋外ビルボード、ショッピングモール、複合商業施設、スポーツスタジアムなどに適しています。"}
+      },
+      "spec": {
+        "features": [
+          {"title": "초절전 설계", "title_en": "Super Energy-saving", "title_jp": "超省エネ設計", "desc": "타 5V 입력 제품 대비 소비전력 30% 절감", "desc_en": "Power consumption significantly reduced by 30% compared with other 5V inputs.", "desc_jp": "他の5V入力製品と比較して消費電力を30%大幅削減"},
+          {"title": "고휘도", "title_en": "High Brightness", "title_jp": "高輝度", "desc": "6,000nits 이상의 고휘도, 어떤 조명 환경에서도 선명한 화면 표시", "desc_en": "6000+nits brightness supports gorgeous images under any lighting conditions.", "desc_jp": "6000nits以上の高輝度でいかなる照明環境でも鮮明な画像表示"},
+          {"title": "고대비", "title_en": "High Contrast", "title_jp": "高コントラスト", "desc": "1820 LED 비즈 사용으로 높은 표면 균일성과 향상된 명암비 실현", "desc_en": "1820 LED beads achieve higher surface uniformity and enhanced contrast ratio.", "desc_jp": "1820 LEDビーズにより高い表面均一性と向上したコントラスト比を実現"},
+          {"title": "강력한 방호 기능", "title_en": "High Protection", "title_jp": "高保護機能", "desc": "플라스틱 쉘 모듈, 이중 방수 핀 헤더, IP65+ 방수등급, 5VB 내화등급", "desc_en": "Plastic shell module, double-layer waterproof pin header, IP65+, 5VB fire protection.", "desc_jp": "プラスチックシェルモジュール、二重防水ピンヘッダー、IP65+、5VB耐火等級"},
+          {"title": "전·후면 유지보수", "title_en": "Front & Rear Maintenance", "title_jp": "前後面メンテナンス", "desc": "모듈·전원부 전후면 서비스 설계로 현장 상황에 맞는 유지보수 가능", "desc_en": "Front-Rear service design for both modules & PSUs meets any project-site needs.", "desc_jp": "モジュール・電源部の前後面サービス設計でどの現場環境にも対応"},
+          {"title": "곡면 스플라이싱", "title_en": "Curved Splicing", "title_jp": "曲面スプライシング", "desc": "건물 외관에 맞는 곡면 스플라이싱으로 공간 활용과 시각적 완성도 극대화", "desc_en": "Curved splicing fits the building contour, reducing space waste and installation costs.", "desc_jp": "建物の輪郭に合わせた曲面スプライシングでスペース効率と視覚的完成度を最大化"}
+        ],
+        "application": "실외 빌보드, 쇼핑몰, 복합상업시설, 주차장, 테마파크, 스포츠 경기장, 놀이공원, 엔터테인먼트 시설 외벽 등",
+        "application_en": "Outdoor billboards, Shopping mall, Commercial complex, Parking area, Theme parks, Sports stadium, Playgrounds, Entertainment venue facades, etc.",
+        "application_jp": "屋外ビルボード、ショッピングモール、複合商業施設、駐車場、テーマパーク、スポーツスタジアム、遊園地、エンターテインメント施設外壁など",
+        "tableHeaders": ["모델", "P4", "P6.6", "P8", "P10"],
+        "tableHeaders_en": ["Model", "P4", "P6.6", "P8", "P10"],
+        "tableHeaders_jp": ["モデル", "P4", "P6.6", "P8", "P10"],
+        "tableRows": [
+          {"label": "픽셀 피치 (mm)", "label_en": "Pixel Pitch (mm)", "label_jp": "ピクセルピッチ (mm)", "values": ["4", "6.67", "8", "10"]},
+          {"label": "픽셀 구성", "label_en": "Pixel Composition", "label_jp": "ピクセル構成", "span": true, "value": "1R1G1B"},
+          {"label": "LED 타입", "label_en": "LED Type", "label_jp": "LEDタイプ", "values": ["SMD1820", "SMD1820", "SMD1820", "SMD2727"]},
+          {"label": "픽셀 밀도 (dots/m²)", "label_en": "Pixel Density (dots/m²)", "label_jp": "ピクセル密度 (dots/m²)", "values": ["62,500", "22,500", "15,625", "10,000"]},
+          {"label": "모듈 크기 (mm)", "label_en": "Module Size (mm)", "label_jp": "モジュールサイズ (mm)", "span": true, "value": "480×320"},
+          {"label": "모듈 해상도 (dots)", "label_en": "Module Resolution (dots)", "label_jp": "モジュール解像度 (dots)", "values": ["120×80", "72×48", "60×40", "48×32"]},
+          {"label": "캐비닛 크기 (mm)", "label_en": "Cabinet Size (mm)", "label_jp": "キャビネットサイズ (mm)", "span": true, "value": "960×960×90"},
+          {"label": "캐비닛 해상도 (dots)", "label_en": "Cabinet Resolution (dots)", "label_jp": "キャビネット解像度 (dots)", "values": ["240×240", "144×144", "120×120", "96×96"]},
+          {"label": "밝기 (cd/m²)", "label_en": "Brightness (cd/m²)", "label_jp": "輝度 (cd/m²)", "values": ["5,500", "6,000", "6,000", "6,000"]},
+          {"label": "평균 소비전력 (W/m²)", "label_en": "Ave. Power (W/m²)", "label_jp": "平均消費電力 (W/m²)", "values": ["165", "158", "158", "158"]},
+          {"label": "최대 소비전력 (W/m²)", "label_en": "Max. Power (W/m²)", "label_jp": "最大消費電力 (W/m²)", "values": ["620", "600", "600", "600"]},
+          {"label": "캐비닛 소재", "label_en": "Cabinet Material", "label_jp": "キャビネット素材", "span": true, "value": "다이캐스팅 알루미늄", "value_en": "Die-casting Aluminum", "value_jp": "ダイキャストアルミニウム"},
+          {"label": "캐비닛 무게", "label_en": "Cabinet Weight", "label_jp": "キャビネット重量", "span": true, "value": "27Kg/pc"},
+          {"label": "주사율 (Hz)", "label_en": "Refresh Rate (Hz)", "label_jp": "リフレッシュレート (Hz)", "span": true, "value": "3,840~7,680"},
+          {"label": "계조 (bit)", "label_en": "Gray Scale (bit)", "label_jp": "階調 (bit)", "span": true, "value": "14~16"},
+          {"label": "방수 등급", "label_en": "Waterproof Grade", "label_jp": "防水等級", "span": true, "value": "전면 IP65 / 후면 IP54", "value_en": "Front: IP65 & Rear: IP54", "value_jp": "前面IP65 / 後面IP54"},
+          {"label": "설치/유지보수", "label_en": "Installation / Maintenance", "label_jp": "設置/メンテナンス", "span": true, "value": "전면 / 후면", "value_en": "Front / Rear", "value_jp": "前面 / 後面"},
+          {"label": "수명", "label_en": "Life Span", "label_jp": "寿命", "span": true, "value": "100,000 시간", "value_en": "100,000 hours", "value_jp": "100,000 時間"},
+          {"label": "MTBF", "label_en": "Mtbf", "label_jp": "MTBF", "span": true, "value": ">100,000 시간", "value_en": ">100,000 hours", "value_jp": ">100,000 時間"},
+          {"label": "인증", "label_en": "Certificate", "label_jp": "認証", "span": true, "value": "CE, ETL, FCC"}
+        ]
+      }
+    },
+    {
+      "id": "s_kps",
+      "tags": ["P2.97~P10", "실외형", "IP65", "알루미늄/철재", "전후면유지보수"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "KPS 시리즈 실외 LED 디스플레이 (표준)", "d": "실외 빌보드, 쇼핑몰, 복합상업시설, 스포츠 경기장 등 다양한 실외 환경에 적합한 KPS 시리즈 표준형 실외 LED 디스플레이입니다."},
+        "en": {"t": "KPS Series Outdoor LED Display (Standard)", "d": "KPS Series standard outdoor LED display suitable for outdoor billboards, shopping malls, commercial complexes, and sports stadiums."},
+        "jp": {"t": "KPSシリーズ 屋外LEDディスプレイ (スタンダード)", "d": "屋外ビルボード、ショッピングモール、複合商業施設、スポーツスタジアムなど様々な屋外環境に適したKPSシリーズスタンダード屋外LEDディスプレイです。"}
+      },
+      "spec": {
+        "features": [
+          {"title": "우수한 방열 성능", "title_en": "Better Heat Dissipation", "title_jp": "優れた放熱性能", "desc": "고온 환경에서도 안정적인 동작을 보장하는 우수한 방열 성능", "desc_en": "Good heat dissipation ensures normal operation in high temperature environments.", "desc_jp": "高温環境でも安定した動作を保証する優れた放熱性能"},
+          {"title": "고신뢰성", "title_en": "High Reliability", "title_jp": "高信頼性", "desc": "높은 주사율로 탁월한 시각적 성능 제공", "desc_en": "Excellent visual performance with high refresh rate.", "desc_jp": "高いリフレッシュレートによる優れた視覚的パフォーマンス"},
+          {"title": "강화된 방수 능력", "title_en": "Better Waterproof Ability", "title_jp": "強化された防水能力", "desc": "완전 밀폐 모듈 쉘 설계와 방수 플러그로 높은 방수 성능 실현", "desc_en": "Fully enclosed module shell design with waterproof plug for higher waterproof ability.", "desc_jp": "完全密閉モジュールシェル設計と防水プラグで高い防水性能を実現"},
+          {"title": "초박형 경량", "title_en": "Ultra-thin and Light", "title_jp": "超薄型・軽量", "desc": "320×320mm 모듈+철재 캐비닛 ≈30~32kg/m², 250×250mm 모듈+철재 캐비닛 ≈40kg/m²", "desc_en": "320×320mm module+iron cabinet ≈30~32kg/m², 250×250mm module+iron cabinet ≈40kg/m²", "desc_jp": "320×320mmモジュール+鉄製キャビネット≈30~32kg/m²、250×250mmモジュール+鉄製≈40kg/m²"},
+          {"title": "스마트 유지보수", "title_en": "Smart Maintenance Method", "title_jp": "スマートメンテナンス", "desc": "패스트 록으로 신속한 전면 유지보수 가능", "desc_en": "Front maintenance by fast lock.", "desc_jp": "ファストロックによる迅速な前面メンテナンス"},
+          {"title": "심리스", "title_en": "Seamless", "title_jp": "シームレス", "desc": "심리스 연결, 균일한 색상으로 독보적인 시각 경험 제공", "desc_en": "Seamless connection uniform color, providing a unique visual experience.", "desc_jp": "シームレス接続・均一な色彩で独自の視覚体験を提供"}
+        ],
+        "application": "실외 빌보드, 쇼핑몰, 복합상업시설, 주차장, 테마파크, 스포츠 경기장, 놀이공원, 엔터테인먼트 시설 외벽 등",
+        "application_en": "Outdoor billboards, Shopping mall, Commercial complex, Parking area, Theme parks, Sports stadium, Playgrounds, Entertainment venue facades, etc.",
+        "application_jp": "屋外ビルボード、ショッピングモール、複合商業施設、駐車場、テーマパーク、スポーツスタジアム、遊園地、エンターテインメント施設外壁など",
+        "tableHeaders": ["모델", "P6.67", "P8", "P10", "P2.97", "P3.91", "P5.2", "P6.25"],
+        "tableHeaders_en": ["Model", "P6.67", "P8", "P10", "P2.97", "P3.91", "P5.2", "P6.25"],
+        "tableHeaders_jp": ["モデル", "P6.67", "P8", "P10", "P2.97", "P3.91", "P5.2", "P6.25"],
+        "tableRows": [
+          {"label": "픽셀 피치 (mm)", "label_en": "Pixel Pitch (mm)", "label_jp": "ピクセルピッチ (mm)", "values": ["6.67", "8", "10", "2.976", "3.91", "5.2", "6.25"]},
+          {"label": "픽셀 구성", "label_en": "Pixel Composition", "label_jp": "ピクセル構成", "span": true, "value": "1R1G1B"},
+          {"label": "LED 타입", "label_en": "LED Type", "label_jp": "LEDタイプ", "values": ["SMD2727", "SMD2727", "SMD2727", "SMD1415", "SMD1921", "SMD2727", "SMD2727"]},
+          {"label": "픽셀 밀도 (dots/m²)", "label_en": "Pixel Density (dots/m²)", "label_jp": "ピクセル密度 (dots/m²)", "values": ["22,477", "15,625", "10,000", "112,896", "65,536", "36,869", "25,600"]},
+          {"label": "캐비닛 크기 (mm)", "label_en": "Cabinet Size (mm)", "label_jp": "キャビネットサイズ (mm)", "values": ["960×960", "960×960", "960×960", "1,000×1,000", "1,000×1,000", "1,000×1,000", "1,000×1,000"]},
+          {"label": "캐비닛 해상도 (dots)", "label_en": "Cabinet Resolution (dots)", "label_jp": "キャビネット解像度 (dots)", "values": ["144×144", "120×120", "96×96", "336×336", "256×256", "192×192", "160×160"]},
+          {"label": "모듈 크기 (mm)", "label_en": "Module Size (mm)", "label_jp": "モジュールサイズ (mm)", "values": ["320×320", "320×320", "320×320", "250×250", "250×250", "250×250", "250×250"]},
+          {"label": "모듈 해상도 (dots)", "label_en": "Module Resolution (dots)", "label_jp": "モジュール解像度 (dots)", "values": ["48×48", "40×40", "32×32", "84×84", "64×64", "48×48", "40×40"]},
+          {"label": "캐비닛 소재", "label_en": "Cabinet Material", "label_jp": "キャビネット素材", "values": ["알루미늄/철재", "알루미늄/철재", "알루미늄/철재", "철재/알루미늄", "철재/알루미늄", "철재/알루미늄", "철재/알루미늄"]},
+          {"label": "캐비닛 무게 (kg)", "label_en": "Cabinet Weight (kg)", "label_jp": "キャビネット重量 (kg)", "values": ["30~32(철)/22~26(알)", "30~32(철)/22~26(알)", "30~32(철)/22~26(알)", "40kg/1,000×1,000", "40kg/1,000×1,000", "40kg/1,000×1,000", "40kg/1,000×1,000"]},
+          {"label": "밝기 (cd/m²)", "label_en": "Brightness (cd/m²)", "label_jp": "輝度 (cd/m²)", "span": true, "value": "≥5,500"},
+          {"label": "평균 소비전력 (W/m²)", "label_en": "Avg. Power (W/m²)", "label_jp": "平均消費電力 (W/m²)", "values": ["210", "210", "210", "350", "240", "240", "240"]},
+          {"label": "최대 소비전력 (W/m²)", "label_en": "Max. Power (W/m²)", "label_jp": "最大消費電力 (W/m²)", "values": ["700", "700", "700", "1,050", "800", "800", "800"]},
+          {"label": "주사율 (Hz)", "label_en": "Refresh Rate (Hz)", "label_jp": "リフレッシュレート (Hz)", "span": true, "value": "3,840~7,680"},
+          {"label": "계조 (bit)", "label_en": "Gray Scale (bit)", "label_jp": "階調 (bit)", "span": true, "value": "12~16"},
+          {"label": "설치/유지보수", "label_en": "Installation / Maintenance", "label_jp": "設置/メンテナンス", "span": true, "value": "전면 / 후면", "value_en": "Front / Rear", "value_jp": "前面 / 後面"},
+          {"label": "동작 온도", "label_en": "Working Temperature", "label_jp": "動作温度", "span": true, "value": "-20℃ ~ 60℃"},
+          {"label": "수명", "label_en": "Life Span", "label_jp": "寿命", "span": true, "value": "100,000 시간", "value_en": "100,000 hours", "value_jp": "100,000 時間"},
+          {"label": "MTBF", "label_en": "Mtbf", "label_jp": "MTBF", "span": true, "value": ">100,000 시간", "value_en": ">100,000 hours", "value_jp": ">100,000 時間"},
+          {"label": "인증", "label_en": "Certification", "label_jp": "認証", "span": true, "value": "CE, ETL, FCC, RoHS"}
+        ]
+      }
+    },
+    {
+      "id": "s_kps2",
+      "tags": ["P1.9~P3.9", "실외형", "소형모듈", "철재/알루미늄", "전후면유지보수"],
+      "images": [],
+      "i18n": {
+        "kr": {"t": "KPS 시리즈 실외 LED 디스플레이 (소형 모듈)", "d": "표준형 및 소형 모듈로 구성된 KPS 시리즈의 고해상도 실외 LED 디스플레이입니다. P1.9~P2.6은 표준 규격, P1.9~P3.9는 소형 모듈 구성입니다."},
+        "en": {"t": "KPS Series Outdoor LED Display (Small Module)", "d": "KPS Series high-resolution outdoor LED display with regular and small module configurations. P1.9–P2.6 are regular size; P1.9–P3.9 are small size modules."},
+        "jp": {"t": "KPSシリーズ 屋外LEDディスプレイ (小型モジュール)", "d": "標準および小型モジュール構成のKPSシリーズ高解像度屋外LEDディスプレイ。P1.9〜P2.6は標準サイズ、P1.9〜P3.9は小型モジュール構成です。"}
+      },
+      "spec": {
+        "features": [
+          {"title": "우수한 방열 성능", "title_en": "Better Heat Dissipation", "title_jp": "優れた放熱性能", "desc": "고온 환경에서도 안정적인 동작을 보장하는 우수한 방열 성능", "desc_en": "Good heat dissipation ensures normal operation in high temperature environments.", "desc_jp": "高温環境でも安定した動作を保証する優れた放熱性能"},
+          {"title": "고신뢰성", "title_en": "High Reliability", "title_jp": "高信頼性", "desc": "높은 주사율로 탁월한 시각적 성능 제공", "desc_en": "Excellent visual performance with high refresh rate.", "desc_jp": "高いリフレッシュレートによる優れた視覚的パフォーマンス"},
+          {"title": "강화된 방수 능력", "title_en": "Better Waterproof Ability", "title_jp": "強化された防水能力", "desc": "완전 밀폐 모듈 쉘 설계와 방수 플러그로 높은 방수 성능 실현", "desc_en": "Fully enclosed module shell design with waterproof plug for higher waterproof ability.", "desc_jp": "完全密閉モジュールシェル設計と防水プラグで高い防水性能を実現"},
+          {"title": "초박형 경량", "title_en": "Ultra-thin and Light", "title_jp": "超薄型・軽量", "desc": "320×320mm 모듈+철재 캐비닛 ≈30~32kg/m²", "desc_en": "320×320mm module+iron cabinet ≈30~32kg/m²", "desc_jp": "320×320mmモジュール+鉄製キャビネット≈30~32kg/m²"},
+          {"title": "스마트 유지보수", "title_en": "Smart Maintenance Method", "title_jp": "スマートメンテナンス", "desc": "패스트 록으로 신속한 전면 유지보수 가능", "desc_en": "Front maintenance by fast lock.", "desc_jp": "ファストロックによる迅速な前面メンテナンス"},
+          {"title": "심리스", "title_en": "Seamless", "title_jp": "シームレス", "desc": "심리스 연결, 균일한 색상으로 독보적인 시각 경험 제공", "desc_en": "Seamless connection uniform color, providing a unique visual experience.", "desc_jp": "シームレス接続・均一な色彩で独自の視覚体験を提供"}
+        ],
+        "application": "실외 빌보드, 쇼핑몰, 복합상업시설, 주차장, 테마파크, 스포츠 경기장, 놀이공원, 엔터테인먼트 시설 외벽 등",
+        "application_en": "Outdoor billboards, Shopping mall, Commercial complex, Parking area, Theme parks, Sports stadium, Playgrounds, Entertainment venue facades, etc.",
+        "application_jp": "屋外ビルボード、ショッピングモール、複合商業施設、駐車場、テーマパーク、スポーツスタジアム、遊園地、エンターテインメント施設外壁など",
+        "tableHeaders": ["모델", "P1.9(표준①)", "P1.9(표준②)", "P2.6(표준)", "P1.9(소형)", "P2.9(소형)", "P3.9(소형)"],
+        "tableHeaders_en": ["Model", "P1.9(Reg.①)", "P1.9(Reg.②)", "P2.6(Reg.)", "P1.9(Sm.)", "P2.9(Sm.)", "P3.9(Sm.)"],
+        "tableHeaders_jp": ["モデル", "P1.9(標準①)", "P1.9(標準②)", "P2.6(標準)", "P1.9(小型)", "P2.9(小型)", "P3.9(小型)"],
+        "tableRows": [
+          {"label": "픽셀 피치 (mm)", "label_en": "Pixel Pitch (mm)", "label_jp": "ピクセルピッチ (mm)", "values": ["1.98", "1.98", "2.6", "1.98", "2.976", "3.91"]},
+          {"label": "픽셀 구성", "label_en": "Pixel Composition", "label_jp": "ピクセル構成", "span": true, "value": "1R1G1B"},
+          {"label": "LED 타입", "label_en": "LED Type", "label_jp": "LEDタイプ", "values": ["SMD1515", "SMD1112", "SMD1515", "SMD1112", "SMD1515", "SMD1820"]},
+          {"label": "픽셀 밀도 (dots/m²)", "label_en": "Pixel Density (dots/m²)", "label_jp": "ピクセル密度 (dots/m²)", "values": ["254,076", "254,076", "147,930", "254,076", "112,896", "65,536"]},
+          {"label": "캐비닛 크기 (mm)", "label_en": "Cabinet Size (mm)", "label_jp": "キャビネットサイズ (mm)", "values": ["500×1,000", "커스터마이즈", "커스터마이즈", "커스터마이즈", "커스터마이즈", "커스터마이즈"]},
+          {"label": "모듈 크기 (mm)", "label_en": "Module Size (mm)", "label_jp": "モジュールサイズ (mm)", "values": ["250×250", "250×250", "250×250", "41.67×250", "41.67×250", "62.5×250"]},
+          {"label": "캐비닛 소재", "label_en": "Cabinet Material", "label_jp": "キャビネット素材", "values": ["프로파일 알루미늄", "알루미늄/철재", "알루미늄/철재", "철재", "철재", "철재"]},
+          {"label": "밝기 (cd/m²)", "label_en": "Brightness (cd/m²)", "label_jp": "輝度 (cd/m²)", "values": ["3,500", "3,500", "3,500", "3,500", "5,000", "5,000"]},
+          {"label": "평균 소비전력 (W/m²)", "label_en": "Avg. Power (W/m²)", "label_jp": "平均消費電力 (W/m²)", "values": ["280", "320", "280", "320", "260", "230"]},
+          {"label": "최대 소비전력 (W/m²)", "label_en": "Max. Power (W/m²)", "label_jp": "最大消費電力 (W/m²)", "values": ["930", "1,040", "930", "1,040", "850", "750"]},
+          {"label": "캐비닛 무게", "label_en": "Cabinet Weight", "label_jp": "キャビネット重量", "values": ["30~32(철)/22~26(알)", "30~32(철)/22~26(알)", "30~32(철)/22~26(알)", "30~32kg/m²(철)", "30~32kg/m²(철)", "30~32kg/m²(철)"]},
+          {"label": "주사율 (Hz)", "label_en": "Refresh Rate (Hz)", "label_jp": "リフレッシュレート (Hz)", "span": true, "value": "3,840~7,680"},
+          {"label": "계조 (bit)", "label_en": "Gray Scale (bit)", "label_jp": "階調 (bit)", "span": true, "value": "12~16"},
+          {"label": "설치/유지보수", "label_en": "Installation / Maintenance", "label_jp": "設置/メンテナンス", "values": ["전면", "전면", "전면", "전면/후면", "전면/후면", "전면/후면"]},
+          {"label": "동작 온도", "label_en": "Working Temperature", "label_jp": "動作温度", "span": true, "value": "-30℃ ~ 60℃"},
+          {"label": "수명 (시간)", "label_en": "Life Span (hours)", "label_jp": "寿命 (時間)", "span": true, "value": "100,000"},
+          {"label": "MTBF (시간)", "label_en": "Mtbf (hours)", "label_jp": "MTBF (時間)", "span": true, "value": ">100,000"},
+          {"label": "인증", "label_en": "Certification", "label_jp": "認証", "span": true, "value": "CE, ETL, FCC, RoHS"}
+        ]
+      }
+    },
+    {
       "id": "s1",
-      "tags": [
-        "P1.25~P2.5",
-        "SMD",
-        "GOB",
-        "HOB",
-        "COB",
-        "4K",
-        "전면유지보수"
-      ],
+      "tags": ["P1.25~P2.5", "SMD", "GOB", "HOB", "COB", "4K", "전면유지보수"],
       "images": [
         "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778817718225_57ph.jpg",
         "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778817720434_dr65.jpg",
@@ -87,28 +300,14 @@
         "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778816703206_6p02.jpg"
       ],
       "i18n": {
-        "kr": {
-          "t": "실내 고정형 LED 디스플레이",
-          "d": "P1.25부터 P2.5까지 픽셀 피치를 자유롭게 선택할 수 있는 실내형 전면 유지 보수 LED 디스플레이 입니다. 설치하려는 사이즈에 맞춰 자유롭게 설계가 가능합니다. "
-        },
-        "en": {
-          "t": "Full-color LED Display",
-          "d": "Indoor and outdoor full-color LED displays with pixel pitches from P2 to P10."
-        },
-        "jp": {
-          "t": "フルカラーLEDディスプレイ",
-          "d": "P2からP10までピクセルピッチを自由に選べる屋内・屋外フルカラーディスプレイ。"
-        }
+        "kr": {"t": "실내 고정형 LED 디스플레이", "d": "P1.25부터 P2.5까지 픽셀 피치를 자유롭게 선택할 수 있는 실내형 전면 유지 보수 LED 디스플레이 입니다. 설치하려는 사이즈에 맞춰 자유롭게 설계가 가능합니다. "},
+        "en": {"t": "Full-color LED Display", "d": "Indoor and outdoor full-color LED displays with pixel pitches from P2 to P10."},
+        "jp": {"t": "フルカラーLEDディスプレイ", "d": "P2からP10までピクセルピッチを自由に選べる屋内・屋外フルカラーディスプレイ。"}
       }
     },
     {
       "id": "s2",
-      "tags": [
-        "600×337.5mm",
-        "IP65",
-        "COB(Chip on Board)",
-        "Flip-chip"
-      ],
+      "tags": ["600×337.5mm", "IP65", "COB(Chip on Board)", "Flip-chip"],
       "images": [
         "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778817732219_1p0l.jpg",
         "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778816679318_uv7d.jpg",
@@ -116,70 +315,31 @@
         "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778816679880_6xgo.jpg"
       ],
       "i18n": {
-        "kr": {
-          "t": "COB 마이크로 LED 디스플레이",
-          "d": "COB 및 플립칩 기술로 구현한 고효율 안정성은 물론, 초슬림·초경량 디자인과 IP65 등급의 강력한 보호 성능, 정교한 곡면 접합 기술을 모두 갖춰 어떤 환경에서도 최상의 디스플레이 경험을 선사합니다."
-        },
-        "en": {
-          "t": "Monochrome / Tri-color Display",
-          "d": "Low-power monochrome and tri-color LED displays for roads and parking lots."
-        },
-        "jp": {
-          "t": "単色・三色ディスプレイ",
-          "d": "長時間運用に最適化された低消費電力の単色・三色LEDディスプレイです。"
-        }
+        "kr": {"t": "COB 마이크로 LED 디스플레이", "d": "COB 및 플립칩 기술로 구현한 고효율 안정성은 물론, 초슬림·초경량 디자인과 IP65 등급의 강력한 보호 성능, 정교한 곡면 접합 기술을 모두 갖춰 어떤 환경에서도 최상의 디스플레이 경험을 선사합니다."},
+        "en": {"t": "Monochrome / Tri-color Display", "d": "Low-power monochrome and tri-color LED displays for roads and parking lots."},
+        "jp": {"t": "単色・三色ディスプレイ", "d": "長時間運用に最適化された低消費電力の単色・三色LEDディスプレイです。"}
       }
     },
     {
       "id": "s3",
-      "tags": [
-        "실외용전광판",
-        "IP65",
-        "고휘도디스플레이",
-        "내구성갑",
-        "빌보드전광판"
-      ],
+      "tags": ["실외용전광판", "IP65", "고휘도디스플레이", "내구성갑", "빌보드전광판"],
       "images": [],
       "i18n": {
-        "kr": {
-          "t": "실외형 방수타입 LED 디스플레이",
-          "d": "LED 디스플레이는 IP65 등급의 완벽한 방수·방진 설계와 압도적인 밝기를 갖춰, 어떤 기상 조건에서도 변함없이 선명하고 안정적인 시각 경험을 제공합니다."
-        },
-        "en": {
-          "t": "Curved / Flexible Display",
-          "d": "Flexible LED modules for curved, column-wrapped, or ceiling-mounted forms."
-        },
-        "jp": {
-          "t": "カーブド・フレキシブル",
-          "d": "フレキシブルモジュールでカスタム形状のLEDを製作します。"
-        }
+        "kr": {"t": "실외형 방수타입 LED 디스플레이", "d": "LED 디스플레이는 IP65 등급의 완벽한 방수·방진 설계와 압도적인 밝기를 갖춰, 어떤 기상 조건에서도 변함없이 선명하고 안정적인 시각 경험을 제공합니다."},
+        "en": {"t": "Curved / Flexible Display", "d": "Flexible LED modules for curved, column-wrapped, or ceiling-mounted forms."},
+        "jp": {"t": "カーブド・フレキシブル", "d": "フレキシブルモジュールでカスタム形状のLEDを製作します。"}
       }
     },
     {
       "id": "s4",
-      "tags": [
-        "스마트CMS",
-        "원격콘텐츠관리",
-        "디지털사이니지운영",
-        "통합관제시스템",
-        "실시간업데이트"
-      ],
+      "tags": ["스마트CMS", "원격콘텐츠관리", "디지털사이니지운영", "통합관제시스템", "실시간업데이트"],
       "images": [
         "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/svc_1778730186371.jpg"
       ],
       "i18n": {
-        "kr": {
-          "t": "CMS 스마트 콘텐츠 관리",
-          "d": "직관적인 인터페이스를 통해 전 세계 어디서든 실시간으로 콘텐츠를 원격 제어하고 효율적으로 관리할 수 있는 통합 솔루션입니다."
-        },
-        "en": {
-          "t": "Smart Content Management",
-          "d": "Manage content remotely via PC or mobile app after install."
-        },
-        "jp": {
-          "t": "スマートコンテンツ管理",
-          "d": "PC・モバイルアプリからコンテンツを遠隔でアップロード・スケジューリングできます。"
-        }
+        "kr": {"t": "CMS 스마트 콘텐츠 관리", "d": "직관적인 인터페이스를 통해 전 세계 어디서든 실시간으로 콘텐츠를 원격 제어하고 효율적으로 관리할 수 있는 통합 솔루션입니다."},
+        "en": {"t": "Smart Content Management", "d": "Manage content remotely via PC or mobile app after install."},
+        "jp": {"t": "スマートコンテンツ管理", "d": "PC・モバイルアプリからコンテンツを遠隔でアップロード・スケジューリングできます。"}
       }
     }
   ]
