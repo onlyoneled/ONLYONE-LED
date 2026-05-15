@@ -1366,18 +1366,32 @@ function applyHeroBg() {
   bg.style.removeProperty('--hero-img');
   if (vid) { vid.src = ''; vid.onended = null; }
 
+  // 우선순위: 동영상 > 유튜브 > 이미지(heroImages) > 레거시(heroBg)
+  const imgItems = (CMS.settings.heroImages || []).filter(Boolean);
+
   if (items.length) {
+    // 동영상 모드
     const multi = items.length > 1;
     if (prev) prev.classList.toggle('visible', multi);
     if (next) next.classList.toggle('visible', multi);
     _buildHeroDots(items.length);
     _playHeroSlide(0);
   } else if (CMS.settings.videoId) {
+    // 유튜브 모드
     if (prev) prev.classList.remove('visible');
     if (next) next.classList.remove('visible');
     _buildHeroDots(0);
     setBackgroundVideo(CMS.settings.videoId);
+  } else if (imgItems.length) {
+    // 이미지 모드 (heroImages[])
+    _heroVids = imgItems;
+    const multi = imgItems.length > 1;
+    if (prev) prev.classList.toggle('visible', multi);
+    if (next) next.classList.toggle('visible', multi);
+    _buildHeroDots(imgItems.length);
+    _playHeroSlide(0);
   } else {
+    // 레거시: heroBg (단일 시공사례 이미지)
     if (prev) prev.classList.remove('visible');
     if (next) next.classList.remove('visible');
     _buildHeroDots(0);
