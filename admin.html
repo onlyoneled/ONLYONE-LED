@@ -173,10 +173,25 @@
   .svc-ico-admin { width: 30px; height: 30px; display: grid; place-items: center; background: transparent; border: 1px solid var(--line); border-radius: 50%; cursor: pointer; color: var(--ink); transition: all .25s; flex-shrink: 0; }
   .svc-row-admin.open .svc-ico-admin { background: var(--accent); border-color: var(--accent); color: #000; transform: rotate(45deg); }
   .svc-body-admin { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s ease; }
-  .svc-body-admin > div { overflow: hidden; }
+  .svc-body-admin > div { overflow: clip; }
   .svc-body-inner-admin { padding: 4px 0 28px 70px; }
   .svc-body-inner-admin p { margin: 0; font-size: 15px; line-height: 1.68; color: var(--mute); max-width: 540px; }
   .svc-row-admin.open .svc-body-admin { grid-template-rows: 1fr; }
+  /* ─── Spec sheet (admin) ─── */
+  .svc-spec{margin-top:20px;}
+  .svc-spec-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 20px;margin-bottom:24px;}
+  .svc-spec-feat{display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--accent);padding-left:10px;}
+  .svc-spec-feat strong{font-size:12px;font-weight:700;}
+  .svc-spec-feat span{font-size:11px;color:var(--mute);line-height:1.5;}
+  .svc-spec-app{font-size:13px;color:var(--mute);line-height:1.65;border-top:1px solid var(--line);padding-top:16px;margin-bottom:20px;}
+  .svc-spec-app::before{content:"APPLICATION";display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--accent);margin-bottom:6px;}
+  .svc-spec-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .svc-spec-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:520px;}
+  .svc-spec-tbl th,.svc-spec-tbl td{border:1px solid var(--line);padding:6px 10px;}
+  .svc-spec-tbl thead th{background:rgba(246,244,239,.06);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-align:center;}
+  .svc-spec-tbl tbody th{background:rgba(246,244,239,.03);font-weight:500;text-align:left;color:var(--mute);font-size:11px;min-width:160px;}
+  .svc-spec-tbl tbody td{text-align:center;color:var(--mute);font-size:11px;}
+  .svc-spec-tbl .span-all{text-align:left;}
 
   .heropick { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
   .heropick .opt {
@@ -229,6 +244,7 @@
     .svc-head-admin .tags { display: none; }
     .svc-admin-ops { opacity: 1; }
     .svc-body-inner-admin { padding: 4px 0 22px 58px; }
+    .svc-spec-feats { grid-template-columns: repeat(2,1fr); }
   }
 
   /* ── Login overlay ── */
@@ -1098,6 +1114,25 @@ function moveWork(id, dir) {
   saveData();
 }
 
+function renderSpec(spec) {
+  if (!spec) return '';
+  const featsHtml = (spec.features||[]).map(f =>
+    `<div class="svc-spec-feat"><strong>${f.title}</strong><span>${f.desc}</span></div>`
+  ).join('');
+  const appHtml = spec.application
+    ? `<div class="svc-spec-app">${spec.application}</div>` : '';
+  let tblHtml = '';
+  if (spec.tableHeaders && spec.tableRows) {
+    const hdrs = spec.tableHeaders.map(h => `<th>${h}</th>`).join('');
+    const rows = spec.tableRows.map(r => {
+      if (r.span) return `<tr><th>${r.label}</th><td colspan="${spec.tableHeaders.length-1}" class="span-all">${r.value}</td></tr>`;
+      return `<tr><th>${r.label}</th>${r.values.map(v=>`<td>${v}</td>`).join('')}</tr>`;
+    }).join('');
+    tblHtml = `<div class="svc-spec-tbl-wrap"><table class="svc-spec-tbl"><thead><tr>${hdrs}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  return `<div class="svc-spec">${featsHtml?`<div class="svc-spec-feats">${featsHtml}</div>`:''}${appHtml}${tblHtml}</div>`;
+}
+
 function renderServicesAdmin() {
   const list = $('#svcListAdmin'); if(!list) return;
   list.innerHTML = DATA.services.map((s,i) => {
@@ -1121,6 +1156,7 @@ function renderServicesAdmin() {
       </div>
       <div class="svc-body-admin"><div><div class="svc-body-inner-admin">
         <p>${d.replace(/\n/g,'<br/>')}</p>
+        ${renderSpec(s.spec)}
         ${(s.images&&s.images.length)?`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">${s.images.map(img=>`<img src="${img}" alt="${t}" loading="lazy" style="width:160px;height:120px;object-fit:cover;border-radius:8px;"/>`).join('')}</div>`:''}
       </div></div></div>
     </div>`;
