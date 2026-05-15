@@ -348,6 +348,35 @@ body[data-lang="jp"] .work-card .wc-info h3{font-family:var(--font-jp);}
 .svc-body-img{width:160px;flex-shrink:0;}
 .svc-body-img img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;}
 
+/* ─── Spec sheet ─── */
+.svc-spec{margin-top:20px;}
+.svc-spec-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 20px;margin-bottom:24px;}
+.svc-spec-feat{display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--accent);padding-left:10px;}
+.svc-spec-feat strong{font-size:12px;font-weight:700;}
+.svc-spec-feat span{font-size:11px;color:var(--mute);line-height:1.5;}
+.svc-spec-app{
+  font-size:13px;color:var(--mute);line-height:1.65;
+  border-top:1px solid var(--line);padding-top:16px;margin-bottom:20px;
+}
+.svc-spec-app::before{
+  content:"APPLICATION";display:block;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;
+  color:var(--accent);margin-bottom:6px;
+}
+.svc-spec-tbl-wrap{overflow-x:auto;}
+.svc-spec-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:520px;}
+.svc-spec-tbl th,.svc-spec-tbl td{border:1px solid var(--line);padding:6px 10px;}
+.svc-spec-tbl thead th{
+  background:rgba(246,244,239,.06);font-family:var(--font-mono);
+  font-size:10px;letter-spacing:.08em;text-align:center;
+}
+.svc-spec-tbl tbody th{
+  background:rgba(246,244,239,.03);font-weight:500;
+  text-align:left;color:var(--mute);font-size:11px;min-width:160px;
+}
+.svc-spec-tbl tbody td{text-align:center;color:var(--mute);font-size:11px;}
+.svc-spec-tbl .span-all{text-align:left;}
+
 /* ══════════════════════════════════════════════
    ABOUT
 ══════════════════════════════════════════════ */
@@ -669,6 +698,7 @@ footer .logo{font-size:15px;}
   .svc-tags{display:none;}
   .svc-body-inner{grid-template-columns:1fr;padding:4px 0 22px 46px;}
   .svc-body-img{width:100%;}
+  .svc-spec-feats{grid-template-columns:repeat(2,1fr);}
 
   /* About */
   .about-section{padding:56px var(--pad) 72px;}
@@ -1214,6 +1244,26 @@ function renderWorks() {
   }).join('');
 }
 
+function renderSpec(spec) {
+  const featsHtml = (spec.features||[]).map(f =>
+    `<div class="svc-spec-feat"><strong>${f.title}</strong><span>${f.desc}</span></div>`
+  ).join('');
+  const appHtml = spec.application
+    ? `<div class="svc-spec-app">${spec.application}</div>` : '';
+  let tblHtml = '';
+  if (spec.tableHeaders && spec.tableRows) {
+    const hdrs = spec.tableHeaders.map(h => `<th>${h}</th>`).join('');
+    const rows = spec.tableRows.map(r => {
+      if (r.span) {
+        return `<tr><th>${r.label}</th><td colspan="${spec.tableHeaders.length-1}" class="span-all">${r.value}</td></tr>`;
+      }
+      return `<tr><th>${r.label}</th>${r.values.map(v=>`<td>${v}</td>`).join('')}</tr>`;
+    }).join('');
+    tblHtml = `<div class="svc-spec-tbl-wrap"><table class="svc-spec-tbl"><thead><tr>${hdrs}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  return `<div class="svc-spec">${featsHtml?`<div class="svc-spec-feats">${featsHtml}</div>`:''}${appHtml}${tblHtml}</div>`;
+}
+
 function renderServices() {
   const list = document.getElementById('svcList');
   if (!list) return;
@@ -1222,6 +1272,7 @@ function renderServices() {
     const {t,d} = sText(s, lang);
     const n = String(i+1).padStart(2,'0');
     const tags = (s.tags||[]).map(x=>`<span>${x}</span>`).join('');
+    const specBlock = s.spec ? renderSpec(s.spec) : '';
     return `<div class="svc-row" aria-expanded="false">
       <div class="svc-trigger">
         <span class="svc-n">${n}</span>
@@ -1232,7 +1283,7 @@ function renderServices() {
         </button>
       </div>
       <div class="svc-body"><div><div class="svc-body-inner" style="grid-template-columns:1fr;">
-        <div><p>${d.replace(/\n/g,'<br/>')}</p></div>
+        <div><p>${d.replace(/\n/g,'<br/>')}</p>${specBlock}</div>
         ${(s.images&&s.images.length)?`<div class="svc-gallery" data-imgs='${JSON.stringify(s.images)}' data-idx="0">
           <img src="${s.images[0]}" alt="${t}" loading="lazy"/>
           ${s.images.length>1?`<button class="svc-gal-btn svc-gal-prev" aria-label="이전">&#8249;</button>
