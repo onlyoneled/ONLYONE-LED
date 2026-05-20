@@ -413,10 +413,8 @@ body[data-lang="jp"] .about-title{font-family:var(--font-jp);}
   display:block;width:100%;height:900px;
   border:none;border-radius:12px;
   box-shadow:0 8px 40px rgba(0,0,0,.18);
-  overflow:hidden;
 }
-@media(max-width:768px){.cube-sim-frame{height:1500px;}}
-@media(max-width:480px){.cube-sim-frame{height:1500px;}}
+@media(max-width:768px){.cube-sim-frame{height:1000px;}}
 #aboutCopy p:last-child{margin-bottom:0;}
 
 /* ══════════════════════════════════════════════
@@ -881,7 +879,6 @@ footer .logo{font-size:15px;}
         src="public/onlyone-cube-signage.html"
         class="cube-sim-frame"
         loading="lazy"
-        scrolling="no"
         title="3D 큐브 사이니지 시뮬레이터"
         allowfullscreen
       ></iframe>
@@ -1758,6 +1755,26 @@ if ('IntersectionObserver' in window) {
     if (Math.abs(dy) > 60 && Math.abs(dy) > Math.abs(dx)) { closeLb(); return; }
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); }
   }, { passive: true });
+})();
+
+/* iframe auto-resize: fits simulator to its full content height */
+(function() {
+  var frame = document.querySelector('.cube-sim-frame');
+  if (!frame) return;
+  function fitFrame() {
+    try {
+      var doc = frame.contentDocument || frame.contentWindow.document;
+      var h = doc.documentElement.scrollHeight || doc.body.scrollHeight;
+      if (h > 200) frame.style.height = h + 'px';
+    } catch(e) {}
+  }
+  frame.addEventListener('load', function() {
+    fitFrame();
+    setTimeout(fitFrame, 300);
+    setTimeout(fitFrame, 800);
+    setTimeout(fitFrame, 2000);
+    setTimeout(fitFrame, 4000);
+  });
 })();
 
 </script>
