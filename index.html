@@ -415,8 +415,8 @@ body[data-lang="jp"] .about-title{font-family:var(--font-jp);}
   box-shadow:0 8px 40px rgba(0,0,0,.18);
   overflow:hidden;
 }
-@media(max-width:768px){.cube-sim-frame{height:1300px;}}
-@media(max-width:480px){.cube-sim-frame{height:1300px;}}
+@media(max-width:768px){.cube-sim-frame{height:1500px;}}
+@media(max-width:480px){.cube-sim-frame{height:1500px;}}
 #aboutCopy p:last-child{margin-bottom:0;}
 
 /* ══════════════════════════════════════════════
@@ -1310,7 +1310,7 @@ function renderServices() {
     const n = String(i+1).padStart(2,'0');
     const tags = (s.tags||[]).map(x=>`<span>${x}</span>`).join('');
     const specBlock = s.spec ? renderSpec(s.spec, lang) : '';
-    return `<div class="svc-row" aria-expanded="${i===0?'true':'false'}">
+    return `<div class="svc-row" aria-expanded="false">
       <div class="svc-trigger">
         <span class="svc-n">${n}</span>
         <h3>${t}</h3>
