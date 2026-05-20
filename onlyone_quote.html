@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnlyOne LED 견적서 시스템</title>
+<style>
+/* ===== RESET & BASE ===== */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#f0f4f8;color:#222;font-size:13px;}
+input,select,button{font-family:inherit;font-size:13px;}
+
+/* ===== LAYOUT ===== */
+.app-wrap{display:flex;min-height:100vh;}
+.sidebar{width:380px;min-width:320px;background:#1a2332;color:#e0e8f0;padding:20px;overflow-y:auto;flex-shrink:0;}
+.main-area{flex:1;padding:20px;overflow-y:auto;}
+
+/* ===== SIDEBAR ===== */
+.logo{text-align:center;padding:10px 0 20px;border-bottom:1px solid #2d4060;}
+.logo h1{color:#4fc3f7;font-size:18px;letter-spacing:1px;}
+.logo p{color:#8ab4cf;font-size:11px;margin-top:4px;}
+
+.section-title{color:#4fc3f7;font-size:12px;font-weight:bold;letter-spacing:1px;
+  text-transform:uppercase;margin:18px 0 8px;padding-bottom:5px;
+  border-bottom:1px solid #2d4060;}
+
+label{display:block;color:#b0cfe0;font-size:11px;margin-bottom:3px;margin-top:10px;}
+input[type=text],input[type=number],select{
+  width:100%;padding:7px 9px;background:#0f1c2e;border:1px solid #2d4060;
+  color:#e0e8f0;border-radius:4px;outline:none;transition:border .2s;}
+input:focus,select:focus{border-color:#4fc3f7;}
+select option{background:#1a2332;}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+.radio-group{display:flex;gap:10px;margin-top:6px;}
+.radio-group label{display:flex;align-items:center;gap:5px;color:#b0cfe0;cursor:pointer;margin:0;}
+.radio-group input[type=radio]{width:auto;accent-color:#4fc3f7;}
+
+/* calc result box */
+.calc-box{background:#0f1c2e;border:1px solid #2d4060;border-radius:6px;padding:12px;margin-top:10px;}
+.calc-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;}
+.calc-label{color:#8ab4cf;font-size:11px;}
+.calc-value{color:#4fc3f7;font-weight:bold;font-size:12px;}
+.calc-value.warn{color:#ffb74d;}
+.calc-value.ok{color:#81c784;}
+
+/* margin slider */
+.slider-wrap{display:flex;align-items:center;gap:8px;margin-top:6px;}
+input[type=range]{flex:1;accent-color:#4fc3f7;height:4px;}
+.slider-val{color:#4fc3f7;font-weight:bold;min-width:38px;text-align:right;}
+
+/* controller list */
+.ctrl-list{max-height:200px;overflow-y:auto;margin-top:6px;}
+.ctrl-item{display:flex;align-items:flex-start;gap:8px;padding:7px;
+  border-radius:4px;cursor:pointer;border:1px solid transparent;transition:.15s;}
+.ctrl-item:hover{background:#0f1c2e;}
+.ctrl-item.selected{background:#0a2040;border-color:#4fc3f7;}
+.ctrl-item input[type=radio]{width:auto;accent-color:#4fc3f7;margin-top:2px;flex-shrink:0;}
+.ctrl-name{color:#e0e8f0;font-weight:bold;font-size:12px;}
+.ctrl-price{color:#81c784;font-size:11px;}
+.ctrl-spec{color:#6a8da6;font-size:10px;line-height:1.3;margin-top:2px;}
+
+/* action buttons */
+.btn{display:block;width:100%;padding:11px;border:none;border-radius:6px;
+  font-size:13px;font-weight:bold;cursor:pointer;margin-top:8px;transition:.2s;}
+.btn-primary{background:#4fc3f7;color:#0a1628;}
+.btn-primary:hover{background:#81d4fa;}
+.btn-secondary{background:#1e3a5c;color:#e0e8f0;border:1px solid #4fc3f7;}
+.btn-secondary:hover{background:#2d4e70;}
+.btn-print{background:#2e7d32;color:#fff;}
+.btn-print:hover{background:#388e3c;}
+.btn-save{background:#6a1b9a;color:#fff;}
+.btn-save:hover{background:#7b1fa2;}
+
+/* ===== MAIN AREA ===== */
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;}
+.tab{padding:8px 18px;background:#fff;border:1px solid #dce3ec;border-radius:6px 6px 0 0;
+  cursor:pointer;color:#555;transition:.15s;}
+.tab.active{background:#1a2332;color:#4fc3f7;border-color:#1a2332;font-weight:bold;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ===== QUOTATION PREVIEW ===== */
+.quote-wrap{background:#fff;padding:30px;max-width:800px;margin:0 auto;
+  box-shadow:0 2px 16px rgba(0,0,0,.1);border-radius:4px;}
+.quote-header{text-align:center;font-size:26px;font-weight:bold;
+  letter-spacing:4px;color:#1a2332;margin-bottom:20px;
+  border-bottom:3px solid #1a2332;padding-bottom:10px;}
+.quote-meta{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:16px;}
+.meta-left td{padding:3px 6px;font-size:12px;}
+.meta-right td{padding:3px 6px;font-size:11px;color:#333;}
+.meta-left td:first-child{color:#666;white-space:nowrap;min-width:60px;}
+.meta-left td:nth-child(2){font-weight:bold;}
+.company-box{border:1px solid #333;padding:8px 12px;}
+.company-box p{font-size:11px;line-height:1.7;}
+.quote-title-row{background:#1a2332;color:#fff;font-size:13px;
+  font-weight:bold;padding:8px 10px;margin:12px 0 0;}
+.items-table{width:100%;border-collapse:collapse;font-size:12px;}
+.items-table th{background:#1a2332;color:#fff;padding:7px 8px;text-align:center;border:1px solid #444;}
+.items-table td{padding:6px 8px;border:1px solid #ccc;vertical-align:middle;}
+.items-table tr:nth-child(even){background:#f9fbfd;}
+.items-table .spec-row td{background:#f5f8fc;color:#444;font-size:11px;padding:4px 8px;}
+.items-table .spec-label{color:#888;min-width:80px;}
+.total-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px;}
+.total-table td{padding:6px 10px;border:1px solid #ccc;}
+.total-table .total-row{font-weight:bold;font-size:14px;background:#1a2332;color:#fff;}
+.terms-title{font-weight:bold;margin:20px 0 8px;font-size:13px;border-bottom:1px solid #ccc;padding-bottom:4px;}
+.terms-table{width:100%;border-collapse:collapse;font-size:12px;}
+.terms-table td{padding:5px 8px;border:1px solid #ddd;vertical-align:top;}
+.terms-table td:first-child{width:30px;text-align:center;font-weight:bold;background:#f0f4f8;}
+.terms-table td:nth-child(2){width:120px;color:#555;}
+.stamp-area{text-align:right;margin-top:10px;color:#888;font-size:11px;}
+
+/* ===== COST BREAKDOWN ===== */
+.cost-table{width:100%;border-collapse:collapse;font-size:12px;max-width:700px;}
+.cost-table th{background:#2d4e70;color:#fff;padding:7px 10px;text-align:center;}
+.cost-table td{padding:6px 10px;border:1px solid #dce3ec;}
+.cost-table .section-hd{background:#e8f0f8;font-weight:bold;color:#1a2332;}
+.cost-table .total-row{background:#1a2332;color:#fff;font-weight:bold;}
+.margin-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;}
+.margin-ok{background:#e8f5e9;color:#2e7d32;}
+.margin-warn{background:#fff3e0;color:#e65100;}
+
+/* ===== DB VIEWER ===== */
+.db-section{margin-bottom:24px;}
+.db-section h3{background:#1a2332;color:#4fc3f7;padding:8px 12px;border-radius:4px 4px 0 0;font-size:13px;}
+.db-table{width:100%;border-collapse:collapse;font-size:11px;}
+.db-table th{background:#2d4e70;color:#fff;padding:5px 8px;text-align:left;}
+.db-table td{padding:5px 8px;border-bottom:1px solid #eee;}
+.db-table tr:hover{background:#f5f8fc;}
+.db-table td.db-price{text-align:right;}
+.db-edit-input{width:80px;padding:2px 4px;border:1px solid #4fc3f7;border-radius:3px;
+  background:#e8f5ff;color:#0a1628;font-size:11px;text-align:right;}
+.tag{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:bold;}
+.tag-indoor{background:#e3f2fd;color:#1565c0;}
+.tag-outdoor{background:#fff3e0;color:#e65100;}
+.tag-flex{background:#f3e5f5;color:#6a1b9a;}
+
+/* ===== PRINT ===== */
+@media print{
+  .app-wrap{display:block;}
+  .sidebar,.tab-bar,.btn,.no-print{display:none!important;}
+  .main-area{padding:0;}
+  .tab-content{display:block!important;}
+  #tab-quote{display:block;}
+  .quote-wrap{box-shadow:none;padding:15px;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<div class="app-wrap">
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar no-print">
+  <div class="logo">
+    <h1>㈜ 온리원 LED</h1>
+    <p>OnlyOne Co., Ltd. — 견적서 작성 시스템</p>
+  </div>
+
+  <!-- 1. 화면 사양 -->
+  <div class="section-title">① 화면 사양</div>
+
+  <label>제품 타입</label>
+  <div class="radio-group">
+    <label><input type="radio" name="ptype" value="indoor" checked onchange="onTypeChange()"> 실내 (Indoor)</label>
+    <label><input type="radio" name="ptype" value="outdoor" onchange="onTypeChange()"> 옥외 (Outdoor)</label>
+    <label><input type="radio" name="ptype" value="outdoor_front" onchange="onTypeChange()"> 옥외전면</label>
+  </div>
+
+  <label>픽셀 피치 선택</label>
+  <select id="sel-pitch" onchange="onPitchChange()"></select>
+
+  <div class="row2">
+    <div>
+      <label>가로 (W) mm</label>
+      <input type="number" id="inp-width" value="2560" step="10" oninput="calcSize()">
+    </div>
+    <div>
+      <label>세로 (H) mm</label>
+      <input type="number" id="inp-height" value="1440" step="10" oninput="calcSize()">
+    </div>
+  </div>
+
+  <div class="calc-box" id="size-result">
+    <div class="calc-row"><span class="calc-label">640×640 박스 수</span><span class="calc-value" id="r-q640">–</span></div>
+    <div class="calc-row"><span class="calc-label">640×480 박스 수</span><span class="calc-value" id="r-q480">–</span></div>
+    <div class="calc-row"><span class="calc-label">실제 제작 치수</span><span class="calc-value" id="r-size">–</span></div>
+    <div class="calc-row"><span class="calc-label">면적 (㎡)</span><span class="calc-value" id="r-area">–</span></div>
+    <div class="calc-row"><span class="calc-label">해상도</span><span class="calc-value" id="r-res">–</span></div>
+    <div class="calc-row"><span class="calc-label">총 픽셀</span><span class="calc-value" id="r-pixels">–</span></div>
+  </div>
+
+  <!-- 2. 마진 / 환율 -->
+  <div class="section-title">② 마진 · 환율</div>
+  <label>마진율 (Margin)</label>
+  <div class="slider-wrap">
+    <input type="range" id="sl-margin" min="20" max="80" value="55" step="1" oninput="onMarginChange()">
+    <span class="slider-val" id="margin-val">55%</span>
+  </div>
+
+  <div class="row2" style="margin-top:8px;">
+    <div>
+      <label>환율 CNY → KRW</label>
+      <input type="number" id="inp-cny-krw" value="200" step="1" oninput="calcAll()">
+    </div>
+    <div>
+      <label>환율 CNY → JPY</label>
+      <input type="number" id="inp-cny-jpy" value="21" step="0.1" oninput="calcAll()">
+    </div>
+  </div>
+
+  <!-- 3. 컨트롤러 -->
+  <div class="section-title">③ 컨트롤러 선택</div>
+  <label>브랜드</label>
+  <div class="radio-group">
+    <label><input type="radio" name="ctrlbrand" value="novastar" checked onchange="renderControllers()"> 노바스타</label>
+    <label><input type="radio" name="ctrlbrand" value="huidu" onchange="renderControllers()"> 후이두</label>
+  </div>
+  <div class="ctrl-list" id="ctrl-list"></div>
+
+  <!-- 4. 추가 항목 -->
+  <div class="section-title">④ 추가 항목</div>
+  <div class="row2">
+    <div>
+      <label>설치비 단가 (원/㎡)</label>
+      <input type="number" id="inp-install" value="250000" step="10000" oninput="calcAll()">
+    </div>
+    <div>
+      <label>구조물/함체 (원)</label>
+      <input type="number" id="inp-struct" value="500000" step="100000" oninput="calcAll()">
+    </div>
+  </div>
+  <div class="row2">
+    <div>
+      <label>공과잡비 (원)</label>
+      <input type="number" id="inp-misc" value="300000" step="10000" oninput="calcAll()">
+    </div>
+    <div>
+      <label>전기통신 (원)</label>
+      <input type="number" id="inp-elec" value="200000" step="10000" oninput="calcAll()">
+    </div>
+  </div>
+  <div>
+    <label>운송비 (원, 0=무료)</label>
+    <input type="number" id="inp-ship" value="0" step="10000" oninput="calcAll()">
+  </div>
+
+  <!-- 5. 고객 정보 -->
+  <div class="section-title">⑤ 고객 · 견적 정보</div>
+  <label>견적 번호</label>
+  <input type="text" id="inp-qno" value="OL-260518-01">
+  <label>수 신 (고객사명)</label>
+  <input type="text" id="inp-client" value="김포참된교회 김병환 목사님">
+  <label>건 명</label>
+  <input type="text" id="inp-subject" value="예배당 LED 스크린 납품 및 설치" oninput="updatePreview()">
+  <label>담당자 연락처</label>
+  <input type="text" id="inp-contact" value="010-2827-2714">
+  <label>결제 조건</label>
+  <input type="text" id="inp-payment" value="70%(발주 시), 30%(검수 후 14일 이내)">
+  <label>납기 (일)</label>
+  <input type="number" id="inp-delivery" value="50">
+
+  <button class="btn btn-primary" onclick="calcAll();renderQuote();" style="margin-top:16px;">🔄 견적 생성</button>
+  <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+  <button class="btn btn-save" onclick="saveJSON()">💾 JSON 저장</button>
+  <button class="btn btn-secondary" onclick="loadJSON()">📂 JSON 불러오기</button>
+  <input type="file" id="file-load" accept=".json" style="display:none" onchange="loadFromFile(event)">
+</div>
+
+<!-- ===== MAIN AREA ===== -->
+<div class="main-area">
+  <div class="tab-bar no-print">
+    <div class="tab active" onclick="switchTab('tab-quote',this)">📄 견적서</div>
+    <div class="tab" onclick="switchTab('tab-cost',this)">💰 원가 분석</div>
+    <div class="tab" onclick="switchTab('tab-db',this)">🗃️ 제품 DB</div>
+  </div>
+
+  <!-- TAB 1: 견적서 -->
+  <div id="tab-quote" class="tab-content active">
+    <div class="quote-wrap" id="quotation-output">
+      <div class="quote-header">QUOTATION</div>
+      <table style="width:100%;margin-bottom:12px;">
+        <tr>
+          <td style="width:50%;vertical-align:top;">
+            <table class="meta-left">
+              <tr><td>번 호 :</td><td id="q-no"></td></tr>
+              <tr><td>일 자 :</td><td id="q-date"></td></tr>
+              <tr><td>수 신 :</td><td id="q-client"></td></tr>
+              <tr><td>담 당 :</td><td id="q-contact"></td></tr>
+              <tr><td>건 명 :</td><td id="q-subject" style="font-weight:bold;font-size:12px;"></td></tr>
+              <tr><td>금 액 :</td><td id="q-amount" style="font-weight:bold;color:#c00;font-size:13px;"></td></tr>
+            </table>
+          </td>
+          <td style="width:50%;vertical-align:top;">
+            <div class="company-box">
+              <p><b>㈜ 온리원 OnlyOne Co., Ltd.</b></p>
+              <p>경기도 김포시 대곶면 대곶북로 385</p>
+              <p>등록번호: 391-86-02266 &nbsp; 대표: 이하나</p>
+              <p>업태: 제조업, 도소매 &nbsp; 종목: 무역업, 조명장치 제조업</p>
+              <p>팀장 배건환 010-7782-0021 / only1@only1led.com</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <div class="quote-title-row" id="q-title-row"></div>
+      <table class="items-table" id="items-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>ITEM</th>
+            <th>DESCRIPTION</th>
+            <th>Unit</th>
+            <th style="width:50px;">QTY</th>
+            <th>UNIT PRICE</th>
+            <th>Sub-Total</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody"></tbody>
+      </table>
+
+      <table class="total-table" id="total-table" style="margin-top:0;width:50%;margin-left:50%;">
+        <tr><td style="text-align:right;">소계 (VAT 별도)</td><td id="t-sub" style="text-align:right;min-width:100px;"></td></tr>
+        <tr><td style="text-align:right;">부가가치세 (VAT 10%)</td><td id="t-vat" style="text-align:right;"></td></tr>
+        <tr class="total-row"><td style="text-align:right;padding:8px 10px;">합 계</td><td id="t-total" style="text-align:right;padding:8px 10px;font-size:15px;"></td></tr>
+      </table>
+
+      <div class="terms-title">견적조건 (Terms &amp; Conditions)</div>
+      <table class="terms-table" id="terms-table"></table>
+      <div class="stamp-area">⬜ (인)</div>
+    </div>
+  </div>
+
+  <!-- TAB 2: 원가 분석 -->
+  <div id="tab-cost" class="tab-content">
+    <h2 style="margin-bottom:14px;color:#1a2332;">💰 원가 분석표</h2>
+    <div id="cost-output"></div>
+  </div>
+
+  <!-- TAB 3: DB 뷰어 -->
+  <div id="tab-db" class="tab-content">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <h2 style="color:#1a2332;margin:0;">🗃️ 제품 데이터베이스</h2>
+      <button id="btn-edit-db" class="btn btn-secondary" style="width:auto;padding:6px 14px;" onclick="toggleEditMode()">✏️ 편집 모드</button>
+      <button class="btn btn-secondary" style="width:auto;padding:6px 14px;border-color:#e65100;color:#e65100;" onclick="resetDB()">🔄 초기화</button>
+      <span id="db-save-notice" style="color:#2e7d32;font-size:11px;display:none;font-weight:bold;">저장됨 ✓</span>
+    </div>
+    <div id="db-output"></div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ============================================================
+   DATABASE
+   ============================================================ */
+const DB_MODULES = {
+  indoor: [
+    {model:"P1.25",  moduleSize:"320×160",pixelSize:"256×128",pitch:1.25, brightness:650, price90:129000,price45:134000,price90gob:143000,price45gob:147000,price90cob:null},
+    {model:"P1.538", moduleSize:"320×160",pixelSize:"208×104",pitch:1.538,brightness:680, price90:78000, price45:83000, price90gob:88000, price45gob:93000, price90cob:null},
+    {model:"P1.86",  moduleSize:"320×160",pixelSize:"172×86", pitch:1.86, brightness:680, price90:51000, price45:55000, price90gob:60000, price45gob:66000, price90cob:null},
+    {model:"P2.0",   moduleSize:"320×160",pixelSize:"160×80", pitch:2.0,  brightness:800, price90:47000, price45:51000, price90gob:56000, price45gob:62000, price90cob:null},
+    {model:"P2.5",   moduleSize:"320×160",pixelSize:"128×64", pitch:2.5,  brightness:800, price90:39000, price45:44000, price90gob:48000, price45gob:54000, price90cob:null},
+    {model:"P3.076", moduleSize:"320×160",pixelSize:"104×52", pitch:3.076,brightness:800, price90:32000, price45:37000, price90gob:41000, price45gob:47000, price90cob:null},
+    {model:"P1.56",  moduleSize:"250×250",pixelSize:"160×160",pitch:1.56, brightness:680, price90:null,  price45:null,  price90gob:129000,price45gob:135000,price90cob:null},
+    {model:"P1.95",  moduleSize:"250×250",pixelSize:"128×128",pitch:1.95, brightness:680, price90:83000, price45:88000, price90gob:94000, price45gob:99000, price90cob:null},
+    {model:"P2.604", moduleSize:"250×250",pixelSize:"96×96",  pitch:2.604,brightness:800, price90:47000, price45:52000, price90gob:57000, price45gob:63000, price90cob:null},
+    {model:"P2.97",  moduleSize:"250×250",pixelSize:"84×84",  pitch:2.97, brightness:800, price90:44000, price45:49000, price90gob:54000, price45gob:60000, price90cob:null},
+    {model:"P3.91",  moduleSize:"250×250",pixelSize:"64×64",  pitch:3.91, brightness:800, price90:34000, price45:39000, price90gob:44000, price45gob:49000, price90cob:null},
+    {model:"P4.81",  moduleSize:"250×250",pixelSize:"52×52",  pitch:4.81, brightness:800, price90:31000, price45:36000, price90gob:41000, price45gob:46000, price90cob:null},
+    {model:"P2.5s",  moduleSize:"160×160",pixelSize:"64×64",  pitch:2.5,  brightness:800, price90:27000, price45:29000, price90gob:34000, price45gob:35000, price90cob:null},
+    {model:"P3s",    moduleSize:"192×192",pixelSize:"64×64",  pitch:3.0,  brightness:800, price90:24000, price45:26000, price90gob:31000, price45gob:32000, price90cob:null},
+  ],
+  outdoor: [
+    {model:"P2",    moduleSize:"320×160",pixelSize:"160×80",pitch:2.0,  brightness:5000,price90:194000,price45:null,  price90gob:207000,price45gob:null},
+    {model:"P2.5",  moduleSize:"320×160",pixelSize:"128×64",pitch:2.5,  brightness:5000,price90:70000, price45:75000, price90gob:83000, price45gob:88000},
+    {model:"P3.076",moduleSize:"320×160",pixelSize:"104×52",pitch:3.076,brightness:5000,price90:54000, price45:60000, price90gob:68000, price45gob:73000},
+    {model:"P4",    moduleSize:"320×160",pixelSize:"80×40", pitch:4.0,  brightness:5000,price90:34000, price45:39000, price90gob:null,  price45gob:null},
+    {model:"P5",    moduleSize:"320×160",pixelSize:"64×32", pitch:5.0,  brightness:5000,price90:30000, price45:35000, price90gob:null,  price45gob:null},
+    {model:"P6.67", moduleSize:"320×160",pixelSize:"48×24", pitch:6.67, brightness:5500,price90:27000, price45:null,  price90gob:null,  price45gob:null},
+    {model:"P8",    moduleSize:"320×160",pixelSize:"40×20", pitch:8.0,  brightness:5500,price90:24000, price45:null,  price90gob:null,  price45gob:null},
+    {model:"P10",   moduleSize:"320×160",pixelSize:"32×16", pitch:10.0, brightness:5500,price90:22000, price45:null,  price90gob:null,  price45gob:null},
+    {model:"P2.604",moduleSize:"250×250",pixelSize:"96×96", pitch:2.604,brightness:4500,price90:82000, price45:87000, price90gob:95000, price45gob:null},
+    {model:"P2.97", moduleSize:"250×250",pixelSize:"84×84", pitch:2.97, brightness:4500,price90:58000, price45:63000, price90gob:71000, price45gob:null},
+    {model:"P3.91", moduleSize:"250×250",pixelSize:"64×64", pitch:3.91, brightness:4500,price90:46000, price45:51000, price90gob:60000, price45gob:null},
+    {model:"P4.81", moduleSize:"250×250",pixelSize:"52×52", pitch:4.81, brightness:4500,price90:42000, price45:47000, price90gob:null,  price45gob:null},
+    {model:"P2.5s", moduleSize:"160×160",pixelSize:"64×64", pitch:2.5,  brightness:5000,price90:42000, price45:47000, price90gob:null,  price45gob:null},
+    {model:"P3s",   moduleSize:"192×192",pixelSize:"64×64", pitch:3.0,  brightness:5000,price90:37000, price45:41000, price90gob:null,  price45gob:null},
+    {model:"P6s",   moduleSize:"192×192",pixelSize:"32×32", pitch:6.0,  brightness:5500,price90:23000, price45:null,  price90gob:null,  price45gob:null},
+  ],
+  outdoor_front: [
+    {model:"P2.97", moduleSize:"250×250",pixelSize:"96×96", pitch:2.97, brightness:4500,price90:86000},
+    {model:"P3.91", moduleSize:"250×250",pixelSize:"64×64", pitch:3.91, brightness:4500,price90:74000},
+    {model:"P4.81", moduleSize:"250×250",pixelSize:"52×52", pitch:4.81, brightness:4500,price90:66000},
+    {model:"P4",    moduleSize:"320×160",pixelSize:"80×40", pitch:4.0,  brightness:5500,price90:52000},
+    {model:"P5",    moduleSize:"320×160",pixelSize:"64×32", pitch:5.0,  brightness:5500,price90:47000},
+    {model:"P6.67", moduleSize:"320×160",pixelSize:"48×24", pitch:6.67, brightness:5500,price90:43000},
+    {model:"P8",    moduleSize:"320×160",pixelSize:"40×20", pitch:8.0,  brightness:5500,price90:38000},
+    {model:"P10",   moduleSize:"320×160",pixelSize:"32×16", pitch:10.0, brightness:5500,price90:36000},
+  ]
+};
+
+const DB_BOX = {
+  "640x640A": {spec:"640×640A", price90:102000, price45:119000},
+  "640x480A": {spec:"640×480A", price90:69000,  price45:86000},
+  "320x640A": {spec:"320×640A", price90:69000,  price45:86000},
+  "320x480A": {spec:"320×480A", price90:67000,  price45:84000},
+  "640x640":  {spec:"640×640",  price90:94000,  price45:111000},
+  "640x480":  {spec:"640×480",  price90:63000,  price45:80000},
+};
+
+const DB_NOVASTAR = [
+  {model:"TB60",      price_krw:1280000, price_cny:2880, category:"Taurus",     spec:"Taurus 3세대. 4 GbE, 2.3M px. HDMI 1.4, 4K 영상, sync/async"},
+  {model:"TB50",      price_krw:799000,  price_cny:2350, category:"Taurus",     spec:"Taurus 3세대. 2 GbE, 1.3M px. HDMI 1.4, 4-core ARM + 10GB RAM"},
+  {model:"TB40",      price_krw:408000,  price_cny:1200, category:"Taurus",     spec:"Taurus 3세대. 2 GbE, 1.3M px. HDMI 1.4, USB 3.0"},
+  {model:"TB30",      price_krw:595000,  price_cny:1750, category:"Taurus",     spec:"Taurus 3세대. 1 GbE, 650K px. HDMI 1.4"},
+  {model:"TB20plus",  price_krw:323000,  price_cny:950,  category:"Taurus",     spec:"Taurus. 1 GbE, 650K px. HDMI sync, Wi-Fi AP/STA"},
+  {model:"TB1",       price_krw:187000,  price_cny:550,  category:"Taurus",     spec:"Taurus. 1 GbE, 650K px. Wi-Fi AP"},
+  {model:"MSD600-1",  price_krw:493000,  price_cny:1450, category:"Built-in",   spec:"내장 발송카드. 4 GbE, 2.6M px"},
+  {model:"MSD300-1",  price_krw:221000,  price_cny:650,  category:"Built-in",   spec:"내장 발송카드. 2 GbE, 1.3M px"},
+  {model:"MCTRL1600", price_krw:2788000, price_cny:8200, category:"External",   spec:"외장 발송박스. 16 GbE, 9.4M px"},
+  {model:"MCTRL660Pro",price_krw:2006000,price_cny:5900, category:"External",   spec:"외장 발송박스(Pro). 4 GbE, 2.3M px"},
+  {model:"MCTRL700",  price_krw:748000,  price_cny:2200, category:"External",   spec:"외장 발송박스. 6 GbE, 3.9M px"},
+  {model:"MCTRL600",  price_krw:646000,  price_cny:1900, category:"External",   spec:"외장 발송박스. 4 GbE, 2.6M px"},
+  {model:"MCTRL300",  price_krw:408000,  price_cny:1200, category:"External",   spec:"외장 발송박스. 2 GbE, 1.3M px"},
+  {model:"VX1000Pro", price_krw:3468000, price_cny:10200,category:"All-in-one", spec:"올인원(Pro). 10 GbE + 2×10G 광, 6.5M px, 4K×2K@60Hz"},
+  {model:"VX600Pro",  price_krw:2346000, price_cny:6900, category:"All-in-one", spec:"올인원(Pro). 6 GbE, 3.9M px. 색상 교정"},
+  {model:"VX400Pro",  price_krw:2142000, price_cny:6300, category:"All-in-one", spec:"올인원(Pro). 4 GbE, 2.6M px. HDMI 2.0"},
+  {model:"VX400S-N",  price_krw:1360000, price_cny:4000, category:"All-in-one", spec:"올인원. 4 GbE, 2.6M px. 영상처리+제어"},
+  {model:"VX16S",     price_krw:646000,  price_cny:1900, category:"All-in-one", spec:"소형 영상처리기. 16 GbE, 10.4M px"},
+  {model:"MRV560-1",  price_krw:95000,   price_cny:280,  category:"수신카드",    spec:"2×50PIN 출력 수신카드"},
+  {model:"MRV416",    price_krw:37000,   price_cny:108,  category:"수신카드",    spec:"16×HUB75 수신카드"},
+  {model:"MRV412",    price_krw:33000,   price_cny:98,   category:"수신카드",    spec:"12×HUB75 수신카드"},
+  {model:"DH7516-S",  price_krw:33000,   price_cny:98,   category:"수신카드",    spec:"16×HUB75 수신카드"},
+  {model:"A5S PLUS",  price_krw:30000,   price_cny:88,   category:"수신카드",    spec:"8×HUB75 수신카드"},
+];
+
+const DB_HUIDU = [
+  {model:"HD-A8",     price_krw:4216000, price_cny:12400,category:"듀얼모드",    spec:"4K 마스터. 8.2M px, 32GB, 4G/5G 옵션, HDMI/DP sync"},
+  {model:"HD-A7",     price_krw:3060000, price_cny:8999, category:"듀얼모드",    spec:"4K 플레이어. 5.2M px, 32GB, 듀얼밴드 Wi-Fi"},
+  {model:"HD-A6L",    price_krw:677000,  price_cny:1990, category:"듀얼모드",    spec:"발송박스. 2.6M px, HDMI, 듀얼밴드 Wi-Fi"},
+  {model:"HD-A5L",    price_krw:408000,  price_cny:1200, category:"듀얼모드",    spec:"멀티미디어. 1.3M px, HDMI, Wi-Fi, sync/async"},
+  {model:"HD-A4L",    price_krw:289000,  price_cny:850,  category:"듀얼모드",    spec:"멀티미디어. 650K px, HDMI, Wi-Fi"},
+  {model:"HD-H4K",    price_krw:469000,  price_cny:1380, category:"4K 프로세서", spec:"4K(3840×2160). 5.2M px, FPGA, Wi-Fi"},
+  {model:"HD-A3L",    price_krw:187000,  price_cny:550,  category:"비동기",      spec:"650K px, USB, Wi-Fi"},
+  {model:"HD-C16L",   price_krw:187000,  price_cny:550,  category:"비동기",      spec:"650K px, 12×HUB75E, 2.4G Wi-Fi"},
+  {model:"HD-C08L",   price_krw:136000,  price_cny:400,  category:"비동기",      spec:"196K px, 8×HUB75E, Wi-Fi"},
+  {model:"HD-B6L",    price_krw:401000,  price_cny:1180, category:"비동기",      spec:"광고 머신용. 1.3M px"},
+  {model:"HD-VP620A", price_krw:867000,  price_cny:2550, category:"비디오프로세서",spec:"390만 px@60Hz, 최대 8192"},
+  {model:"HD-VP820A", price_krw:1037000, price_cny:3050, category:"비디오프로세서",spec:"520만 px@60Hz, 최대 8192"},
+  {model:"HD-VP1220C",price_krw:1870000, price_cny:5500, category:"비디오프로세서",spec:"780만 px@60Hz, 최대 16000"},
+  {model:"HD-VP210H", price_krw:255000,  price_cny:750,  category:"비디오프로세서",spec:"130만 px@60Hz, 최대 3840"},
+  {model:"HD-VP410H", price_krw:486000,  price_cny:1430, category:"비디오프로세서",spec:"260만 px@60Hz, 최대 3840"},
+  {model:"HD-R708",   price_krw:24000,   price_cny:72,   category:"수신카드",    spec:"128×512 (표준) / 384×512 (PWM)"},
+  {model:"HD-R712",   price_krw:28000,   price_cny:82,   category:"수신카드",    spec:"128×1024 (표준) / 256×1024 (PWM)"},
+  {model:"HD-R716",   price_krw:33000,   price_cny:98,   category:"수신카드",    spec:"160×1024 (표준) / 320×1024 (PWM)"},
+];
+
+const DB_ACCESSORIES = [
+  {no:1, name:"롱 배선",    spec:"20CM",            price_cny:1,    price_krw:0},
+  {no:2, name:"롱 배선",    spec:"40CM",            price_cny:1.8,  price_krw:1000},
+  {no:3, name:"롱 배선",    spec:"60CM",            price_cny:2.2,  price_krw:1000},
+  {no:4, name:"롱 배선",    spec:"80CM",            price_cny:2.7,  price_krw:1000},
+  {no:5, name:"롱 배선",    spec:"100CM",           price_cny:3.3,  price_krw:1000},
+  {no:6, name:"롱 배선",    spec:"120CM",           price_cny:3.7,  price_krw:1000},
+  {no:7, name:"롱 배선",    spec:"140CM",           price_cny:4.2,  price_krw:1000},
+  {no:8, name:"모듈 전원선",spec:"100CM 1带4핀",    price_cny:17.5, price_krw:6000},
+  {no:9, name:"모듈 전원선",spec:"100CM 1带6핀",    price_cny:18.5, price_krw:6000},
+  {no:10,name:"모듈 전원선",spec:"140CM 1带6핀",    price_cny:21,   price_krw:7000},
+  {no:11,name:"모듈 전원선",spec:"190CM 1带8핀",    price_cny:26,   price_krw:9000},
+  {no:12,name:"기가 랜선",  spec:"60CM",            price_cny:3.7,  price_krw:1000},
+  {no:13,name:"기가 랜선",  spec:"100CM",           price_cny:5.2,  price_krw:2000},
+  {no:14,name:"기가 랜선",  spec:"150CM",           price_cny:6,    price_krw:2000},
+  {no:15,name:"일본 플러그",spec:"3미터",            price_cny:27,   price_krw:9000},
+  {no:16,name:"모듈 분리 공구",spec:"-",            price_cny:7,    price_krw:2000},
+  {no:17,name:"명위 전원",  spec:"LRS-200-5V40A",  price_cny:120,  price_krw:41000},
+  {no:18,name:"명위 전원",  spec:"LRS-350-5V60A",  price_cny:139,  price_krw:47000},
+  {no:19,name:"거능 전원",  spec:"N220V5-B-5V40A", price_cny:45,   price_krw:15000, note:"KC인증 없음"},
+  {no:20,name:"거능 전원",  spec:"N220V5-B-5V40A", price_cny:78,   price_krw:27000, note:"KC인증"},
+  {no:21,name:"영전 전원",  spec:"MA200SH5A-5V40A",price_cny:53,   price_krw:18000, note:"KC인증"},
+];
+
+const DB_MESH = [
+  {type:"실내투명",    model:"P3.91",    moduleSize:"500×125",boxSize:"1000×1000",brightness:4500,price_krw:1190000},
+  {type:"실내투명",    model:"P3.91",    moduleSize:"500×125",boxSize:"1000×500", brightness:4500,price_krw:1278000},
+  {type:"실내투명",    model:"P10.4",    moduleSize:"500×125",boxSize:"1000×1000",brightness:4500,price_krw:1292000},
+  {type:"실내투명",    model:"P10.4",    moduleSize:"500×125",boxSize:"1000×500", brightness:4500,price_krw:1380000},
+  {type:"실내정발광",  model:"P2.6-6.25",moduleSize:"500×125",boxSize:"1000×1000",brightness:1500,price_krw:1550000},
+  {type:"실내정발광",  model:"P2.6-6.25",moduleSize:"500×125",boxSize:"1000×500", brightness:1500,price_krw:1639000},
+  {type:"옥외방수투명",model:"GP3.91-7.8",moduleSize:"500×125",boxSize:"1000×500",brightness:4500,price_krw:2033000},
+  {type:"옥외방수투명",model:"GP10.4",   moduleSize:"500×125",boxSize:"1000×500", brightness:4500,price_krw:1904000},
+];
+
+/* ============================================================
+   CALCULATION ENGINE
+   ============================================================ */
+const MODULE_PIXEL_MAP = {
+  "P1.25":{w:256,h:128},"P1.538":{w:208,h:104},"P1.86":{w:172,h:86},
+  "P2.0": {w:160,h:80}, "P2.5":  {w:128,h:64}, "P3.076":{w:104,h:52},
+  "P1.56":{w:160,h:160},"P1.95": {w:128,h:128},"P2.604":{w:96,h:96},
+  "P2.97":{w:84,h:84},  "P3.91": {w:64,h:64},  "P4.81": {w:52,h:52},
+  "P2":   {w:160,h:80}, "P4":    {w:80,h:40},  "P5":    {w:64,h:32},
+  "P6.67":{w:48,h:24},  "P8":    {w:40,h:20},  "P10":   {w:32,h:16},
+  "P2.5s":{w:64,h:64},  "P3s":   {w:64,h:64},  "P6s":   {w:32,h:32},
+  "P6":   {w:32,h:32},
+};
+
+let g_state = {
+  type:'indoor', pitch:'P1.25', width:2560, height:1440,
+  margin:0.55, cnyKrw:200, cnyJpy:21, ctrl:'TB60',
+  install:250000, struct:500000, misc:300000, elec:200000, ship:0,
+};
+
+function calcBoxCount(w, h) {
+  const cols = Math.floor(w / 640);
+  let best = {a:0, b:0, total:0};
+  for (let a = Math.floor(h/640); a >= 0; a--) {
+    const b = Math.floor((h - a*640) / 480);
+    const total = a*640 + b*480;
+    if (total > best.total) best = {a, b, total};
+  }
+  return {
+    cols, rows640:best.a, rows480:best.b,
+    qty640: cols * best.a, qty480: cols * best.b,
+    actualW: cols * 640,
+    actualH: best.a*640 + best.b*480,
+  };
+}
+
+function getControllerPrice(model) {
+  if (!model) return 0;
+  const n = DB_NOVASTAR.find(c=>c.model===model);
+  if (n) return n.price_krw;
+  const h = DB_HUIDU.find(c=>c.model===model);
+  return h ? h.price_krw : 0;
+}
+
+function calcAll() {
+  const typeEls = document.querySelectorAll('input[name="ptype"]');
+  typeEls.forEach(e=>{ if(e.checked) g_state.type=e.value; });
+  g_state.pitch   = document.getElementById('sel-pitch').value;
+  g_state.width   = parseFloat(document.getElementById('inp-width').value)||0;
+  g_state.height  = parseFloat(document.getElementById('inp-height').value)||0;
+  g_state.margin  = parseFloat(document.getElementById('sl-margin').value)/100;
+  g_state.cnyKrw  = parseFloat(document.getElementById('inp-cny-krw').value)||200;
+  g_state.cnyJpy  = parseFloat(document.getElementById('inp-cny-jpy').value)||21;
+  g_state.install = parseFloat(document.getElementById('inp-install').value)||0;
+  g_state.struct  = parseFloat(document.getElementById('inp-struct').value)||0;
+  g_state.misc    = parseFloat(document.getElementById('inp-misc').value)||0;
+  g_state.elec    = parseFloat(document.getElementById('inp-elec').value)||0;
+  g_state.ship    = parseFloat(document.getElementById('inp-ship').value)||0;
+  const cr = document.querySelector('input[name="ctrl"]:checked');
+  g_state.ctrl = cr ? cr.value : null;
+  updateSizeResult();
+  renderQuote();
+  renderCostBreakdown();
+}
+
+function calcSize() { calcAll(); }
+
+function updateSizeResult() {
+  const {width:w, height:h, pitch} = g_state;
+  if (!w||!h) return;
+  const bc = calcBoxCount(w, h);
+  const px = MODULE_PIXEL_MAP[pitch]||{w:128,h:64};
+  const totalResW = bc.cols * px.w * 2;
+  const totalResH = bc.rows640 * px.h * 4 + bc.rows480 * px.h * 3;
+  const area = (bc.actualW * bc.actualH / 1e6).toFixed(4);
+  document.getElementById('r-q640').textContent   = bc.qty640 + ' 개';
+  document.getElementById('r-q480').textContent   = bc.qty480 + ' 개';
+  const sizeEl = document.getElementById('r-size');
+  sizeEl.textContent = bc.actualW + ' × ' + bc.actualH + ' mm';
+  sizeEl.className = 'calc-value ' + (w-bc.actualW>0||h-bc.actualH>0?'warn':'ok');
+  document.getElementById('r-area').textContent   = area + ' ㎡';
+  document.getElementById('r-res').textContent    = totalResW + '×' + totalResH;
+  document.getElementById('r-pixels').textContent = (totalResW*totalResH).toLocaleString() + ' px';
+}
+
+/* ============================================================
+   RENDER QUOTE
+   ============================================================ */
+function renderQuote() {
+  const s = g_state;
+  const bc = calcBoxCount(s.width, s.height);
+  const px = MODULE_PIXEL_MAP[s.pitch]||{w:128,h:64};
+  const totalResW = bc.cols * px.w * 2;
+  const totalResH = bc.rows640*px.h*4 + bc.rows480*px.h*3;
+  const totalPx   = totalResW * totalResH;
+  const area      = bc.actualW * bc.actualH / 1e6;
+
+  const unit640cost = DB_BOX['640x640A'].price90;
+  const unit480cost = DB_BOX['640x480A'].price90;
+  const unit640sale = Math.round(unit640cost/(1-s.margin)/1000)*1000;
+  const unit480sale = Math.round(unit480cost/(1-s.margin)/1000)*1000;
+  const screenSale  = bc.qty640*unit640sale + bc.qty480*unit480sale;
+  const ctrlPrice   = getControllerPrice(s.ctrl);
+  const installTotal= Math.round(area * s.install);
+  const subtotal    = screenSale + ctrlPrice + s.struct + installTotal + s.misc + s.elec + s.ship;
+  const vat         = Math.round(subtotal * 0.1);
+  const total       = subtotal + vat;
+  const typeLabel   = s.type==='indoor'?'INDOOR SMD':s.type==='outdoor'?'OUTDOOR':'OUTDOOR FRONT';
+
+  document.getElementById('q-no').textContent      = document.getElementById('inp-qno').value;
+  document.getElementById('q-date').textContent    = formatDate(new Date());
+  document.getElementById('q-client').textContent  = document.getElementById('inp-client').value;
+  document.getElementById('q-contact').textContent = document.getElementById('inp-contact').value;
+  document.getElementById('q-subject').textContent = document.getElementById('inp-client').value.split(' ')[0]+' '+s.pitch+' '+bc.actualW/10+'×'+bc.actualH/10+'cm LED스크린 납품 및 설치';
+  document.getElementById('q-amount').textContent  = '일금 '+numToKorean(total)+'원정 (부가세포함)   ₩'+total.toLocaleString();
+  document.getElementById('q-title-row').textContent = document.getElementById('inp-subject').value||'LED 스크린 납품 및 설치';
+
+  const tbody = document.getElementById('items-tbody');
+  tbody.innerHTML = '';
+  const addRow = (no,item,desc,unit,qty,unitP,sub,specs)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="text-align:center">${no}</td><td>${item}</td><td>${desc}</td>
+      <td style="text-align:center">${unit}</td><td style="text-align:right">${qty||''}</td>
+      <td style="text-align:right">${unitP?unitP.toLocaleString():'-'}</td>
+      <td style="text-align:right;font-weight:bold">${sub?sub.toLocaleString():'-'}</td>`;
+    tbody.appendChild(tr);
+    (specs||[]).forEach(sp=>{
+      const sr=document.createElement('tr'); sr.className='spec-row';
+      sr.innerHTML=`<td></td><td></td><td class="spec-label">${sp[0]}</td>
+        <td colspan="2" style="color:#333">${sp[1]||''}</td><td>${sp[2]||''}</td><td></td>`;
+      tbody.appendChild(sr);
+    });
+  };
+
+  if (bc.qty480>0) addRow('1','실내형 전광판',`${typeLabel} ${s.pitch} LED SCREEN`,'pcs',bc.qty480,unit480sale,bc.qty480*unit480sale,[
+    ['LED Lamp','SMD 3 in 1'],['Screen Size',`${bc.actualW} × ${bc.actualH}`,'㎜'],
+    ['Pixel Pitch',s.pitch,'㎜'],['Resolution',`${totalResW}×${totalResH}`,'Pixels'],
+    ['Total Pixels',totalPx.toLocaleString(),'Pixels'],['Cabinet Size','640 × 480','㎜'],
+    ['Refresh Rate','3840','Hz'],['Life span','≥100,000','hours'],
+  ]);
+  if (bc.qty640>0) addRow(bc.qty480>0?'':1,'실내형 전광판',`${typeLabel} ${s.pitch} LED SCREEN (640×640)`,'pcs',bc.qty640,unit640sale,bc.qty640*unit640sale,[
+    ['LED Lamp','SMD 3 in 1'],['Cabinet Size','640 × 640','㎜'],
+  ]);
+
+  const ctrlObj = DB_NOVASTAR.find(c=>c.model===s.ctrl)||DB_HUIDU.find(c=>c.model===s.ctrl);
+  addRow('2','제어시스템','Main Controller','pcs',1,ctrlPrice,ctrlPrice,
+    ctrlObj?[['System',ctrlObj.model],['Spec',ctrlObj.spec]]:[['System','–']]);
+
+  if (s.struct>0) addRow('3','구조물 함체','후면 고정 PIPE','식',1,s.struct,s.struct,[['# 설계 협의에 따른 증감','']]);
+  addRow('4','운송비','서울, 경기 기준','set',1,s.ship||0,s.ship||0,[['# 이외 지방 추가 비용발생','']]);
+  if (installTotal>0) addRow('5','설치비','LED전광판, 케이블, 평탄화 등','sqm',Math.round(area*10)/10,s.install,installTotal,[]);
+  if (s.elec>0) addRow('6','전기 통신','1차 전원 제공 조건/통신 포설','식',1,s.elec,s.elec,[['15m 이내','']]);
+
+  document.getElementById('t-sub').textContent   = subtotal.toLocaleString()+'원';
+  document.getElementById('t-vat').textContent   = vat.toLocaleString()+'원';
+  document.getElementById('t-total').textContent = total.toLocaleString()+'원';
+
+  const delivery = document.getElementById('inp-delivery').value||50;
+  const payment  = document.getElementById('inp-payment').value;
+  document.getElementById('terms-table').innerHTML=[
+    ['1','견적유효기간','발행일로부터 30일'],
+    ['2','납기',`계약금 결제 확정 발주일로부터 최대 ${delivery}일`],
+    ['3','무상보증기간','설치 완료일로부터 1년'],
+    ['4','결제조건',payment+'\n결제계좌: 301-9477-5707-61 (농협), 예금주: ㈜온리원'],
+    ['5','기타','1차 전원, 통신, 분전함 제공 조건\n현장 상황 및 협의 사양 변동 시 증감 발생'],
+  ].map(t=>`<tr><td>${t[0]}</td><td>${t[1]}</td><td style="white-space:pre-line">${t[2]}</td></tr>`).join('');
+}
+
+/* ============================================================
+   RENDER COST BREAKDOWN
+   ============================================================ */
+function renderCostBreakdown() {
+  const s = g_state;
+  const bc = calcBoxCount(s.width, s.height);
+  const area = bc.actualW * bc.actualH / 1e6;
+  const u640c = DB_BOX['640x640A'].price90;
+  const u480c = DB_BOX['640x480A'].price90;
+  const u640s = Math.round(u640c/(1-s.margin)/1000)*1000;
+  const u480s = Math.round(u480c/(1-s.margin)/1000)*1000;
+  const screenCost = bc.qty640*u640c + bc.qty480*u480c;
+  const screenSale = bc.qty640*u640s + bc.qty480*u480s;
+  const ctrlSale   = getControllerPrice(s.ctrl);
+  const ctrlCost   = Math.round(ctrlSale*(1-s.margin));
+  const installSale= Math.round(area*s.install);
+  const totalSale  = screenSale+ctrlSale+s.struct+installSale+s.misc+s.elec+s.ship;
+  const totalCost  = screenCost+ctrlCost;
+  const netMargin  = totalSale-totalCost;
+  const nmRate     = totalSale>0?(netMargin/totalSale*100).toFixed(1):0;
+
+  document.getElementById('cost-output').innerHTML=`
+  <table class="cost-table">
+    <thead><tr><th>항목</th><th>규격</th><th>수량</th><th>원가 (₩)</th><th>판매가 (₩)</th><th>마진 (₩)</th></tr></thead>
+    <tbody>
+      <tr class="section-hd"><td colspan="6">■ 완성품 박스</td></tr>
+      ${bc.qty640>0?`<tr><td>640×640A</td><td>${s.pitch}</td><td>${bc.qty640}개</td>
+        <td>${(bc.qty640*u640c).toLocaleString()}</td><td>${(bc.qty640*u640s).toLocaleString()}</td>
+        <td>${(bc.qty640*(u640s-u640c)).toLocaleString()}</td></tr>`:''}
+      ${bc.qty480>0?`<tr><td>640×480A</td><td>${s.pitch}</td><td>${bc.qty480}개</td>
+        <td>${(bc.qty480*u480c).toLocaleString()}</td><td>${(bc.qty480*u480s).toLocaleString()}</td>
+        <td>${(bc.qty480*(u480s-u480c)).toLocaleString()}</td></tr>`:''}
+      <tr class="section-hd"><td colspan="6">■ 컨트롤러</td></tr>
+      <tr><td>${s.ctrl||'미선택'}</td><td>–</td><td>1개</td>
+        <td>${ctrlCost.toLocaleString()}</td><td>${ctrlSale.toLocaleString()}</td>
+        <td>${(ctrlSale-ctrlCost).toLocaleString()}</td></tr>
+      <tr class="section-hd"><td colspan="6">■ 현장 비용 (원가 미산정)</td></tr>
+      <tr><td>설치비</td><td>${area.toFixed(2)}㎡</td><td>–</td><td>–</td><td>${installSale.toLocaleString()}</td><td>–</td></tr>
+      <tr><td>구조물</td><td>–</td><td>–</td><td>–</td><td>${s.struct.toLocaleString()}</td><td>–</td></tr>
+      <tr><td>공과잡비</td><td>–</td><td>–</td><td>–</td><td>${s.misc.toLocaleString()}</td><td>–</td></tr>
+      <tr><td>전기통신</td><td>–</td><td>–</td><td>–</td><td>${s.elec.toLocaleString()}</td><td>–</td></tr>
+      ${s.ship>0?`<tr><td>운송비</td><td>–</td><td>–</td><td>–</td><td>${s.ship.toLocaleString()}</td><td>–</td></tr>`:''}
+      <tr class="total-row"><td colspan="3">합 계</td>
+        <td>${totalCost.toLocaleString()}</td><td>${totalSale.toLocaleString()}</td>
+        <td>${netMargin.toLocaleString()} <span class="margin-badge ${nmRate>30?'margin-ok':'margin-warn'}">${nmRate}%</span></td>
+      </tr>
+    </tbody>
+  </table>`;
+}
+
+/* ============================================================
+   DB PERSISTENCE & EDIT MODE
+   ============================================================ */
+let g_editMode = false;
+
+function loadDB() {
+  try {
+    const saved = localStorage.getItem('onlyone_db');
+    if (!saved) return;
+    const d = JSON.parse(saved);
+    if (d.modules) {
+      ['indoor','outdoor','outdoor_front'].forEach(key => {
+        if (d.modules[key]) d.modules[key].forEach((s,i) => { if(DB_MODULES[key][i]) Object.assign(DB_MODULES[key][i], s); });
+      });
+    }
+    if (d.box) Object.keys(d.box).forEach(k => { if(DB_BOX[k]) Object.assign(DB_BOX[k], d.box[k]); });
+    if (d.novastar) d.novastar.forEach((s,i) => { if(DB_NOVASTAR[i]) Object.assign(DB_NOVASTAR[i], s); });
+    if (d.huidu) d.huidu.forEach((s,i) => { if(DB_HUIDU[i]) Object.assign(DB_HUIDU[i], s); });
+    if (d.accessories) d.accessories.forEach((s,i) => { if(DB_ACCESSORIES[i]) Object.assign(DB_ACCESSORIES[i], s); });
+    if (d.mesh) d.mesh.forEach((s,i) => { if(DB_MESH[i]) Object.assign(DB_MESH[i], s); });
+  } catch(e) { console.warn('DB load error', e); }
+}
+
+function saveDB() {
+  localStorage.setItem('onlyone_db', JSON.stringify({
+    modules: DB_MODULES, box: DB_BOX, novastar: DB_NOVASTAR,
+    huidu: DB_HUIDU, accessories: DB_ACCESSORIES, mesh: DB_MESH
+  }));
+  const notice = document.getElementById('db-save-notice');
+  if (notice) { notice.style.display='inline'; setTimeout(()=>notice.style.display='none', 2000); }
+}
+
+function resetDB() {
+  if (!confirm('모든 DB 수정사항을 초기값으로 되돌립니다. 계속하시겠습니까?')) return;
+  localStorage.removeItem('onlyone_db');
+  location.reload();
+}
+
+function toggleEditMode() {
+  g_editMode = !g_editMode;
+  document.getElementById('btn-edit-db').textContent = g_editMode ? '✅ 편집 완료' : '✏️ 편집 모드';
+  renderDB();
+}
+
+function updateDBCell(el) {
+  const key = el.dataset.key, idx = parseInt(el.dataset.idx), field = el.dataset.field;
+  const raw = el.value.trim();
+  const isFloat = (field === 'price_cny');
+  const val = raw === '' ? null : (isFloat ? parseFloat(raw) : parseInt(raw));
+  if (key==='indoor'||key==='outdoor'||key==='outdoor_front') DB_MODULES[key][idx][field]=val;
+  else if (key==='box') { const k=Object.keys(DB_BOX)[idx]; if(k) DB_BOX[k][field]=val; }
+  else if (key==='novastar') DB_NOVASTAR[idx][field]=val;
+  else if (key==='huidu') DB_HUIDU[idx][field]=val;
+  else if (key==='accessories') DB_ACCESSORIES[idx][field]=val;
+  else if (key==='mesh') DB_MESH[idx][field]=val;
+  saveDB();
+}
+
+function pc(val, key, idx, field) {
+  if (!g_editMode) return `<td class="db-price">${val!=null?val.toLocaleString()+'원':'–'}</td>`;
+  return `<td><input type="number" class="db-edit-input" value="${val!=null?val:''}" placeholder="–" data-key="${key}" data-idx="${idx}" data-field="${field}" onchange="updateDBCell(this)" step="1000" min="0"></td>`;
+}
+
+/* ============================================================
+   RENDER DB
+   ============================================================ */
+function renderDB() {
+  let html='';
+  html+=`<div class="db-section"><h3>📦 실내 모듈 단가</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>모듈사이즈</th><th>픽셀구성</th><th>밝기</th><th>90° 판매가</th><th>45° 판매가</th><th>GOB</th><th>COB</th></tr></thead><tbody>
+  ${DB_MODULES.indoor.map((m,i)=>`<tr>
+    <td><b>${m.model}</b> <span class="tag tag-indoor">실내</span></td>
+    <td>${m.moduleSize}</td><td>${m.pixelSize}</td><td>${m.brightness}cd</td>
+    ${pc(m.price90,'indoor',i,'price90')}${pc(m.price45,'indoor',i,'price45')}${pc(m.price90gob,'indoor',i,'price90gob')}${pc(m.price90cob,'indoor',i,'price90cob')}</tr>`).join('')}
+  </tbody></table></div>`;
+
+  html+=`<div class="db-section"><h3>📦 옥외 모듈 단가</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>모듈사이즈</th><th>픽셀구성</th><th>밝기</th><th>90° 판매가</th><th>45° 판매가</th></tr></thead><tbody>
+  ${DB_MODULES.outdoor.map((m,i)=>`<tr>
+    <td><b>${m.model}</b> <span class="tag tag-outdoor">옥외</span></td>
+    <td>${m.moduleSize}</td><td>${m.pixelSize}</td><td>${m.brightness}cd</td>
+    ${pc(m.price90,'outdoor',i,'price90')}${pc(m.price45,'outdoor',i,'price45')}</tr>`).join('')}
+  </tbody></table></div>`;
+
+  html+=`<div class="db-section"><h3>📦 함체(BOX) 단가</h3>
+  <table class="db-table"><thead><tr><th>규격</th><th>90° 원화</th><th>45° 원화</th></tr></thead><tbody>
+  ${Object.values(DB_BOX).map((b,i)=>`<tr><td><b>${b.spec}</b></td>${pc(b.price90,'box',i,'price90')}${pc(b.price45,'box',i,'price45')}</tr>`).join('')}
+  </tbody></table></div>`;
+
+  html+=`<div class="db-section"><h3>🎛️ 노바스타 컨트롤러</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>카테고리</th><th>원화 판매가</th><th>사양</th></tr></thead><tbody>
+  ${DB_NOVASTAR.map((c,i)=>`<tr><td><b>${c.model}</b></td><td>${c.category}</td>${pc(c.price_krw,'novastar',i,'price_krw')}<td style="font-size:11px;color:#555">${c.spec}</td></tr>`).join('')}
+  </tbody></table></div>`;
+
+  html+=`<div class="db-section"><h3>🎛️ 후이두 컨트롤러</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>카테고리</th><th>원화 판매가</th><th>사양</th></tr></thead><tbody>
+  ${DB_HUIDU.map((c,i)=>`<tr><td><b>${c.model}</b></td><td>${c.category}</td>${pc(c.price_krw,'huidu',i,'price_krw')}<td style="font-size:11px;color:#555">${c.spec}</td></tr>`).join('')}
+  </tbody></table></div>`;
+
+  html+=`<div class="db-section"><h3>🔩 부속품 단가</h3>
+  <table class="db-table"><thead><tr><th>No</th><th>제품명</th><th>규격</th><th>CNY</th><th>원화</th></tr></thead><tbody>
+  ${DB_ACCESSORIES.map((a,i)=>`<tr><td>${a.no}</td><td>${a.name}</td><td>${a.spec}</td><td>${a.price_cny}</td>${pc(a.price_krw,'accessories',i,'price_krw')}</tr>`).join('')}
+  </tbody></table></div>`;
+
+  html+=`<div class="db-section"><h3>🔲 투명스크린(매쉬) 단가</h3>
+  <table class="db-table"><thead><tr><th>타입</th><th>모델</th><th>모듈사이즈</th><th>함체사이즈</th><th>밝기</th><th>㎡당 판매가</th></tr></thead><tbody>
+  ${DB_MESH.map((m,i)=>`<tr><td>${m.type}</td><td><b>${m.model}</b></td><td>${m.moduleSize}</td><td>${m.boxSize}</td><td>${m.brightness}cd</td>${pc(m.price_krw,'mesh',i,'price_krw')}</tr>`).join('')}
+  </tbody></table></div>`;
+
+  document.getElementById('db-output').innerHTML=html;
+}
+
+/* ============================================================
+   UI HELPERS
+   ============================================================ */
+function switchTab(id,el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  if(id==='tab-db') renderDB();
+}
+
+function onTypeChange(){
+  g_state.type=document.querySelector('input[name="ptype"]:checked').value;
+  populatePitchSelect(g_state.type);
+  calcAll();
+}
+
+function onPitchChange(){ g_state.pitch=document.getElementById('sel-pitch').value; calcAll(); }
+
+function onMarginChange(){
+  const v=document.getElementById('sl-margin').value;
+  document.getElementById('margin-val').textContent=v+'%';
+  calcAll();
+}
+
+function updatePreview(){ renderQuote(); }
+
+function populatePitchSelect(type){
+  const sel=document.getElementById('sel-pitch');
+  const list=DB_MODULES[type==='outdoor_front'?'outdoor':type]||DB_MODULES.indoor;
+  const cur=sel.value;
+  sel.innerHTML=list.map(m=>`<option value="${m.model}">${m.model} (${m.moduleSize})</option>`).join('');
+  if(list.find(m=>m.model===cur)) sel.value=cur;
+  g_state.pitch=sel.value;
+}
+
+function renderControllers(){
+  const brand=document.querySelector('input[name="ctrlbrand"]:checked').value;
+  const list=brand==='novastar'?DB_NOVASTAR:DB_HUIDU;
+  const cats=[...new Set(list.map(c=>c.category))];
+  let html='';
+  cats.forEach(cat=>{
+    html+=`<div style="color:#4fc3f7;font-size:10px;padding:4px 4px 2px;margin-top:4px;">${cat}</div>`;
+    list.filter(c=>c.category===cat).forEach(c=>{
+      html+=`<div class="ctrl-item" onclick="selectCtrl('${c.model}',this)">
+        <input type="radio" name="ctrl" value="${c.model}" onchange="calcAll()">
+        <div><div class="ctrl-name">${c.model}</div>
+        <div class="ctrl-price">₩${c.price_krw.toLocaleString()}</div>
+        <div class="ctrl-spec">${c.spec}</div></div></div>`;
+    });
+  });
+  document.getElementById('ctrl-list').innerHTML=html;
+}
+
+function selectCtrl(model,el){
+  document.querySelectorAll('.ctrl-item').forEach(i=>i.classList.remove('selected'));
+  el.classList.add('selected');
+  const r=el.querySelector('input[type=radio]');
+  if(r){r.checked=true; g_state.ctrl=model;}
+  calcAll();
+}
+
+function formatDate(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function numToKorean(num){
+  if(num===0) return '영';
+  const U=['','만','억','조'],D=['','일','이','삼','사','오','육','칠','팔','구'],P=['','십','백','천'];
+  let result='',ui=0;
+  while(num>0){
+    const chunk=num%10000;
+    if(chunk>0){
+      let s='',n=chunk;
+      for(let p=0;p<4;p++){const d=n%10;if(d>0)s=(d===1&&p>0?'':D[d])+P[p]+s;n=Math.floor(n/10);}
+      result=s+U[ui]+result;
+    }
+    num=Math.floor(num/10000);ui++;
+  }
+  return result;
+}
+
+function saveJSON(){
+  const data={version:'1.0',savedAt:new Date().toISOString(),state:g_state,
+    quoteNo:document.getElementById('inp-qno').value,
+    client:document.getElementById('inp-client').value,
+    subject:document.getElementById('inp-subject').value,
+    contact:document.getElementById('inp-contact').value,
+    payment:document.getElementById('inp-payment').value,
+    delivery:document.getElementById('inp-delivery').value};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download=`견적_${data.client.split(' ')[0]}_${formatDate(new Date())}.json`;
+  a.click();
+}
+
+function loadJSON(){ document.getElementById('file-load').click(); }
+
+function loadFromFile(evt){
+  const file=evt.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.state) Object.assign(g_state,data.state);
+      if(data.client)   document.getElementById('inp-client').value=data.client;
+      if(data.quoteNo)  document.getElementById('inp-qno').value=data.quoteNo;
+      if(data.subject)  document.getElementById('inp-subject').value=data.subject;
+      if(data.contact)  document.getElementById('inp-contact').value=data.contact;
+      if(data.payment)  document.getElementById('inp-payment').value=data.payment;
+      if(data.delivery) document.getElementById('inp-delivery').value=data.delivery;
+      document.getElementById('inp-width').value=g_state.width;
+      document.getElementById('inp-height').value=g_state.height;
+      document.getElementById('sl-margin').value=Math.round(g_state.margin*100);
+      document.getElementById('margin-val').textContent=Math.round(g_state.margin*100)+'%';
+      populatePitchSelect(g_state.type);
+      renderControllers();
+      calcAll();
+      alert('견적 불러오기 완료!');
+    }catch(ex){alert('파일 형식 오류: '+ex.message);}
+  };
+  reader.readAsText(file);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(function init(){
+  loadDB();
+  populatePitchSelect('indoor');
+  renderControllers();
+  setTimeout(()=>{
+    document.querySelectorAll('.ctrl-item').forEach(it=>{
+      const nm=it.querySelector('.ctrl-name');
+      if(nm&&nm.textContent==='TB60') selectCtrl('TB60',it);
+    });
+    calcAll();
+  },100);
+})();
+</script>
+</body>
+</html>

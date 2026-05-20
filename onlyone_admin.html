@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnlyOne LED 통합 관리자</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:#f0f4f8;color:#222;font-size:13px;}
+input,select,button{font-family:inherit;font-size:13px;}
+
+/* LAYOUT */
+.app-wrap{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:360px;min-width:300px;background:#1a2332;color:#e0e8f0;padding:14px;overflow-y:auto;flex-shrink:0;transition:transform .3s;}
+.main-area{flex:1;padding:16px;overflow-y:auto;min-width:0;}
+
+/* SIDEBAR */
+.logo{text-align:center;padding:8px 0 10px;border-bottom:1px solid #2d4060;margin-bottom:2px;}
+.logo h1{color:#4fc3f7;font-size:16px;letter-spacing:1px;}
+.logo p{color:#8ab4cf;font-size:10px;margin-top:3px;}
+.section-title{color:#4fc3f7;font-size:11px;font-weight:bold;letter-spacing:.7px;text-transform:uppercase;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid #2d4060;}
+.sidebar label{display:block;color:#b0cfe0;font-size:11px;margin-bottom:3px;margin-top:7px;}
+.sidebar input[type=text],.sidebar input[type=number],.sidebar select{width:100%;padding:6px 8px;background:#0f1c2e;border:1px solid #2d4060;color:#e0e8f0;border-radius:4px;outline:none;transition:border .2s;}
+.sidebar input:focus,.sidebar select:focus{border-color:#4fc3f7;}
+.sidebar select option{background:#1a2332;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.rsb{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px;}
+.rsb label{display:flex;align-items:center;gap:4px;color:#b0cfe0;cursor:pointer;margin:0;font-size:11px;}
+.rsb input[type=radio]{width:auto;accent-color:#4fc3f7;}
+
+.rate-box{background:#0f1c2e;border:1px solid #2d4060;border-radius:5px;padding:8px 10px;margin-bottom:2px;}
+.rate-row2{display:flex;justify-content:space-between;align-items:center;padding:2px 0;}
+.rate-lbl{color:#8ab4cf;font-size:11px;}
+.rate-val{color:#4fc3f7;font-weight:bold;font-size:12px;}
+.rate-badge{padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;}
+.rate-badge.live{background:#dcfce7;color:#15803d;}
+.rate-badge.err{background:#fee2e2;color:#b91c1c;}
+.rate-badge.loading{background:#f1f5f9;color:#64748b;}
+.rate-time{font-size:10px;color:#6a8da6;}
+.rate-btn{display:block;width:100%;padding:5px;border:1px solid #2d4060;border-radius:4px;background:transparent;color:#8ab4cf;font-size:11px;cursor:pointer;margin-top:5px;transition:.2s;}
+.rate-btn:hover{border-color:#4fc3f7;color:#4fc3f7;}
+
+.margin-row{display:flex;align-items:center;gap:7px;margin-top:5px;}
+.margin-inp{width:68px!important;text-align:center;font-size:16px!important;font-weight:800;color:#4fc3f7!important;border-color:#4fc3f7!important;}
+.margin-pct{color:#4fc3f7;font-size:14px;font-weight:700;}
+
+.ctrl-list{max-height:180px;overflow-y:auto;margin-top:4px;}
+.ctrl-item{display:flex;align-items:flex-start;gap:6px;padding:5px 6px;border-radius:4px;cursor:pointer;border:1px solid transparent;transition:.15s;}
+.ctrl-item:hover{background:#0f1c2e;}
+.ctrl-item.selected{background:#0a2040;border-color:#4fc3f7;}
+.ctrl-item input[type=radio]{width:auto;accent-color:#4fc3f7;margin-top:2px;flex-shrink:0;}
+.ctrl-name{color:#e0e8f0;font-weight:bold;font-size:12px;}
+.ctrl-price{color:#81c784;font-size:10px;}
+.ctrl-spec{color:#6a8da6;font-size:10px;line-height:1.3;margin-top:1px;}
+
+.calc-box{background:#0f1c2e;border:1px solid #2d4060;border-radius:5px;padding:8px 10px;margin-top:6px;}
+.calc-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;}
+.calc-label{color:#8ab4cf;font-size:11px;}
+.calc-value{color:#4fc3f7;font-weight:bold;font-size:11px;}
+.calc-value.warn{color:#ffb74d;}
+.calc-value.ok{color:#81c784;}
+
+.btn{display:block;width:100%;padding:9px;border:none;border-radius:5px;font-size:12px;font-weight:bold;cursor:pointer;margin-top:6px;transition:.2s;}
+.btn-primary{background:#4fc3f7;color:#0a1628;}
+.btn-primary:hover{background:#81d4fa;}
+.btn-secondary{background:#1e3a5c;color:#e0e8f0;border:1px solid #4fc3f7;}
+.btn-secondary:hover{background:#2d4e70;}
+.btn-print{background:#2e7d32;color:#fff;}
+.btn-print:hover{background:#388e3c;}
+.btn-save{background:#6a1b9a;color:#fff;}
+.btn-save:hover{background:#7b1fa2;}
+
+/* HAMBURGER */
+.hamburger{display:none;position:fixed;top:10px;left:10px;z-index:300;background:#1a2332;border:1.5px solid #2d4060;color:#4fc3f7;font-size:18px;padding:6px 10px;border-radius:5px;cursor:pointer;line-height:1;}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:198;}
+
+/* MAIN */
+.tab-bar{display:flex;gap:3px;margin-bottom:14px;flex-wrap:wrap;}
+.tab{padding:8px 18px;background:#fff;border:1px solid #dce3ec;border-radius:6px 6px 0 0;cursor:pointer;color:#555;font-weight:600;font-size:13px;transition:.15s;white-space:nowrap;}
+.tab.active{background:#1a2332;color:#4fc3f7;border-color:#1a2332;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* COST CALC */
+:root{--primary:#1a56db;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;--green:#16a34a;}
+
+/* Settings strip */
+.cc-strip{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+.cc-strip-group{flex:1;min-width:160px;}
+.cc-strip-group > .sg-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;}
+
+/* Main grid */
+.cc-cols{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;}
+.cc-bot{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+@media(max-width:900px){.cc-cols,.cc-bot{grid-template-columns:1fr;}}
+
+.card{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px;}
+.card h2{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:6px;}
+.badge-sm{font-size:10px;padding:1px 6px;border-radius:8px;background:#e0e7ff;color:#3730a3;font-weight:600;}
+.frow{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.frow label{font-size:11px;font-weight:600;color:var(--muted);display:block;margin:0;}
+.frow input,.frow select{border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;font-weight:500;color:var(--text);background:#fff;outline:none;transition:border .2s;width:100%;}
+.frow input:focus,.frow select:focus{border-color:var(--primary);}
+.frow input[readonly]{background:#f8fafc;color:var(--muted);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+@media(max-width:500px){.g2,.g3{grid-template-columns:1fr;}}
+
+/* radio chips */
+.cc-radio{display:flex;gap:5px;flex-wrap:wrap;}
+.cc-radio label{display:flex;align-items:center;gap:4px;padding:5px 10px;border:1.5px solid var(--border);border-radius:16px;font-size:12px;cursor:pointer;font-weight:500;color:var(--text);transition:all .2s;white-space:nowrap;}
+.cc-radio label.checked{background:var(--primary);color:#fff;border-color:var(--primary);}
+.cc-radio input{display:none;}
+
+.notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:7px 10px;font-size:11px;color:#1d4ed8;margin-bottom:10px;}
+
+/* result cards */
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:12px;}
+.res-card{border-radius:9px;padding:10px 12px;text-align:center;}
+.res-card .lbl{font-size:10px;font-weight:700;opacity:.8;margin-bottom:3px;}
+.res-card .val{font-size:15px;font-weight:800;}
+.rc-blue{background:#dbeafe;color:#1d4ed8;}
+.rc-orange{background:#ffedd5;color:#c2410c;}
+.rc-purple{background:#ede9fe;color:#7c3aed;}
+.rc-red{background:#fee2e2;color:#b91c1c;}
+.rc-gray{background:#f1f5f9;color:#475569;}
+.rc-green{background:#dcfce7;color:#15803d;}
+
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border);}
+table.ctbl{width:100%;border-collapse:collapse;font-size:11px;}
+table.ctbl thead th{background:#f8fafc;padding:7px 9px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border);white-space:nowrap;}
+table.ctbl tbody tr{border-bottom:1px solid var(--border);}
+table.ctbl tbody tr:last-child{border:none;}
+table.ctbl tbody td{padding:6px 9px;vertical-align:middle;}
+table.ctbl .total-row{background:#1a56db;color:#fff;font-weight:700;}
+table.ctbl .total-row td{padding:8px 9px;}
+table.ctbl .sep-row td{background:#f1f5f9;font-size:10px;font-weight:700;color:var(--muted);padding:4px 9px;}
+.tr{text-align:right;}
+
+/* sale pricing */
+.sale-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+@media(max-width:600px){.sale-inputs{grid-template-columns:1fr 1fr;}}
+.sale-total-box{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:linear-gradient(135deg,#1a56db,#7c3aed);border-radius:10px;padding:14px;margin-top:10px;color:#fff;}
+.st-item{text-align:center;}
+.st-lbl{font-size:10px;opacity:.75;margin-bottom:4px;font-weight:600;}
+.st-val{font-size:16px;font-weight:800;}
+.ctrl-info-bar{background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:7px 10px;margin-bottom:10px;font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* QUOTE */
+.quote-wrap{background:#fff;padding:26px;max-width:800px;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,.1);border-radius:4px;}
+.quote-header{text-align:center;font-size:24px;font-weight:bold;letter-spacing:4px;color:#1a2332;margin-bottom:16px;border-bottom:3px solid #1a2332;padding-bottom:8px;}
+.meta-left td{padding:3px 6px;font-size:12px;}
+.meta-left td:first-child{color:#666;white-space:nowrap;min-width:60px;}
+.meta-left td:nth-child(2){font-weight:bold;}
+.company-box{border:1px solid #333;padding:8px 12px;}
+.company-box p{font-size:11px;line-height:1.7;}
+.quote-title-row{background:#1a2332;color:#fff;font-size:13px;font-weight:bold;padding:7px 10px;margin:10px 0 0;}
+.items-table{width:100%;border-collapse:collapse;font-size:12px;}
+.items-table th{background:#1a2332;color:#fff;padding:6px 8px;text-align:center;border:1px solid #444;}
+.items-table td{padding:5px 8px;border:1px solid #ccc;vertical-align:middle;}
+.items-table tr:nth-child(even){background:#f9fbfd;}
+.items-table .spec-row td{background:#f5f8fc;color:#444;font-size:11px;padding:3px 8px;}
+.total-table{width:100%;border-collapse:collapse;margin-top:0;font-size:12px;}
+.total-table td{padding:5px 10px;border:1px solid #ccc;}
+.total-table .total-row{font-weight:bold;font-size:14px;background:#1a2332;color:#fff;}
+.terms-title{font-weight:bold;margin:16px 0 6px;font-size:13px;border-bottom:1px solid #ccc;padding-bottom:4px;}
+.terms-table{width:100%;border-collapse:collapse;font-size:12px;}
+.terms-table td{padding:4px 8px;border:1px solid #ddd;vertical-align:top;}
+.terms-table td:first-child{width:30px;text-align:center;font-weight:bold;background:#f0f4f8;}
+.terms-table td:nth-child(2){width:120px;color:#555;}
+.stamp-area{text-align:right;margin-top:8px;color:#888;font-size:11px;}
+
+/* DB */
+.db-section{margin-bottom:20px;}
+.db-section h3{background:#1a2332;color:#4fc3f7;padding:7px 11px;border-radius:4px 4px 0 0;font-size:12px;}
+.db-table{width:100%;border-collapse:collapse;font-size:11px;}
+.db-table th{background:#2d4e70;color:#fff;padding:5px 8px;text-align:left;}
+.db-table td{padding:4px 8px;border-bottom:1px solid #eee;}
+.db-table tr:hover{background:#f5f8fc;}
+.db-table td.db-price{text-align:right;}
+.db-edit-input{width:80px;padding:2px 4px;border:1px solid #4fc3f7;border-radius:3px;background:#e8f5ff;color:#0a1628;font-size:11px;text-align:right;}
+.tag{display:inline-block;padding:1px 5px;border-radius:7px;font-size:10px;font-weight:bold;}
+.tag-indoor{background:#e3f2fd;color:#1565c0;}
+.tag-outdoor{background:#fff3e0;color:#e65100;}
+
+/* MOBILE */
+@media(max-width:768px){
+  .hamburger{display:block;}
+  .app-wrap{display:block;height:auto;overflow:visible;}
+  .sidebar{position:fixed;left:0;top:0;height:100%;z-index:199;width:300px;transform:translateX(-100%);}
+  .sidebar.sb-open{transform:translateX(0);}
+  .sb-overlay.sb-open{display:block;}
+  .main-area{padding:10px;padding-top:46px;height:100vh;overflow-y:auto;}
+  .tab{padding:7px 12px;font-size:12px;}
+  .sale-total-box{grid-template-columns:1fr 1fr;}
+}
+
+@media print{
+  .sidebar,.tab-bar,.hamburger,.sb-overlay,.no-print{display:none!important;}
+  .main-area{padding:0;height:auto;}
+  .app-wrap{display:block;}
+  .tab-content{display:none!important;}
+  #tab-quote{display:block!important;}
+  .quote-wrap{box-shadow:none;padding:15px;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<button class="hamburger" onclick="toggleSidebar()">☰</button>
+<div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
+
+<div class="app-wrap">
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar no-print" id="sidebar">
+  <div class="logo">
+    <h1>㈜ 온리원 LED</h1>
+    <p>OnlyOne Co., Ltd. — 통합 관리자</p>
+  </div>
+
+  <div class="section-title">💱 실시간 환율</div>
+  <div class="rate-box">
+    <div class="rate-row2"><span class="rate-lbl">위안(CNY) 1 =</span><span class="rate-val" id="rate-val-cny">조회 중…</span></div>
+    <div class="rate-row2"><span class="rate-lbl">엔(JPY) 1 =</span><span class="rate-val" id="rate-val-jpy">–</span></div>
+    <div class="rate-row2" style="margin-top:4px;">
+      <span class="rate-badge loading" id="rate-badge">LOADING</span>
+      <span class="rate-time" id="rate-time"></span>
+    </div>
+    <button class="rate-btn" onclick="fetchRate()">↻ 새로고침</button>
+  </div>
+  <input type="hidden" id="inp-rate" value="200">
+  <input type="hidden" id="inp-rate-jpy" value="9.0">
+
+  <div class="section-title">① 목표 마진</div>
+  <div class="margin-row">
+    <input type="number" class="margin-inp" id="inp-margin" value="30" min="0" max="99" step="0.5" oninput="onMarginChange()">
+    <span class="margin-pct">%</span>
+    <span style="font-size:10px;color:#6a8da6;">공통 적용</span>
+  </div>
+
+  <div class="section-title">② 컨트롤러</div>
+  <div class="rsb">
+    <label><input type="radio" name="ctrlbrand" value="novastar" checked onchange="onCtrlBrandChange()"> 노바스타</label>
+    <label><input type="radio" name="ctrlbrand" value="huidu" onchange="onCtrlBrandChange()"> 후이두</label>
+    <label><input type="radio" name="ctrlbrand" value="colorlight" onchange="onCtrlBrandChange()"> 컬러라이트</label>
+  </div>
+  <div class="ctrl-list" id="ctrl-list"></div>
+  <div id="cl-section" style="display:none;margin-top:7px;">
+    <div class="notice" style="font-size:10px;margin-bottom:6px;">⚠️ Colorlight — 단가 직접 입력</div>
+    <div class="row2">
+      <div><label>컨트롤러 모델</label><input type="text" id="cl-ctrl-name" placeholder="예: C16" oninput="ccCalc()"></div>
+      <div><label>단가 (CNY)</label><input type="number" id="cl-ctrl-price" value="0" oninput="ccCalc()"></div>
+      <div><label>수신카드 모델</label><input type="text" id="cl-rcv-name" placeholder="예: 5A" oninput="ccCalc()"></div>
+      <div><label>수신카드 (CNY)</label><input type="number" id="cl-rcv-price" value="0" oninput="ccCalc()"></div>
+    </div>
+  </div>
+
+  <!-- QUOTE-ONLY SIDEBAR SECTIONS -->
+  <div class="section-title quote-only">③ 화면 사양 <span style="font-size:9px;color:#6a8da6;">(견적서)</span></div>
+  <div class="quote-only">
+    <div class="rsb">
+      <label><input type="radio" name="ptype" value="indoor" checked onchange="onTypeChange()"> 실내</label>
+      <label><input type="radio" name="ptype" value="outdoor" onchange="onTypeChange()"> 옥외</label>
+      <label><input type="radio" name="ptype" value="outdoor_front" onchange="onTypeChange()"> 옥외전면</label>
+    </div>
+    <label>픽셀 피치</label>
+    <select id="sel-pitch" onchange="onPitchChange()"></select>
+    <div class="row2">
+      <div><label>가로 (W) mm</label><input type="number" id="inp-width" value="2560" step="10" oninput="calcAll()"></div>
+      <div><label>세로 (H) mm</label><input type="number" id="inp-height" value="1440" step="10" oninput="calcAll()"></div>
+    </div>
+    <div class="calc-box" id="size-result">
+      <div class="calc-row"><span class="calc-label">640×640 박스 수</span><span class="calc-value" id="r-q640">–</span></div>
+      <div class="calc-row"><span class="calc-label">640×480 박스 수</span><span class="calc-value" id="r-q480">–</span></div>
+      <div class="calc-row"><span class="calc-label">실제 치수</span><span class="calc-value" id="r-size">–</span></div>
+      <div class="calc-row"><span class="calc-label">면적 (㎡)</span><span class="calc-value" id="r-area">–</span></div>
+      <div class="calc-row"><span class="calc-label">해상도</span><span class="calc-value" id="r-res">–</span></div>
+    </div>
+  </div>
+
+  <div class="section-title quote-only">④ 추가 항목 <span style="font-size:9px;color:#6a8da6;">(견적서)</span></div>
+  <div class="quote-only">
+    <div class="row2">
+      <div><label>설치비 (원/㎡)</label><input type="number" id="inp-install" value="250000" step="10000" oninput="calcAll()"></div>
+      <div><label>구조물/함체 (원)</label><input type="number" id="inp-struct" value="500000" step="100000" oninput="calcAll()"></div>
+    </div>
+    <div class="row2">
+      <div><label>공과잡비 (원)</label><input type="number" id="inp-misc" value="300000" step="10000" oninput="calcAll()"></div>
+      <div><label>전기통신 (원)</label><input type="number" id="inp-elec" value="200000" step="10000" oninput="calcAll()"></div>
+    </div>
+    <label>운송비 (원)</label>
+    <input type="number" id="inp-ship" value="0" step="10000" oninput="calcAll()">
+  </div>
+
+  <div class="section-title quote-only">⑤ 고객 · 견적 정보 <span style="font-size:9px;color:#6a8da6;">(견적서)</span></div>
+  <div class="quote-only">
+    <label>견적 번호</label><input type="text" id="inp-qno" value="OL-260520-01">
+    <label>수 신 (고객사명)</label><input type="text" id="inp-client" value="">
+    <label>건 명</label><input type="text" id="inp-subject" value="LED 스크린 납품 및 설치" oninput="updatePreview()">
+    <label>담당자 연락처</label><input type="text" id="inp-contact" value="">
+    <label>결제 조건</label><input type="text" id="inp-payment" value="70%(발주 시), 30%(검수 후 14일 이내)">
+    <label>납기 (일)</label><input type="number" id="inp-delivery" value="50">
+  </div>
+
+  <div id="sb-actions-quote" class="quote-only" style="margin-top:12px;">
+    <button class="btn btn-primary" onclick="calcAll();renderQuote();">🔄 견적 생성</button>
+    <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄 / PDF</button>
+    <button class="btn btn-save" onclick="saveJSON()">💾 JSON 저장</button>
+    <button class="btn btn-secondary" onclick="loadJSON()">📂 JSON 불러오기</button>
+    <input type="file" id="file-load" accept=".json" style="display:none" onchange="loadFromFile(event)">
+  </div>
+
+  <div id="sb-actions-db" style="display:none;margin-top:12px;">
+    <button id="btn-edit-db" class="btn btn-secondary" onclick="toggleEditMode()">✏️ 편집 모드</button>
+    <button class="btn btn-secondary" style="border-color:#e65100;color:#e65100;" onclick="resetDB()">🔄 DB 초기화</button>
+    <div id="db-save-notice" style="display:none;color:#81c784;font-size:11px;margin-top:4px;text-align:center;">저장됨 ✓</div>
+  </div>
+</div><!-- /sidebar -->
+
+<!-- ===== MAIN AREA ===== -->
+<div class="main-area">
+  <div class="tab-bar no-print">
+    <div class="tab active" onclick="switchTab('tab-cost-calc',this)">🧮 원가계산기</div>
+    <div class="tab" onclick="switchTab('tab-quote',this)">📄 견적서</div>
+    <div class="tab" onclick="switchTab('tab-db',this)">🗃️ 제품DB</div>
+  </div>
+
+  <!-- ===== TAB: 원가계산기 ===== -->
+  <div id="tab-cost-calc" class="tab-content active">
+
+    <!-- SETTINGS STRIP -->
+    <div class="cc-strip">
+      <div class="cc-strip-group">
+        <div class="sg-label">📦 박스 사이즈</div>
+        <div class="cc-radio" id="rg-size"></div>
+      </div>
+      <div class="cc-strip-group" style="min-width:140px;max-width:200px;">
+        <div class="sg-label">🔲 픽셀 피치</div>
+        <select id="cc-sel-pitch" onchange="ccOnPitchChange()" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:5px 7px;font-size:12px;outline:none;">
+          <option value="2.5">P2.5 — ¥115</option>
+          <option value="1.86">P1.86 — ¥150</option>
+          <option value="1.538" selected>P1.538 — ¥230</option>
+          <option value="1.25">P1.25 — ¥380</option>
+        </select>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;" id="disp-module-krw-mini"></div>
+      </div>
+      <div class="cc-strip-group">
+        <div class="sg-label">⚡ SMPS</div>
+        <div class="cc-radio" id="rg-smps"></div>
+        <div class="frow" id="smps-custom-wrap" style="display:none;margin-top:6px;">
+          <input type="number" id="inp-smps-custom" value="0" step="1" oninput="ccCalc()" placeholder="CNY 직접 입력">
+        </div>
+      </div>
+    </div><!-- /cc-strip -->
+
+    <!-- MAIN 2-COL -->
+    <div class="cc-cols">
+
+      <!-- LEFT: inputs -->
+      <div>
+        <!-- 화면 사양 -->
+        <div class="card">
+          <h2>📐 화면 사양 &amp; 박스 수량</h2>
+          <div class="g2">
+            <div class="frow"><label>가로 (W) mm</label><input type="number" id="cc-width" value="2560" step="10" oninput="ccScreenSpec()"></div>
+            <div class="frow"><label>세로 (H) mm</label><input type="number" id="cc-height" value="1440" step="10" oninput="ccScreenSpec()"></div>
+          </div>
+          <div id="cc-box-breakdown" style="margin-top:6px;"></div>
+          <div style="font-size:11px;color:#6a8da6;background:#f8fafc;border-radius:5px;padding:5px 8px;margin-top:5px;" id="cc-screen-info">–</div>
+        </div>
+
+        <!-- 포장 / 현지운송 -->
+        <div class="card">
+          <h2>📦 포장 &amp; 현지 운송 <span class="badge-sm">중국 내</span></h2>
+          <div class="notice">💡 전체 기준 금액을 박스 수로 나눠 1박스당 배분</div>
+          <div class="g2">
+            <div class="frow"><label>포장비 총액 (CNY)</label><input type="number" id="inp-pack-total" value="260" step="10" oninput="ccCalc()"></div>
+            <div class="frow"><label>현지운송비 총액 (CNY)</label><input type="number" id="inp-freight-local" value="300" step="10" oninput="ccCalc()"></div>
+            <div class="frow"><label>총 박스 수량 (PCS)</label><input type="number" id="inp-box-total" value="12" min="1" oninput="ccCalc()"></div>
+            <div class="frow"><label>박스당 배분액 (자동)</label><input type="text" id="disp-pack-per-box" readonly></div>
+          </div>
+        </div>
+
+        <!-- 여분 부품 -->
+        <div class="card">
+          <h2>🔧 여분 부품 원가</h2>
+          <div class="notice">💡 여분 총 비용을 판매 수량으로 나눠 박스당 원가에 반영</div>
+          <div class="g3">
+            <div class="frow"><label id="spare-module-lbl">모듈 여분 (수량)</label><input type="number" id="inp-spare-module" value="0" min="0" oninput="calcSale(false)"></div>
+            <div class="frow"><label id="spare-rcv-lbl">수신카드 여분 (수량)</label><input type="number" id="inp-spare-rcv" value="0" min="0" oninput="calcSale(false)"></div>
+            <div class="frow"><label>SMPS 여분 (수량)</label><input type="number" id="inp-spare-smps" value="0" min="0" oninput="calcSale(false)"></div>
+          </div>
+          <div class="frow"><label>여분 합계 → 박스당 배분</label><input type="text" id="disp-spare-total" readonly></div>
+        </div>
+
+        <!-- 수입 비용 -->
+        <div class="card">
+          <h2>✈️ 한국 수입 비용 <span class="badge-sm">전체 총액 기준</span></h2>
+          <div class="notice">💡 전체 수입 총액을 입력 → 판매 수량으로 나눠 박스당 반영</div>
+          <div class="g2">
+            <div class="frow"><label>국제 운송비 (KRW)</label><input type="number" id="inp-intl-freight" value="0" step="10000" oninput="calcSale(false)"></div>
+            <div class="frow"><label>관세 (KRW)</label><input type="number" id="inp-duty" value="0" step="10000" oninput="calcSale(false)"></div>
+            <div class="frow"><label>부가세 (KRW)</label><input type="number" id="inp-vat-imp" value="0" step="10000" oninput="calcSale(false)"></div>
+            <div class="frow"><label>기타 부대비용 (KRW)</label><input type="number" id="inp-extra" value="0" step="10000" oninput="calcSale(false)"></div>
+          </div>
+          <div class="frow"><label>수입 비용 합계 → 박스당 배분</label><input type="text" id="disp-import-total" readonly></div>
+        </div>
+      </div><!-- /left -->
+
+      <!-- RIGHT: results -->
+      <div>
+        <!-- 원가 분석 -->
+        <div class="card">
+          <h2>📊 박스 1개 원가 분석</h2>
+          <div class="ctrl-info-bar" id="cc-ctrl-info">컨트롤러 정보 로딩 중…</div>
+          <div class="res-grid" id="res-summary"></div>
+          <div class="tbl-wrap">
+            <table class="ctbl">
+              <thead><tr>
+                <th>구분</th><th>항목</th><th>수량</th>
+                <th class="tr">단가(CNY)</th><th class="tr">소계(CNY)</th><th class="tr">소계(KRW)</th>
+              </tr></thead>
+              <tbody id="tbody-main"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 판매가 책정 -->
+        <div class="card">
+          <h2>🏷️ 판매가 책정</h2>
+          <div class="sale-inputs">
+            <div class="frow"><label>판매 수량 (PCS)</label><input type="number" id="sale-qty" value="1" min="1" oninput="calcSale(false)"></div>
+            <div class="frow">
+              <label>박스 1개 판매가 (KRW) <span style="font-size:10px;color:var(--muted);">수정→마진역산</span></label>
+              <input type="number" id="inp-sale-price" value="0" step="1000" oninput="calcSale('krw')"
+                style="font-size:15px;font-weight:800;color:var(--green);border:2px solid var(--green);">
+            </div>
+            <div class="frow">
+              <label>박스 1개 판매가 (JPY) <span style="font-size:10px;color:var(--muted);">수정→마진역산</span></label>
+              <input type="number" id="inp-sale-price-jpy" value="0" step="100" oninput="calcSale('jpy')"
+                style="font-size:15px;font-weight:800;color:var(--primary);border:2px solid var(--primary);">
+            </div>
+          </div>
+          <div class="res-grid" id="res-sale"></div>
+          <div class="sale-total-box" id="res-total"></div>
+        </div>
+      </div><!-- /right -->
+    </div><!-- /cc-cols -->
+  </div><!-- /tab-cost-calc -->
+
+  <!-- ===== TAB: 견적서 ===== -->
+  <div id="tab-quote" class="tab-content">
+    <div class="quote-wrap" id="quotation-output">
+      <div class="quote-header">QUOTATION</div>
+      <table style="width:100%;margin-bottom:12px;">
+        <tr>
+          <td style="width:50%;vertical-align:top;">
+            <table class="meta-left">
+              <tr><td>번 호 :</td><td id="q-no"></td></tr>
+              <tr><td>일 자 :</td><td id="q-date"></td></tr>
+              <tr><td>수 신 :</td><td id="q-client"></td></tr>
+              <tr><td>담 당 :</td><td id="q-contact"></td></tr>
+              <tr><td>건 명 :</td><td id="q-subject" style="font-weight:bold;font-size:12px;"></td></tr>
+              <tr><td>금 액 :</td><td id="q-amount" style="font-weight:bold;color:#c00;font-size:13px;"></td></tr>
+            </table>
+          </td>
+          <td style="width:50%;vertical-align:top;">
+            <div class="company-box">
+              <p><b>㈜ 온리원 OnlyOne Co., Ltd.</b></p>
+              <p>경기도 김포시 대곶면 대곶북로 385</p>
+              <p>등록번호: 391-86-02266 &nbsp; 대표: 이하나</p>
+              <p>업태: 제조업, 도소매 &nbsp; 종목: 무역업, 조명장치 제조업</p>
+              <p>팀장 배건환 010-7782-0021 / only1@only1led.com</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div class="quote-title-row" id="q-title-row"></div>
+      <table class="items-table" id="items-table">
+        <thead><tr>
+          <th style="width:30px;">#</th><th>ITEM</th><th>DESCRIPTION</th>
+          <th>Unit</th><th style="width:50px;">QTY</th><th>UNIT PRICE</th><th>Sub-Total</th>
+        </tr></thead>
+        <tbody id="items-tbody"></tbody>
+      </table>
+      <table class="total-table" style="width:50%;margin-left:50%;">
+        <tr><td style="text-align:right;">소계 (VAT 별도)</td><td id="t-sub" style="text-align:right;min-width:100px;"></td></tr>
+        <tr><td style="text-align:right;">부가가치세 (VAT 10%)</td><td id="t-vat" style="text-align:right;"></td></tr>
+        <tr class="total-row"><td style="text-align:right;padding:8px 10px;">합 계</td><td id="t-total" style="text-align:right;padding:8px 10px;font-size:15px;"></td></tr>
+      </table>
+      <div class="terms-title">견적조건 (Terms &amp; Conditions)</div>
+      <table class="terms-table" id="terms-table"></table>
+      <div class="stamp-area">⬜ (인)</div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: 제품DB ===== -->
+  <div id="tab-db" class="tab-content">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <h2 style="color:#1a2332;margin:0;font-size:15px;">🗃️ 제품 데이터베이스</h2>
+    </div>
+    <div id="db-output"></div>
+  </div>
+
+</div><!-- /main-area -->
+</div><!-- /app-wrap -->
+
+<script>
+/* ================================================================
+   DATABASE
+   ================================================================ */
+const DB_MODULES = {
+  indoor: [
+    {model:"P1.25",  moduleSize:"320×160",pixelSize:"256×128",pitch:1.25, brightness:650, price90:129000,price45:134000,price90gob:143000,price45gob:147000,price90cob:null},
+    {model:"P1.538", moduleSize:"320×160",pixelSize:"208×104",pitch:1.538,brightness:680, price90:78000, price45:83000, price90gob:88000, price45gob:93000, price90cob:null},
+    {model:"P1.86",  moduleSize:"320×160",pixelSize:"172×86", pitch:1.86, brightness:680, price90:51000, price45:55000, price90gob:60000, price45gob:66000, price90cob:null},
+    {model:"P2.0",   moduleSize:"320×160",pixelSize:"160×80", pitch:2.0,  brightness:800, price90:47000, price45:51000, price90gob:56000, price45gob:62000, price90cob:null},
+    {model:"P2.5",   moduleSize:"320×160",pixelSize:"128×64", pitch:2.5,  brightness:800, price90:39000, price45:44000, price90gob:48000, price45gob:54000, price90cob:null},
+    {model:"P3.076", moduleSize:"320×160",pixelSize:"104×52", pitch:3.076,brightness:800, price90:32000, price45:37000, price90gob:41000, price45gob:47000, price90cob:null},
+    {model:"P1.56",  moduleSize:"250×250",pixelSize:"160×160",pitch:1.56, brightness:680, price90:null,  price45:null,  price90gob:129000,price45gob:135000,price90cob:null},
+    {model:"P1.95",  moduleSize:"250×250",pixelSize:"128×128",pitch:1.95, brightness:680, price90:83000, price45:88000, price90gob:94000, price45gob:99000, price90cob:null},
+    {model:"P2.604", moduleSize:"250×250",pixelSize:"96×96",  pitch:2.604,brightness:800, price90:47000, price45:52000, price90gob:57000, price45gob:63000, price90cob:null},
+    {model:"P2.97",  moduleSize:"250×250",pixelSize:"84×84",  pitch:2.97, brightness:800, price90:44000, price45:49000, price90gob:54000, price45gob:60000, price90cob:null},
+    {model:"P3.91",  moduleSize:"250×250",pixelSize:"64×64",  pitch:3.91, brightness:800, price90:34000, price45:39000, price90gob:44000, price45gob:49000, price90cob:null},
+    {model:"P4.81",  moduleSize:"250×250",pixelSize:"52×52",  pitch:4.81, brightness:800, price90:31000, price45:36000, price90gob:41000, price45gob:46000, price90cob:null},
+    {model:"P2.5s",  moduleSize:"160×160",pixelSize:"64×64",  pitch:2.5,  brightness:800, price90:27000, price45:29000, price90gob:34000, price45gob:35000, price90cob:null},
+    {model:"P3s",    moduleSize:"192×192",pixelSize:"64×64",  pitch:3.0,  brightness:800, price90:24000, price45:26000, price90gob:31000, price45gob:32000, price90cob:null},
+  ],
+  outdoor: [
+    {model:"P2",    moduleSize:"320×160",pixelSize:"160×80",pitch:2.0,  brightness:5000,price90:194000,price45:null,  price90gob:207000,price45gob:null},
+    {model:"P2.5",  moduleSize:"320×160",pixelSize:"128×64",pitch:2.5,  brightness:5000,price90:70000, price45:75000, price90gob:83000, price45gob:88000},
+    {model:"P3.076",moduleSize:"320×160",pixelSize:"104×52",pitch:3.076,brightness:5000,price90:54000, price45:60000, price90gob:68000, price45gob:73000},
+    {model:"P4",    moduleSize:"320×160",pixelSize:"80×40", pitch:4.0,  brightness:5000,price90:34000, price45:39000, price90gob:null,  price45gob:null},
+    {model:"P5",    moduleSize:"320×160",pixelSize:"64×32", pitch:5.0,  brightness:5000,price90:30000, price45:35000, price90gob:null,  price45gob:null},
+    {model:"P6.67", moduleSize:"320×160",pixelSize:"48×24", pitch:6.67, brightness:5500,price90:27000, price45:null,  price90gob:null,  price45gob:null},
+    {model:"P8",    moduleSize:"320×160",pixelSize:"40×20", pitch:8.0,  brightness:5500,price90:24000, price45:null,  price90gob:null,  price45gob:null},
+    {model:"P10",   moduleSize:"320×160",pixelSize:"32×16", pitch:10.0, brightness:5500,price90:22000, price45:null,  price90gob:null,  price45gob:null},
+    {model:"P2.604",moduleSize:"250×250",pixelSize:"96×96", pitch:2.604,brightness:4500,price90:82000, price45:87000, price90gob:95000, price45gob:null},
+    {model:"P2.97", moduleSize:"250×250",pixelSize:"84×84", pitch:2.97, brightness:4500,price90:58000, price45:63000, price90gob:71000, price45gob:null},
+    {model:"P3.91", moduleSize:"250×250",pixelSize:"64×64", pitch:3.91, brightness:4500,price90:46000, price45:51000, price90gob:60000, price45gob:null},
+    {model:"P4.81", moduleSize:"250×250",pixelSize:"52×52", pitch:4.81, brightness:4500,price90:42000, price45:47000, price90gob:null,  price45gob:null},
+    {model:"P2.5s", moduleSize:"160×160",pixelSize:"64×64", pitch:2.5,  brightness:5000,price90:42000, price45:47000, price90gob:null,  price45gob:null},
+    {model:"P3s",   moduleSize:"192×192",pixelSize:"64×64", pitch:3.0,  brightness:5000,price90:37000, price45:41000, price90gob:null,  price45gob:null},
+    {model:"P6s",   moduleSize:"192×192",pixelSize:"32×32", pitch:6.0,  brightness:5500,price90:23000, price45:null,  price90gob:null,  price45gob:null},
+  ],
+  outdoor_front: [
+    {model:"P2.97", moduleSize:"250×250",pixelSize:"96×96", pitch:2.97, brightness:4500,price90:86000},
+    {model:"P3.91", moduleSize:"250×250",pixelSize:"64×64", pitch:3.91, brightness:4500,price90:74000},
+    {model:"P4.81", moduleSize:"250×250",pixelSize:"52×52", pitch:4.81, brightness:4500,price90:66000},
+    {model:"P4",    moduleSize:"320×160",pixelSize:"80×40", pitch:4.0,  brightness:5500,price90:52000},
+    {model:"P5",    moduleSize:"320×160",pixelSize:"64×32", pitch:5.0,  brightness:5500,price90:47000},
+    {model:"P6.67", moduleSize:"320×160",pixelSize:"48×24", pitch:6.67, brightness:5500,price90:43000},
+    {model:"P8",    moduleSize:"320×160",pixelSize:"40×20", pitch:8.0,  brightness:5500,price90:38000},
+    {model:"P10",   moduleSize:"320×160",pixelSize:"32×16", pitch:10.0, brightness:5500,price90:36000},
+  ]
+};
+
+const DB_BOX = {
+  "640x640A":{spec:"640×640A",price90:102000,price45:119000},
+  "640x480A":{spec:"640×480A",price90:69000, price45:86000},
+  "320x640A":{spec:"320×640A",price90:69000, price45:86000},
+  "320x480A":{spec:"320×480A",price90:67000, price45:84000},
+  "640x640": {spec:"640×640", price90:94000, price45:111000},
+  "640x480": {spec:"640×480", price90:63000, price45:80000},
+};
+
+const DB_NOVASTAR = [
+  {model:"TB60",       price_krw:1280000,price_cny:2880, category:"Taurus",    spec:"Taurus 3세대. 4 GbE, 2.3M px. HDMI 1.4, 4K 영상"},
+  {model:"TB50",       price_krw:799000, price_cny:2350, category:"Taurus",    spec:"Taurus 3세대. 2 GbE, 1.3M px. HDMI 1.4"},
+  {model:"TB40",       price_krw:408000, price_cny:1200, category:"Taurus",    spec:"Taurus 3세대. 2 GbE, 1.3M px. USB 3.0"},
+  {model:"TB30",       price_krw:595000, price_cny:1750, category:"Taurus",    spec:"Taurus 3세대. 1 GbE, 650K px. HDMI 1.4"},
+  {model:"TB20plus",   price_krw:323000, price_cny:950,  category:"Taurus",    spec:"Taurus. 1 GbE, 650K px. Wi-Fi AP/STA"},
+  {model:"TB1",        price_krw:187000, price_cny:550,  category:"Taurus",    spec:"Taurus. 1 GbE, 650K px. Wi-Fi AP"},
+  {model:"MSD600-1",   price_krw:493000, price_cny:1450, category:"Built-in",  spec:"내장 발송카드. 4 GbE, 2.6M px"},
+  {model:"MSD300-1",   price_krw:221000, price_cny:650,  category:"Built-in",  spec:"내장 발송카드. 2 GbE, 1.3M px"},
+  {model:"MCTRL1600",  price_krw:2788000,price_cny:8200, category:"External",  spec:"외장 발송박스. 16 GbE, 9.4M px"},
+  {model:"MCTRL660Pro",price_krw:2006000,price_cny:5900, category:"External",  spec:"외장 발송박스(Pro). 4 GbE, 2.3M px"},
+  {model:"MCTRL700",   price_krw:748000, price_cny:2200, category:"External",  spec:"외장 발송박스. 6 GbE, 3.9M px"},
+  {model:"MCTRL600",   price_krw:646000, price_cny:1900, category:"External",  spec:"외장 발송박스. 4 GbE, 2.6M px"},
+  {model:"MCTRL300",   price_krw:408000, price_cny:1200, category:"External",  spec:"외장 발송박스. 2 GbE, 1.3M px"},
+  {model:"VX1000Pro",  price_krw:3468000,price_cny:10200,category:"All-in-one",spec:"올인원(Pro). 10 GbE, 6.5M px, 4K×2K@60Hz"},
+  {model:"VX600Pro",   price_krw:2346000,price_cny:6900, category:"All-in-one",spec:"올인원(Pro). 6 GbE, 3.9M px"},
+  {model:"VX400Pro",   price_krw:2142000,price_cny:6300, category:"All-in-one",spec:"올인원(Pro). 4 GbE, 2.6M px. HDMI 2.0"},
+  {model:"VX400S-N",   price_krw:1360000,price_cny:4000, category:"All-in-one",spec:"올인원. 4 GbE, 2.6M px"},
+  {model:"VX16S",      price_krw:646000, price_cny:1900, category:"All-in-one",spec:"소형 영상처리기. 16 GbE, 10.4M px"},
+  {model:"MRV560-1",   price_krw:95000,  price_cny:280,  category:"수신카드",   spec:"2×50PIN 출력 수신카드"},
+  {model:"MRV416",     price_krw:37000,  price_cny:108,  category:"수신카드",   spec:"16×HUB75 수신카드"},
+  {model:"MRV412",     price_krw:33000,  price_cny:98,   category:"수신카드",   spec:"12×HUB75 수신카드"},
+  {model:"DH7516-S",   price_krw:33000,  price_cny:98,   category:"수신카드",   spec:"16×HUB75 수신카드"},
+  {model:"A5S PLUS",   price_krw:30000,  price_cny:88,   category:"수신카드",   spec:"8×HUB75 수신카드"},
+];
+
+const DB_HUIDU = [
+  {model:"HD-A8",      price_krw:4216000,price_cny:12400,category:"듀얼모드",    spec:"4K 마스터. 8.2M px, 4G/5G, HDMI/DP sync"},
+  {model:"HD-A7",      price_krw:3060000,price_cny:8999, category:"듀얼모드",    spec:"4K 플레이어. 5.2M px, 듀얼밴드 Wi-Fi"},
+  {model:"HD-A6L",     price_krw:677000, price_cny:1990, category:"듀얼모드",    spec:"발송박스. 2.6M px, HDMI, 듀얼밴드 Wi-Fi"},
+  {model:"HD-A5L",     price_krw:408000, price_cny:1200, category:"듀얼모드",    spec:"멀티미디어. 1.3M px, Wi-Fi, sync/async"},
+  {model:"HD-A4L",     price_krw:289000, price_cny:850,  category:"듀얼모드",    spec:"멀티미디어. 650K px, HDMI, Wi-Fi"},
+  {model:"HD-H4K",     price_krw:469000, price_cny:1380, category:"4K프로세서",  spec:"4K(3840×2160). 5.2M px, FPGA"},
+  {model:"HD-A3L",     price_krw:187000, price_cny:550,  category:"비동기",      spec:"650K px, USB, Wi-Fi"},
+  {model:"HD-C16L",    price_krw:187000, price_cny:550,  category:"비동기",      spec:"650K px, 12×HUB75E, 2.4G Wi-Fi"},
+  {model:"HD-C08L",    price_krw:136000, price_cny:400,  category:"비동기",      spec:"196K px, 8×HUB75E, Wi-Fi"},
+  {model:"HD-B6L",     price_krw:401000, price_cny:1180, category:"비동기",      spec:"광고 머신용. 1.3M px"},
+  {model:"HD-VP620A",  price_krw:867000, price_cny:2550, category:"비디오프로세서",spec:"390만 px@60Hz"},
+  {model:"HD-VP820A",  price_krw:1037000,price_cny:3050, category:"비디오프로세서",spec:"520만 px@60Hz"},
+  {model:"HD-VP1220C", price_krw:1870000,price_cny:5500, category:"비디오프로세서",spec:"780만 px@60Hz"},
+  {model:"HD-VP210H",  price_krw:255000, price_cny:750,  category:"비디오프로세서",spec:"130만 px@60Hz"},
+  {model:"HD-VP410H",  price_krw:486000, price_cny:1430, category:"비디오프로세서",spec:"260만 px@60Hz"},
+  {model:"HD-R708",    price_krw:24000,  price_cny:72,   category:"수신카드",    spec:"128×512 / 384×512 (PWM)"},
+  {model:"HD-R712",    price_krw:28000,  price_cny:82,   category:"수신카드",    spec:"128×1024 / 256×1024 (PWM)"},
+  {model:"HD-R716",    price_krw:33000,  price_cny:98,   category:"수신카드",    spec:"160×1024 / 320×1024 (PWM)"},
+];
+
+const DB_ACCESSORIES = [
+  {no:1, name:"롱 배선",       spec:"20CM",             price_cny:1,    price_krw:0},
+  {no:2, name:"롱 배선",       spec:"40CM",             price_cny:1.8,  price_krw:1000},
+  {no:3, name:"롱 배선",       spec:"60CM",             price_cny:2.2,  price_krw:1000},
+  {no:4, name:"롱 배선",       spec:"80CM",             price_cny:2.7,  price_krw:1000},
+  {no:5, name:"롱 배선",       spec:"100CM",            price_cny:3.3,  price_krw:1000},
+  {no:6, name:"롱 배선",       spec:"120CM",            price_cny:3.7,  price_krw:1000},
+  {no:7, name:"롱 배선",       spec:"140CM",            price_cny:4.2,  price_krw:1000},
+  {no:8, name:"모듈 전원선",   spec:"100CM 1带4핀",     price_cny:17.5, price_krw:6000},
+  {no:9, name:"모듈 전원선",   spec:"100CM 1带6핀",     price_cny:18.5, price_krw:6000},
+  {no:10,name:"모듈 전원선",   spec:"140CM 1带6핀",     price_cny:21,   price_krw:7000},
+  {no:11,name:"모듈 전원선",   spec:"190CM 1带8핀",     price_cny:26,   price_krw:9000},
+  {no:12,name:"기가 랜선",     spec:"60CM",             price_cny:3.7,  price_krw:1000},
+  {no:13,name:"기가 랜선",     spec:"100CM",            price_cny:5.2,  price_krw:2000},
+  {no:14,name:"기가 랜선",     spec:"150CM",            price_cny:6,    price_krw:2000},
+  {no:15,name:"일본 플러그",   spec:"3미터",             price_cny:27,   price_krw:9000},
+  {no:16,name:"모듈 분리 공구",spec:"-",                price_cny:7,    price_krw:2000},
+  {no:17,name:"명위 전원",     spec:"LRS-200-5V40A",   price_cny:120,  price_krw:41000},
+  {no:18,name:"명위 전원",     spec:"LRS-350-5V60A",   price_cny:139,  price_krw:47000},
+  {no:19,name:"거능 전원",     spec:"N220V5-B-5V40A",  price_cny:45,   price_krw:15000,note:"KC인증 없음"},
+  {no:20,name:"거능 전원",     spec:"N220V5-B-5V40A",  price_cny:78,   price_krw:27000,note:"KC인증"},
+  {no:21,name:"영전 전원",     spec:"MA200SH5A-5V40A", price_cny:53,   price_krw:18000,note:"KC인증"},
+];
+
+const DB_MESH = [
+  {type:"실내투명",    model:"P3.91",     moduleSize:"500×125",boxSize:"1000×1000",brightness:4500,price_krw:1190000},
+  {type:"실내투명",    model:"P3.91",     moduleSize:"500×125",boxSize:"1000×500", brightness:4500,price_krw:1278000},
+  {type:"실내투명",    model:"P10.4",     moduleSize:"500×125",boxSize:"1000×1000",brightness:4500,price_krw:1292000},
+  {type:"실내투명",    model:"P10.4",     moduleSize:"500×125",boxSize:"1000×500", brightness:4500,price_krw:1380000},
+  {type:"실내정발광",  model:"P2.6-6.25", moduleSize:"500×125",boxSize:"1000×1000",brightness:1500,price_krw:1550000},
+  {type:"실내정발광",  model:"P2.6-6.25", moduleSize:"500×125",boxSize:"1000×500", brightness:1500,price_krw:1639000},
+  {type:"옥외방수투명",model:"GP3.91-7.8",moduleSize:"500×125",boxSize:"1000×500", brightness:4500,price_krw:2033000},
+  {type:"옥외방수투명",model:"GP10.4",    moduleSize:"500×125",boxSize:"1000×500", brightness:4500,price_krw:1904000},
+];
+
+var MODULE_PRICES = {'2.5':115,'1.86':150,'1.538':230,'1.25':380};
+
+const NS_RCV_MAP = {
+  'Taurus':    {model:'A5S PLUS',cny:88},
+  'Built-in':  {model:'A5S PLUS',cny:88},
+  'External':  {model:'MRV412',  cny:98},
+  'All-in-one':{model:'MRV412',  cny:98},
+};
+const HD_RCV_FIXED = {model:'HD-R708',cny:72};
+
+const MODULE_PIXEL_MAP = {
+  "P1.25":{w:256,h:128},"P1.538":{w:208,h:104},"P1.86":{w:172,h:86},
+  "P2.0":{w:160,h:80},"P2.5":{w:128,h:64},"P3.076":{w:104,h:52},
+  "P1.56":{w:160,h:160},"P1.95":{w:128,h:128},"P2.604":{w:96,h:96},
+  "P2.97":{w:84,h:84},"P3.91":{w:64,h:64},"P4.81":{w:52,h:52},
+  "P2":{w:160,h:80},"P4":{w:80,h:40},"P5":{w:64,h:32},
+  "P6.67":{w:48,h:24},"P8":{w:40,h:20},"P10":{w:32,h:16},
+  "P2.5s":{w:64,h:64},"P3s":{w:64,h:64},"P6s":{w:32,h:32},
+};
+
+let g_state = {
+  type:'indoor', pitch:'P1.538',
+  width:2560, height:1440,
+  margin:30,
+  cnyKrw:200, jpyKrw:9.0,
+  ctrl:'TB60', ctrlBrand:'novastar',
+  install:250000, struct:500000, misc:300000, elec:200000, ship:0,
+};
+
+/* ================================================================
+   LIVE RATE
+   ================================================================ */
+async function fetchRate() {
+  const cnyEl = document.getElementById('rate-val-cny');
+  const jpyEl = document.getElementById('rate-val-jpy');
+  const badge = document.getElementById('rate-badge');
+  const timeEl = document.getElementById('rate-time');
+  cnyEl.textContent='조회 중…'; jpyEl.textContent='–';
+  badge.className='rate-badge loading'; badge.textContent='LOADING'; timeEl.textContent='';
+  try {
+    const res  = await fetch('https://open.er-api.com/v6/latest/KRW');
+    const data = await res.json();
+    if (data.result !== 'success') throw new Error();
+    const krwPerCny = Math.round(1 / data.rates.CNY);
+    const krwPerJpy = parseFloat((1 / data.rates.JPY).toFixed(4));
+    g_state.cnyKrw = krwPerCny;
+    g_state.jpyKrw = krwPerJpy;
+    document.getElementById('inp-rate').value     = krwPerCny;
+    document.getElementById('inp-rate-jpy').value = krwPerJpy;
+    cnyEl.textContent = '1 CNY = ' + krwPerCny.toLocaleString() + '원';
+    jpyEl.textContent = '1 JPY = ' + krwPerJpy.toFixed(2) + '원';
+    badge.className='rate-badge live'; badge.textContent='LIVE';
+    const updated = new Date(data.time_last_update_utc);
+    timeEl.textContent = updated.toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    ccCalc();
+  } catch(e) {
+    cnyEl.textContent='조회 실패 — 수동값 적용';
+    badge.className='rate-badge err'; badge.textContent='ERROR';
+  }
+}
+
+/* ================================================================
+   HELPERS
+   ================================================================ */
+function numV(id) { const el=document.getElementById(id); return el?(parseFloat(el.value)||0):0; }
+function fmt(n) { if(isNaN(n)||n===null||n===undefined) return '-'; return Math.round(n).toLocaleString('ko-KR'); }
+function rc(cls, lbl, val) {
+  return '<div class="res-card ' + cls + '"><div class="lbl">' + lbl + '</div><div class="val">' + val + '</div></div>';
+}
+
+/* ================================================================
+   CONTROLLER
+   ================================================================ */
+function getCcCtrl() {
+  const brand = g_state.ctrlBrand;
+  const model = g_state.ctrl;
+  if (brand === 'novastar') {
+    const c = DB_NOVASTAR.find(x => x.model===model && x.category!=='수신카드');
+    if (c) {
+      const rcv = NS_RCV_MAP[c.category] || {model:'MRV412',cny:98};
+      return {ctrlModel:c.model, ctrlCny:c.price_cny, rcvModel:rcv.model, rcvCny:rcv.cny};
+    }
+  }
+  if (brand === 'huidu') {
+    const c = DB_HUIDU.find(x => x.model===model && x.category!=='수신카드');
+    if (c) return {ctrlModel:c.model, ctrlCny:c.price_cny, rcvModel:HD_RCV_FIXED.model, rcvCny:HD_RCV_FIXED.cny};
+  }
+  return {
+    ctrlModel: (document.getElementById('cl-ctrl-name')||{}).value || 'Colorlight',
+    ctrlCny:   numV('cl-ctrl-price'),
+    rcvModel:  (document.getElementById('cl-rcv-name')||{}).value || '-',
+    rcvCny:    numV('cl-rcv-price'),
+  };
+}
+
+/* ================================================================
+   SCREEN SPEC (cost calc)
+   ================================================================ */
+function ccScreenSpec() {
+  const size = (document.querySelector('input[name="ccsize"]:checked')||{value:'480'}).value;
+  const w = parseFloat(document.getElementById('cc-width').value) || 0;
+  const h = parseFloat(document.getElementById('cc-height').value) || 0;
+  const bdEl = document.getElementById('cc-box-breakdown');
+  if (!w || !h) {
+    document.getElementById('cc-screen-info').textContent = '–';
+    if (bdEl) bdEl.innerHTML = '';
+    return;
+  }
+
+  const sizeMap = {'480':{bw:640,bh:480},'640':{bw:640,bh:640},'320x480':{bw:320,bh:480},'320x640':{bw:320,bh:640}};
+  const sizeLabels = {'480':'640×480','640':'640×640','320x480':'320×480','320x640':'320×640'};
+  const {bw, bh} = sizeMap[size] || {bw:640,bh:480};
+  const sizeLabel = sizeLabels[size] || '640×480';
+  const cols = Math.floor(w / bw);
+  const rows = Math.floor(h / bh);
+  const count = cols * rows;
+  const actualW = cols * bw;
+  const actualH = rows * bh;
+  const mismatch = (w !== actualW || h !== actualH);
+
+  document.getElementById('cc-screen-info').textContent =
+    '실제 제작 치수: ' + actualW + ' × ' + actualH + ' mm' +
+    (mismatch ? '  ⚠️ 여백 ' + (w-actualW) + '×' + (h-actualH) + 'mm' : '  ✓ 정확히 맞음');
+
+  if (bdEl) {
+    if (count > 0) {
+      bdEl.innerHTML =
+        '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:8px 12px;font-size:12px;color:#1d4ed8;">' +
+          '<div style="font-weight:700;margin-bottom:4px;">📦 박스 구성</div>' +
+          '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">' +
+            '<span style="background:#dbeafe;border-radius:5px;padding:3px 8px;font-weight:800;font-size:13px;">' +
+              sizeLabel + 'mm &nbsp;×&nbsp; <b>' + count + '개</b>' +
+            '</span>' +
+            '<span style="color:#3730a3;font-size:11px;">' + cols + '열 × ' + rows + '행</span>' +
+          '</div>' +
+          '<div style="margin-top:5px;font-size:10px;color:#6366f1;">→ 포장/운송 수량 &amp; 판매 수량에 자동 반영</div>' +
+        '</div>';
+    } else {
+      bdEl.innerHTML = '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:6px 10px;font-size:11px;color:#b91c1c;">⚠️ 입력 치수가 선택한 박스 크기보다 작습니다.</div>';
+    }
+  }
+
+  if (count > 0) {
+    document.getElementById('inp-box-total').value = count;
+    document.getElementById('sale-qty').value = count;
+    ccCalc();
+  }
+}
+
+/* ================================================================
+   COST CALC
+   ================================================================ */
+function ccGetInputs() {
+  const size  = (document.querySelector('input[name="ccsize"]:checked')||{value:'480'}).value;
+  const pitch = document.getElementById('cc-sel-pitch').value;
+  const rate  = g_state.cnyKrw;
+  const sizeConf = {
+    '480':    {mq:6,sq:1,dc:'cc-s-dc480',label:'640×480'},
+    '640':    {mq:8,sq:2,dc:'cc-s-dc640',label:'640×640'},
+    '320x480':{mq:3,sq:1,dc:'cc-s-dc480',label:'320×480'},
+    '320x640':{mq:4,sq:1,dc:'cc-s-dc480',label:'320×640'},
+  }[size] || {mq:6,sq:1,dc:'cc-s-dc480',label:'640×480'};
+  const modulePrice = MODULE_PRICES[pitch] || 230;
+  const dcPrice     = numV(sizeConf.dc);
+  const smpsType    = (document.querySelector('input[name="ccsmps"]:checked')||{value:'80'}).value;
+  const smpsPrice   = smpsType==='custom' ? numV('inp-smps-custom') : parseFloat(smpsType);
+  const boxTotal    = numV('inp-box-total') || 1;
+  const ctrl        = getCcCtrl();
+  return {
+    size, pitch, rate, label:sizeConf.label,
+    moduleQty:sizeConf.mq, smpsQty:sizeConf.sq, modulePrice, smpsPrice, dcPrice,
+    cable3:numV('cc-s-cable3'), cat6:numV('cc-s-cat6'), flat:numV('cc-s-flat'),
+    ctrlModel:ctrl.ctrlModel, ctrlCny:ctrl.ctrlCny,
+    rcvModel:ctrl.rcvModel,   rcvCny:ctrl.rcvCny,
+    packPerBox:   numV('inp-pack-total')   / boxTotal,
+    freightPerBox:numV('inp-freight-local') / boxTotal,
+    boxTotal,
+    intlFreight:numV('inp-intl-freight'),
+    duty:       numV('inp-duty'),
+    vatImp:     numV('inp-vat-imp'),
+    extra:      numV('inp-extra'),
+  };
+}
+
+function ccCalcCost(inp) {
+  const rows = [
+    {cat:'박스 구성', name:'LED 모듈 (P'+inp.pitch+')',     qty:inp.moduleQty, unit:inp.modulePrice},
+    {cat:'박스 구성', name:'수신카드 ('+inp.rcvModel+')',   qty:1,             unit:inp.rcvCny},
+    {cat:'박스 구성', name:'SMPS 전원공급장치',             qty:inp.smpsQty,   unit:inp.smpsPrice},
+    {cat:'박스 구성', name:'다이캐스팅 ('+inp.label+'mm)', qty:1,             unit:inp.dcPrice},
+    {cat:'박스 구성', name:'Three-core 케이블 750mm',       qty:1,             unit:inp.cable3},
+    {cat:'박스 구성', name:'Network CAT6 1000mm',           qty:1,             unit:inp.cat6},
+    {cat:'박스 구성', name:'16P Flat cable',                qty:1,             unit:inp.flat},
+    {cat:'포장/운송', name:'포장비 (배분)',                 qty:1,             unit:Math.round(inp.packPerBox*10)/10},
+    {cat:'포장/운송', name:'현지 운송비 (배분)',            qty:1,             unit:Math.round(inp.freightPerBox*10)/10},
+  ];
+  rows.forEach(r => { r.subtotalCNY=Math.round(r.qty*r.unit*10)/10; r.subtotalKRW=Math.round(r.subtotalCNY*inp.rate); });
+  const cnySum   = rows.reduce((a,r)=>a+r.subtotalCNY, 0);
+  const totalKRW = Math.round(cnySum * inp.rate);
+  return {rows, cnySum, totalKRW};
+}
+
+function ccCalc() {
+  updateModuleKrw();
+  const inp = ccGetInputs();
+  const res = ccCalcCost(inp);
+
+  document.getElementById('cc-ctrl-info').innerHTML =
+    '🎛️ <b>' + inp.ctrlModel + '</b> ¥' + inp.ctrlCny + ' CNY' +
+    ' &nbsp;│&nbsp; 수신카드: <b>' + inp.rcvModel + '</b> ¥' + inp.rcvCny + ' CNY' +
+    ' &nbsp;│&nbsp; 환율 1CNY = ' + g_state.cnyKrw + '원';
+
+  const ppb = Math.round((inp.packPerBox+inp.freightPerBox)*10)/10;
+  const el = document.getElementById('disp-pack-per-box');
+  if (el) el.value = '¥'+Math.round(inp.packPerBox*10)/10+' + ¥'+Math.round(inp.freightPerBox*10)/10+' = ¥'+ppb;
+
+  document.getElementById('res-summary').innerHTML =
+    rc('rc-blue',   'CNY 원가 합계',  '¥'+fmt(res.cnySum)) +
+    rc('rc-orange', 'KRW 환산 원가',  '₩'+fmt(res.totalKRW)) +
+    rc('rc-gray',   inp.ctrlModel,   '¥'+inp.ctrlCny.toLocaleString());
+
+  let html='', lastCat='';
+  res.rows.forEach(r => {
+    if (r.cat!==lastCat) { html+='<tr class="sep-row"><td colspan="6">▸ '+r.cat+'</td></tr>'; lastCat=r.cat; }
+    html+='<tr><td></td><td>'+r.name+'</td><td>'+r.qty+'</td>'+
+      '<td class="tr">¥'+r.unit+'</td><td class="tr">¥'+r.subtotalCNY+'</td>'+
+      '<td class="tr">₩'+fmt(r.subtotalKRW)+'</td></tr>';
+  });
+  html+='<tr class="total-row"><td colspan="4">박스 1개 제조 원가</td>'+
+    '<td class="tr">¥'+fmt(res.cnySum)+'</td><td class="tr">₩'+fmt(res.totalKRW)+'</td></tr>';
+  document.getElementById('tbody-main').innerHTML = html;
+  calcSale(false);
+}
+
+function calcSale(src) {
+  const inp = ccGetInputs();
+  const res = ccCalcCost(inp);
+  const qty = parseFloat(document.getElementById('sale-qty').value) || 1;
+  const mg  = g_state.margin;
+
+  const spareM = parseFloat(document.getElementById('inp-spare-module').value)||0;
+  const spareR = parseFloat(document.getElementById('inp-spare-rcv').value)   ||0;
+  const spareS = parseFloat(document.getElementById('inp-spare-smps').value)  ||0;
+  const spareKRW     = Math.round((spareM*inp.modulePrice + spareR*inp.rcvCny + spareS*inp.smpsPrice) * inp.rate);
+  const sparePerBox  = spareKRW / qty;
+
+  const slm=document.getElementById('spare-module-lbl');
+  const slr=document.getElementById('spare-rcv-lbl');
+  if(slm) slm.textContent='모듈 여분 — P'+inp.pitch+' (¥'+inp.modulePrice+'/개)';
+  if(slr) slr.textContent='수신카드 여분 — '+inp.rcvModel+' (¥'+inp.rcvCny+'/개)';
+  const dsp=document.getElementById('disp-spare-total');
+  if(dsp) dsp.value = spareKRW>0 ? '₩'+fmt(spareKRW)+' ÷ '+qty+'개 = 박스당 ₩'+fmt(sparePerBox) : '(없음)';
+
+  const importTotal  = inp.intlFreight + inp.duty + inp.vatImp + inp.extra;
+  const importPerBox = importTotal / qty;
+  const dsi=document.getElementById('disp-import-total');
+  if(dsi) dsi.value = importTotal>0 ? '₩'+fmt(importTotal)+' ÷ '+qty+'개 = 박스당 ₩'+fmt(importPerBox) : '(없음)';
+
+  const addPerBox  = importPerBox + sparePerBox;
+  const costPerBox = res.totalKRW + addPerBox;
+
+  const krwEl  = document.getElementById('inp-sale-price');
+  const jpyEl  = document.getElementById('inp-sale-price-jpy');
+  const jpyRate= g_state.jpyKrw || 9.0;
+  let salePerBox, effMg;
+
+  if (src === 'krw') {
+    salePerBox = parseFloat(krwEl.value) || 0;
+    effMg      = salePerBox > 0 ? (salePerBox - costPerBox) / salePerBox * 100 : 0;
+    jpyEl.value = Math.round(salePerBox / jpyRate);
+    // 마진 역산 반영
+    document.getElementById('inp-margin').value = effMg.toFixed(1);
+    g_state.margin = effMg;
+  } else if (src === 'jpy') {
+    const saleJpy = parseFloat(jpyEl.value) || 0;
+    salePerBox    = Math.round(saleJpy * jpyRate);
+    krwEl.value   = salePerBox;
+    effMg         = salePerBox > 0 ? (salePerBox - costPerBox) / salePerBox * 100 : 0;
+    // 마진 역산 반영
+    document.getElementById('inp-margin').value = effMg.toFixed(1);
+    g_state.margin = effMg;
+  } else {
+    salePerBox  = mg < 100 ? costPerBox / (1 - mg/100) : costPerBox;
+    krwEl.value = Math.round(salePerBox);
+    jpyEl.value = Math.round(salePerBox / jpyRate);
+    effMg = mg;
+  }
+
+  const saleTotal    = salePerBox * qty;
+  const saleTotalJpy = Math.round(saleTotal / jpyRate);
+  const profit       = (salePerBox - costPerBox) * qty;
+  const mgColor      = effMg >= 30 ? '#81c784' : effMg >= 20 ? '#ffb74d' : '#ef5350';
+
+  document.getElementById('res-sale').innerHTML =
+    rc('rc-blue',   '박스 제조 원가',   '₩'+fmt(res.totalKRW)) +
+    (addPerBox>0 ? rc('rc-purple','추가비 배분','₩'+fmt(addPerBox)) : '') +
+    rc('rc-red',    '박스당 합산 원가', '₩'+fmt(costPerBox));
+
+  function stItem(lbl, val, color) {
+    return '<div class="st-item"><div class="st-lbl">'+lbl+'</div><div class="st-val"'+(color?' style="color:'+color+'"':'')+'>'+val+'</div></div>';
+  }
+  document.getElementById('res-total').innerHTML =
+    stItem('총 박스 제조 원가 ×'+qty, '₩'+fmt(costPerBox * qty)) +
+    stItem('판매가 합계 ×'+qty, '₩'+fmt(saleTotal)) +
+    stItem('총 이익', '₩'+fmt(profit)) +
+    stItem('마진율', effMg.toFixed(1)+'%', mgColor);
+}
+
+function updateModuleKrw() {
+  const cny  = MODULE_PRICES[document.getElementById('cc-sel-pitch').value] || 230;
+  const rate = g_state.cnyKrw;
+  document.getElementById('inp-module-price-hidden').value = cny;
+  const mini = document.getElementById('disp-module-krw-mini');
+  if (mini) mini.textContent = '¥'+cny+' CNY = ₩'+Math.round(cny*rate).toLocaleString();
+}
+
+function ccOnPitchChange() { updateModuleKrw(); ccCalc(); }
+
+/* ================================================================
+   QUOTE
+   ================================================================ */
+function calcBoxCount(w, h) {
+  const cols = Math.floor(w/640);
+  let best = {a:0,b:0,total:0};
+  for (let a=Math.floor(h/640); a>=0; a--) {
+    const b=Math.floor((h-a*640)/480), total=a*640+b*480;
+    if (total>best.total) best={a,b,total};
+  }
+  return {cols,rows640:best.a,rows480:best.b,qty640:cols*best.a,qty480:cols*best.b,
+    actualW:cols*640,actualH:best.a*640+best.b*480};
+}
+
+function getCtrlKrw(model) {
+  const n=DB_NOVASTAR.find(c=>c.model===model); if(n) return n.price_krw;
+  const h=DB_HUIDU.find(c=>c.model===model);    return h?h.price_krw:0;
+}
+
+function calcAll() {
+  g_state.type   = (document.querySelector('input[name="ptype"]:checked')||{value:'indoor'}).value;
+  g_state.pitch  = document.getElementById('sel-pitch').value;
+  g_state.width  = parseFloat(document.getElementById('inp-width').value)||0;
+  g_state.height = parseFloat(document.getElementById('inp-height').value)||0;
+  g_state.install= parseFloat(document.getElementById('inp-install').value)||0;
+  g_state.struct = parseFloat(document.getElementById('inp-struct').value)||0;
+  g_state.misc   = parseFloat(document.getElementById('inp-misc').value)||0;
+  g_state.elec   = parseFloat(document.getElementById('inp-elec').value)||0;
+  g_state.ship   = parseFloat(document.getElementById('inp-ship').value)||0;
+  updateSizeResult();
+  renderQuote();
+}
+
+function updateSizeResult() {
+  const {width:w, height:h, pitch} = g_state;
+  if (!w||!h) return;
+  const bc = calcBoxCount(w,h);
+  const px = MODULE_PIXEL_MAP[pitch]||{w:128,h:64};
+  const totalResW = bc.cols*px.w*2;
+  const totalResH = bc.rows640*px.h*4+bc.rows480*px.h*3;
+  document.getElementById('r-q640').textContent = bc.qty640+' 개';
+  document.getElementById('r-q480').textContent = bc.qty480+' 개';
+  const sEl = document.getElementById('r-size');
+  sEl.textContent = bc.actualW+' × '+bc.actualH+' mm';
+  sEl.className   = 'calc-value '+(w-bc.actualW>0||h-bc.actualH>0?'warn':'ok');
+  document.getElementById('r-area').textContent = (bc.actualW*bc.actualH/1e6).toFixed(4)+' ㎡';
+  document.getElementById('r-res').textContent  = totalResW+'×'+totalResH;
+}
+
+function renderQuote() {
+  const s  = g_state;
+  const bc = calcBoxCount(s.width, s.height);
+  const px = MODULE_PIXEL_MAP[s.pitch]||{w:128,h:64};
+  const totalResW = bc.cols*px.w*2;
+  const totalResH = bc.rows640*px.h*4+bc.rows480*px.h*3;
+  const totalPx   = totalResW*totalResH;
+  const area      = bc.actualW*bc.actualH/1e6;
+  const margin    = s.margin/100;
+  const u640cost  = DB_BOX['640x640A'].price90;
+  const u480cost  = DB_BOX['640x480A'].price90;
+  const u640sale  = Math.round(u640cost/(1-margin)/1000)*1000;
+  const u480sale  = Math.round(u480cost/(1-margin)/1000)*1000;
+  const screenSale= bc.qty640*u640sale+bc.qty480*u480sale;
+  const ctrlPrice = getCtrlKrw(s.ctrl);
+  const installTot= Math.round(area*s.install);
+  const subtotal  = screenSale+ctrlPrice+s.struct+installTot+s.misc+s.elec+s.ship;
+  const vat       = Math.round(subtotal*0.1);
+  const total     = subtotal+vat;
+  const typeLabel = s.type==='indoor'?'INDOOR SMD':s.type==='outdoor'?'OUTDOOR':'OUTDOOR FRONT';
+
+  document.getElementById('q-no').textContent      = document.getElementById('inp-qno').value;
+  document.getElementById('q-date').textContent    = formatDate(new Date());
+  document.getElementById('q-client').textContent  = document.getElementById('inp-client').value;
+  document.getElementById('q-contact').textContent = document.getElementById('inp-contact').value;
+  const cl0 = (document.getElementById('inp-client').value||'').split(' ')[0];
+  document.getElementById('q-subject').textContent = cl0+' '+s.pitch+' '+bc.actualW/10+'×'+bc.actualH/10+'cm LED스크린';
+  document.getElementById('q-amount').textContent  = '일금 '+numToKorean(total)+'원정 (부가세포함)   ₩'+total.toLocaleString();
+  document.getElementById('q-title-row').textContent = document.getElementById('inp-subject').value||'LED 스크린 납품 및 설치';
+
+  const tbody = document.getElementById('items-tbody');
+  tbody.innerHTML = '';
+  const addRow = (no,item,desc,unit,qty,unitP,sub,specs) => {
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="text-align:center">${no}</td><td>${item}</td><td>${desc}</td>
+      <td style="text-align:center">${unit}</td><td style="text-align:right">${qty||''}</td>
+      <td style="text-align:right">${unitP?unitP.toLocaleString():'-'}</td>
+      <td style="text-align:right;font-weight:bold">${sub?sub.toLocaleString():'-'}</td>`;
+    tbody.appendChild(tr);
+    (specs||[]).forEach(sp=>{
+      const sr=document.createElement('tr'); sr.className='spec-row';
+      sr.innerHTML=`<td></td><td></td><td class="spec-label">${sp[0]}</td><td colspan="2">${sp[1]||''}</td><td>${sp[2]||''}</td><td></td>`;
+      tbody.appendChild(sr);
+    });
+  };
+  if(bc.qty480>0) addRow('1','실내형 전광판',`${typeLabel} ${s.pitch} LED SCREEN`,'pcs',bc.qty480,u480sale,bc.qty480*u480sale,[
+    ['LED Lamp','SMD 3 in 1'],['Screen Size',`${bc.actualW} × ${bc.actualH}`,'㎜'],
+    ['Pixel Pitch',s.pitch,'㎜'],['Resolution',`${totalResW}×${totalResH}`,'Pixels'],
+    ['Total Pixels',totalPx.toLocaleString(),'Pixels'],['Cabinet Size','640 × 480','㎜'],
+    ['Refresh Rate','3840','Hz'],['Life span','≥100,000','hours'],
+  ]);
+  if(bc.qty640>0) addRow(bc.qty480>0?'':'1','실내형 전광판',`${typeLabel} ${s.pitch} LED SCREEN (640×640)`,'pcs',bc.qty640,u640sale,bc.qty640*u640sale,[
+    ['LED Lamp','SMD 3 in 1'],['Cabinet Size','640 × 640','㎜'],
+  ]);
+  const ctrlObj=DB_NOVASTAR.find(c=>c.model===s.ctrl)||DB_HUIDU.find(c=>c.model===s.ctrl);
+  addRow('2','제어시스템','Main Controller','pcs',1,ctrlPrice,ctrlPrice,
+    ctrlObj?[['System',ctrlObj.model],['Spec',ctrlObj.spec]]:[['System','–']]);
+  if(s.struct>0) addRow('3','구조물 함체','후면 고정 PIPE','식',1,s.struct,s.struct,[['# 설계 협의에 따른 증감','']]);
+  addRow('4','운송비','서울, 경기 기준','set',1,s.ship||0,s.ship||0,[['# 이외 지방 추가 비용발생','']]);
+  if(installTot>0) addRow('5','설치비','LED전광판, 케이블, 평탄화 등','sqm',Math.round(area*10)/10,s.install,installTot,[]);
+  if(s.elec>0) addRow('6','전기 통신','1차 전원 제공 조건/통신 포설','식',1,s.elec,s.elec,[['15m 이내','']]);
+
+  document.getElementById('t-sub').textContent   = subtotal.toLocaleString()+'원';
+  document.getElementById('t-vat').textContent   = vat.toLocaleString()+'원';
+  document.getElementById('t-total').textContent = total.toLocaleString()+'원';
+
+  const delivery=document.getElementById('inp-delivery').value||50;
+  const payment =document.getElementById('inp-payment').value||'';
+  document.getElementById('terms-table').innerHTML=[
+    ['1','견적유효기간','발행일로부터 30일'],
+    ['2','납기',`계약금 결제 확정 발주일로부터 최대 ${delivery}일`],
+    ['3','무상보증기간','설치 완료일로부터 1년'],
+    ['4','결제조건',payment+'\n결제계좌: 301-9477-5707-61 (농협), 예금주: ㈜온리원'],
+    ['5','기타','1차 전원, 통신, 분전함 제공 조건\n현장 상황 및 협의 사양 변동 시 증감 발생'],
+  ].map(t=>`<tr><td>${t[0]}</td><td>${t[1]}</td><td style="white-space:pre-line">${t[2]}</td></tr>`).join('');
+}
+
+/* ================================================================
+   DB
+   ================================================================ */
+let g_editMode=false;
+
+function loadDB(){
+  try{
+    const saved=localStorage.getItem('onlyone_db_v2'); if(!saved) return;
+    const d=JSON.parse(saved);
+    if(d.modules){['indoor','outdoor','outdoor_front'].forEach(k=>{if(d.modules[k])d.modules[k].forEach((s,i)=>{if(DB_MODULES[k][i])Object.assign(DB_MODULES[k][i],s);});});}
+    if(d.box) Object.keys(d.box).forEach(k=>{if(DB_BOX[k])Object.assign(DB_BOX[k],d.box[k]);});
+    if(d.novastar) d.novastar.forEach((s,i)=>{if(DB_NOVASTAR[i])Object.assign(DB_NOVASTAR[i],s);});
+    if(d.huidu)    d.huidu.forEach((s,i)=>{if(DB_HUIDU[i])Object.assign(DB_HUIDU[i],s);});
+    if(d.accessories) d.accessories.forEach((s,i)=>{if(DB_ACCESSORIES[i])Object.assign(DB_ACCESSORIES[i],s);});
+    if(d.mesh) d.mesh.forEach((s,i)=>{if(DB_MESH[i])Object.assign(DB_MESH[i],s);});
+  }catch(e){console.warn('DB load error',e);}
+}
+
+function saveDB(){
+  localStorage.setItem('onlyone_db_v2',JSON.stringify({modules:DB_MODULES,box:DB_BOX,novastar:DB_NOVASTAR,huidu:DB_HUIDU,accessories:DB_ACCESSORIES,mesh:DB_MESH}));
+  const n=document.getElementById('db-save-notice');
+  if(n){n.style.display='block';setTimeout(()=>n.style.display='none',2000);}
+}
+
+function resetDB(){
+  if(!confirm('모든 DB 수정사항을 초기값으로 되돌립니다. 계속하시겠습니까?')) return;
+  localStorage.removeItem('onlyone_db_v2'); location.reload();
+}
+
+function toggleEditMode(){
+  g_editMode=!g_editMode;
+  document.getElementById('btn-edit-db').textContent=g_editMode?'✅ 편집 완료':'✏️ 편집 모드';
+  renderDB();
+}
+
+function updateDBCell(el){
+  const {key,idx,field}=el.dataset;
+  const raw=el.value.trim();
+  const val=raw===''?null:(field==='price_cny'?parseFloat(raw):parseInt(raw));
+  if(key==='indoor'||key==='outdoor'||key==='outdoor_front') DB_MODULES[key][idx][field]=val;
+  else if(key==='box'){const k=Object.keys(DB_BOX)[idx];if(k)DB_BOX[k][field]=val;}
+  else if(key==='novastar') DB_NOVASTAR[idx][field]=val;
+  else if(key==='huidu')    DB_HUIDU[idx][field]=val;
+  else if(key==='accessories') DB_ACCESSORIES[idx][field]=val;
+  else if(key==='mesh')     DB_MESH[idx][field]=val;
+  saveDB();
+}
+
+function pc(val,key,idx,field){
+  if(!g_editMode) return `<td class="db-price">${val!=null?val.toLocaleString()+'원':'–'}</td>`;
+  return `<td><input type="number" class="db-edit-input" value="${val!=null?val:''}" placeholder="–" data-key="${key}" data-idx="${idx}" data-field="${field}" onchange="updateDBCell(this)" step="1000" min="0"></td>`;
+}
+
+function renderDB(){
+  let html='';
+  html+=`<div class="db-section"><h3>📦 실내 모듈 단가</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>모듈크기</th><th>픽셀구성</th><th>밝기</th><th>90° 판매가</th><th>45° 판매가</th><th>GOB</th></tr></thead><tbody>
+  ${DB_MODULES.indoor.map((m,i)=>`<tr><td><b>${m.model}</b> <span class="tag tag-indoor">실내</span></td>
+    <td>${m.moduleSize}</td><td>${m.pixelSize}</td><td>${m.brightness}cd</td>
+    ${pc(m.price90,'indoor',i,'price90')}${pc(m.price45,'indoor',i,'price45')}${pc(m.price90gob,'indoor',i,'price90gob')}</tr>`).join('')}
+  </tbody></table></div>`;
+  html+=`<div class="db-section"><h3>📦 옥외 모듈 단가</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>모듈크기</th><th>픽셀구성</th><th>밝기</th><th>90° 판매가</th><th>45° 판매가</th></tr></thead><tbody>
+  ${DB_MODULES.outdoor.map((m,i)=>`<tr><td><b>${m.model}</b> <span class="tag tag-outdoor">옥외</span></td>
+    <td>${m.moduleSize}</td><td>${m.pixelSize}</td><td>${m.brightness}cd</td>
+    ${pc(m.price90,'outdoor',i,'price90')}${pc(m.price45,'outdoor',i,'price45')}</tr>`).join('')}
+  </tbody></table></div>`;
+  html+=`<div class="db-section"><h3>📦 함체(BOX) 단가</h3>
+  <table class="db-table"><thead><tr><th>규격</th><th>90° 원화</th><th>45° 원화</th></tr></thead><tbody>
+  ${Object.values(DB_BOX).map((b,i)=>`<tr><td><b>${b.spec}</b></td>${pc(b.price90,'box',i,'price90')}${pc(b.price45,'box',i,'price45')}</tr>`).join('')}
+  </tbody></table></div>`;
+  html+=`<div class="db-section"><h3>🎛️ 노바스타 컨트롤러</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>카테고리</th><th>CNY</th><th>원화 판매가</th><th>사양</th></tr></thead><tbody>
+  ${DB_NOVASTAR.map((c,i)=>`<tr><td><b>${c.model}</b></td><td>${c.category}</td><td>¥${c.price_cny}</td>${pc(c.price_krw,'novastar',i,'price_krw')}<td style="font-size:10px;color:#555">${c.spec}</td></tr>`).join('')}
+  </tbody></table></div>`;
+  html+=`<div class="db-section"><h3>🎛️ 후이두 컨트롤러</h3>
+  <table class="db-table"><thead><tr><th>모델</th><th>카테고리</th><th>CNY</th><th>원화 판매가</th><th>사양</th></tr></thead><tbody>
+  ${DB_HUIDU.map((c,i)=>`<tr><td><b>${c.model}</b></td><td>${c.category}</td><td>¥${c.price_cny}</td>${pc(c.price_krw,'huidu',i,'price_krw')}<td style="font-size:10px;color:#555">${c.spec}</td></tr>`).join('')}
+  </tbody></table></div>`;
+  html+=`<div class="db-section"><h3>🔩 부속품 단가</h3>
+  <table class="db-table"><thead><tr><th>No</th><th>제품명</th><th>규격</th><th>CNY</th><th>원화</th></tr></thead><tbody>
+  ${DB_ACCESSORIES.map((a,i)=>`<tr><td>${a.no}</td><td>${a.name}</td><td>${a.spec}</td><td>¥${a.price_cny}</td>${pc(a.price_krw,'accessories',i,'price_krw')}</tr>`).join('')}
+  </tbody></table></div>`;
+  html+=`<div class="db-section"><h3>🔲 투명스크린(매쉬) 단가</h3>
+  <table class="db-table"><thead><tr><th>타입</th><th>모델</th><th>모듈크기</th><th>함체크기</th><th>밝기</th><th>㎡당 판매가</th></tr></thead><tbody>
+  ${DB_MESH.map((m,i)=>`<tr><td>${m.type}</td><td><b>${m.model}</b></td><td>${m.moduleSize}</td><td>${m.boxSize}</td><td>${m.brightness}cd</td>${pc(m.price_krw,'mesh',i,'price_krw')}</tr>`).join('')}
+  </tbody></table></div>`;
+  document.getElementById('db-output').innerHTML=html;
+}
+
+/* ================================================================
+   UI HELPERS
+   ================================================================ */
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  const isQ=id==='tab-quote', isD=id==='tab-db';
+  document.querySelectorAll('.quote-only').forEach(e=>e.style.display=isQ?'':'none');
+  document.getElementById('sb-actions-quote').style.display=isQ?'':'none';
+  document.getElementById('sb-actions-db').style.display=isD?'':'none';
+  if(id==='tab-db') renderDB();
+  if(id==='tab-cost-calc') ccCalc();
+  if(id==='tab-quote'){ calcAll(); renderQuote(); }
+}
+
+function onMarginChange(){
+  g_state.margin = parseFloat(document.getElementById('inp-margin').value)||30;
+  ccCalc();
+}
+
+function onCtrlBrandChange(){
+  const brand=(document.querySelector('input[name="ctrlbrand"]:checked')||{value:'novastar'}).value;
+  g_state.ctrlBrand=brand;
+  document.getElementById('cl-section').style.display=brand==='colorlight'?'':'none';
+  renderControllers();
+  ccCalc();
+}
+
+function onTypeChange(){
+  g_state.type=(document.querySelector('input[name="ptype"]:checked')||{value:'indoor'}).value;
+  populatePitchSelect(g_state.type);
+  calcAll();
+}
+
+function onPitchChange(){ g_state.pitch=document.getElementById('sel-pitch').value; calcAll(); }
+function updatePreview(){ renderQuote(); }
+
+function populatePitchSelect(type){
+  const sel=document.getElementById('sel-pitch');
+  const list=DB_MODULES[type==='outdoor_front'?'outdoor':type]||DB_MODULES.indoor;
+  const cur=sel.value;
+  sel.innerHTML=list.map(m=>`<option value="${m.model}">${m.model} (${m.moduleSize})</option>`).join('');
+  if(list.find(m=>m.model===cur)) sel.value=cur;
+  g_state.pitch=sel.value;
+}
+
+function renderControllers(){
+  const brand=g_state.ctrlBrand;
+  const list=(brand==='huidu'?DB_HUIDU:DB_NOVASTAR).filter(c=>c.category!=='수신카드');
+  const cats=[...new Set(list.map(c=>c.category))];
+  if(brand==='colorlight'){
+    document.getElementById('ctrl-list').innerHTML='<div style="color:#8ab4cf;font-size:11px;padding:7px;">컬러라이트 — 아래 입력란에 단가를 입력하세요.</div>';
+    return;
+  }
+  let html='';
+  cats.forEach(cat=>{
+    html+=`<div style="color:#4fc3f7;font-size:10px;padding:3px 4px 1px;margin-top:3px;">${cat}</div>`;
+    list.filter(c=>c.category===cat).forEach(c=>{
+      html+=`<div class="ctrl-item" onclick="selectCtrl('${c.model}',this)">
+        <input type="radio" name="ctrl" value="${c.model}" onchange="onCtrlSelect('${c.model}')">
+        <div><div class="ctrl-name">${c.model}</div>
+        <div class="ctrl-price">₩${c.price_krw.toLocaleString()} / ¥${c.price_cny} CNY</div>
+        <div class="ctrl-spec">${c.spec}</div></div></div>`;
+    });
+  });
+  document.getElementById('ctrl-list').innerHTML=html;
+}
+
+function selectCtrl(model,el){
+  document.querySelectorAll('.ctrl-item').forEach(i=>i.classList.remove('selected'));
+  el.classList.add('selected');
+  const r=el.querySelector('input[type=radio]');
+  if(r){r.checked=true; g_state.ctrl=model;}
+  ccCalc(); calcAll();
+}
+
+function onCtrlSelect(model){ g_state.ctrl=model; ccCalc(); calcAll(); }
+
+function buildSizeRadio(){
+  const el=document.getElementById('rg-size');
+  const sizes=[{v:'480',l:'640×480'},{v:'640',l:'640×640'},{v:'320x480',l:'320×480'},{v:'320x640',l:'320×640'}];
+  el.innerHTML=sizes.map((s,i)=>
+    `<label class="${i===0?'checked':''}"><input type="radio" name="ccsize" value="${s.v}" ${i===0?'checked':''} onchange="ccSizeChange(this)">${s.l}</label>`
+  ).join('');
+}
+
+function buildSmpsRadio(){
+  const el=document.getElementById('rg-smps');
+  const opts=[{v:'80',l:'일반 ¥80'},{v:'120',l:'MeanWell ¥120'},{v:'45',l:'110V ¥45'},{v:'custom',l:'직접입력'}];
+  el.innerHTML=opts.map((o,i)=>
+    `<label class="${i===0?'checked':''}"><input type="radio" name="ccsmps" value="${o.v}" ${i===0?'checked':''} onchange="ccSmpsChange(this)">${o.l}</label>`
+  ).join('');
+}
+
+function ccSizeChange(inp){
+  document.querySelectorAll('#rg-size label').forEach(l=>{const r=l.querySelector('input');l.classList.toggle('checked',r&&r.checked);});
+  ccScreenSpec();
+  ccCalc();
+}
+
+function ccSmpsChange(inp){
+  document.querySelectorAll('#rg-smps label').forEach(l=>{const r=l.querySelector('input');l.classList.toggle('checked',r&&r.checked);});
+  document.getElementById('smps-custom-wrap').style.display=inp.value==='custom'?'':'none';
+  ccCalc();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('sb-open');
+  document.getElementById('sb-overlay').classList.toggle('sb-open');
+}
+
+/* ================================================================
+   UTILS
+   ================================================================ */
+function formatDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+function numToKorean(num){
+  if(num===0) return '영';
+  const U=['','만','억','조'],D=['','일','이','삼','사','오','육','칠','팔','구'],P=['','십','백','천'];
+  let result='',ui=0;
+  while(num>0){const chunk=num%10000;if(chunk>0){let s='',n=chunk;for(let p=0;p<4;p++){const d=n%10;if(d>0)s=(d===1&&p>0?'':D[d])+P[p]+s;n=Math.floor(n/10);}result=s+U[ui]+result;}num=Math.floor(num/10000);ui++;}
+  return result;
+}
+
+function saveJSON(){
+  const data={version:'2.0',savedAt:new Date().toISOString(),state:g_state,
+    quoteNo:document.getElementById('inp-qno').value,client:document.getElementById('inp-client').value,
+    subject:document.getElementById('inp-subject').value,contact:document.getElementById('inp-contact').value,
+    payment:document.getElementById('inp-payment').value,delivery:document.getElementById('inp-delivery').value};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download=`견적_${(data.client||'고객').split(' ')[0]}_${formatDate(new Date())}.json`;
+  a.click();
+}
+
+function loadJSON(){document.getElementById('file-load').click();}
+
+function loadFromFile(evt){
+  const file=evt.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.state) Object.assign(g_state,data.state);
+      if(data.client)   document.getElementById('inp-client').value  =data.client;
+      if(data.quoteNo)  document.getElementById('inp-qno').value     =data.quoteNo;
+      if(data.subject)  document.getElementById('inp-subject').value =data.subject;
+      if(data.contact)  document.getElementById('inp-contact').value =data.contact;
+      if(data.payment)  document.getElementById('inp-payment').value =data.payment;
+      if(data.delivery) document.getElementById('inp-delivery').value=data.delivery;
+      document.getElementById('inp-width').value =g_state.width;
+      document.getElementById('inp-height').value=g_state.height;
+      document.getElementById('inp-margin').value=g_state.margin;
+      populatePitchSelect(g_state.type); renderControllers();
+      setTimeout(()=>{calcAll();renderQuote();alert('견적 불러오기 완료!');},100);
+    }catch(ex){alert('파일 형식 오류: '+ex.message);}
+  };
+  reader.readAsText(file);
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+(function init(){
+  loadDB();
+  populatePitchSelect('indoor');
+  renderControllers();
+  buildSizeRadio();
+  buildSmpsRadio();
+
+  document.querySelectorAll('.quote-only').forEach(e=>e.style.display='none');
+  document.getElementById('sb-actions-quote').style.display='none';
+  document.getElementById('sb-actions-db').style.display='none';
+
+  // Hidden unit price fields for cost calc
+  document.body.insertAdjacentHTML('beforeend',
+    '<input type="hidden" id="inp-module-price-hidden" value="230">'+
+    '<input type="hidden" id="cc-s-dc480" value="203">'+
+    '<input type="hidden" id="cc-s-dc640" value="300">'+
+    '<input type="hidden" id="cc-s-cable3" value="22">'+
+    '<input type="hidden" id="cc-s-cat6" value="20">'+
+    '<input type="hidden" id="cc-s-flat" value="0">'
+  );
+
+  fetchRate();
+
+  setTimeout(()=>{
+    document.querySelectorAll('.ctrl-item').forEach(it=>{
+      const nm=it.querySelector('.ctrl-name');
+      if(nm&&nm.textContent==='TB60') selectCtrl('TB60',it);
+    });
+    updateModuleKrw();
+    ccScreenSpec();
+    ccCalc();
+    calcAll();
+  },150);
+})();
+</script>
+</body>
+</html>

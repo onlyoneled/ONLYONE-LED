@@ -391,7 +391,7 @@ body[data-lang="jp"] .work-card .wc-info h3{font-family:var(--font-jp);}
   filter:brightness(.28) saturate(.7);
   pointer-events:none;
 }
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start;}
+.about-grid{display:grid;grid-template-columns:1fr 1.65fr;gap:80px;align-items:start;}
 .about-eyebrow{
   font-family:var(--font-mono);font-size:10px;letter-spacing:.24em;color:var(--accent);
   display:flex;align-items:center;gap:10px;margin:0 0 28px;
@@ -408,6 +408,15 @@ body[data-lang="jp"] .about-title{font-family:var(--font-jp);}
 .about-title .hl{color:var(--accent);}
 .about-right{padding-top:8px;}
 #aboutCopy p{margin:0 0 18px;font-size:16px;line-height:1.72;color:var(--mute);}
+/* cube sim */
+.cube-sim-frame{
+  display:block;width:100%;height:900px;
+  border:none;border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+@media(max-width:768px){.cube-sim-frame{height:960px;}}
+@media(max-width:480px){.cube-sim-frame{height:1060px;}}
 #aboutCopy p:last-child{margin-bottom:0;}
 
 /* ══════════════════════════════════════════════
@@ -863,9 +872,19 @@ footer .logo{font-size:15px;}
         <span data-i="about.l2">사이니지를</span>
         <span class="hl" data-i="about.l3">만듭니다.</span>
       </h2>
+      <div class="about-right">
+        <div id="aboutCopy"></div>
+      </div>
     </div>
-    <div class="about-right">
-      <div id="aboutCopy"></div>
+    <div>
+      <iframe
+        src="public/onlyone-cube-signage.html"
+        class="cube-sim-frame"
+        loading="lazy"
+        scrolling="no"
+        title="3D 큐브 사이니지 시뮬레이터"
+        allowfullscreen
+      ></iframe>
     </div>
   </div>
 </section>
