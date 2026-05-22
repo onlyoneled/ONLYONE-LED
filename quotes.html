@@ -709,11 +709,12 @@ async function runUpload() {
       const parsed = await parsePDF(file, template);
       const fileKey = `${vendor}/${file.name}`;
 
-      const res = await apiFetch('/api/save', {
+      const rawRes = await fetch(`${API_BASE}/api/save`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Auth-Token': authToken },
         body: JSON.stringify({ ...parsed, vendor, file_key: fileKey, file_name: file.name }),
       });
+      const res = await rawRes.json();
 
       if (res?.skipped) {
         statusEl.textContent = '이미 처리됨'; statusEl.className = 'fi-status fi-skip'; skipped++;
