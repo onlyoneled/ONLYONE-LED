@@ -28,7 +28,7 @@ export default {
     if (path === '/api/quotes'          && request.method === 'GET')    return handleList(url, env);
     if (path === '/api/quotes'          && request.method === 'DELETE') return handleBatchDelete(request, env);
     if (path.startsWith('/api/quotes/') && request.method === 'GET')    return handleGet(path.split('/')[3], env);
-    if (path.startsWith('/api/quotes/') && request.method === 'PATCH')  return handleMemo(path.split('/')[3], request, env);
+    if (path.startsWith('/api/quotes/') && request.method === 'PATCH')  return handlePatch(path.split('/')[3], request, env);
     if (path === '/api/vendors'         && request.method === 'GET')    return handleVendors(env);
 
     // PDF 업로드 (multipart: vendor + currency + parsed_data + pdf)
@@ -44,23 +44,36 @@ export default {
   },
 };
 
-// ── memo 업데이트 ────────────────────────────────────────
-async function handleMemo(id, request, env) {
+// ── 필드 업데이트 (memo / group_no) ─────────────────────
+async function handlePatch(id, request, env) {
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
-  await env.DB.prepare('UPDATE quotes SET memo = ? WHERE id = ?')
-    .bind(body.memo ?? null, id).run();
+
+  const allowed = ['memo', 'group_no'];
+  const updates = Object.entries(body).filter(([k]) => allowed.includes(k));
+  if (!updates.length) return json({ error: 'No valid fields' }, 400);
+
+  const sets = updates.map(([k]) => `${k} = ?`).join(', ');
+  const vals = updates.map(([, v]) => v ?? null);
+  await env.DB.prepare(`UPDATE quotes SET ${sets} WHERE id = ?`).bind(...vals, id).run();
   return json({ ok: true });
 }
 
-// ── DB 마이그레이션 (memo 컬럼 추가) ────────────────────
+// ── DB 마이그레이션 ──────────────────────────────────────
 async function handleMigrate(env) {
-  try {
-    await env.DB.prepare('ALTER TABLE quotes ADD COLUMN memo TEXT').run();
-    return json({ ok: true, message: 'memo column added' });
-  } catch (e) {
-    return json({ ok: false, error: e.message });
+  const results = [];
+  for (const sql of [
+    'ALTER TABLE quotes ADD COLUMN memo TEXT',
+    'ALTER TABLE quotes ADD COLUMN group_no TEXT',
+  ]) {
+    try {
+      await env.DB.prepare(sql).run();
+      results.push({ sql, ok: true });
+    } catch (e) {
+      results.push({ sql, ok: false, error: e.message });
+    }
   }
+  return json({ results });
 }
 
 // ── PDF 업로드 → R2 저장 + D1 저장 ─────────────────────
@@ -162,9 +175,9 @@ async function handleList(url, env) {
   if (to)   { where += ' AND date <= ?'; params.push(to); }
 
   const { results } = await env.DB.prepare(
-    `SELECT id, vendor, title, date, total_price, currency, drive_file_name, memo
+    `SELECT id, vendor, title, date, total_price, currency, drive_file_name, memo, group_no
      FROM quotes WHERE ${where}
-     ORDER BY date DESC, created_at DESC`
+     ORDER BY CASE WHEN group_no IS NULL THEN 1 ELSE 0 END, group_no, date DESC, created_at DESC`
   ).bind(...params).all();
 
   return json(results);

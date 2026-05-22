@@ -137,6 +137,27 @@ a { color: inherit; text-decoration: none; }
   width: 100%; min-width: 120px; outline: none; font-family: var(--body);
 }
 
+/* ── 묶음 배지 ── */
+.td-group { width: 72px; text-align: center; }
+.group-badge {
+  display: inline-block; font-family: var(--mono); font-size: 11px; font-weight: 700;
+  border-radius: 6px; padding: 3px 8px; cursor: pointer;
+  border: 1px solid transparent; transition: opacity .12s; white-space: nowrap;
+  color: #0a0a0a;
+}
+.group-badge:hover { opacity: .8; }
+.group-empty {
+  display: inline-block; font-size: 12px; color: rgba(246,244,239,.22);
+  cursor: pointer; padding: 3px 4px; border-radius: 6px;
+  transition: background .12s;
+}
+.group-empty:hover { background: var(--panel-2); }
+.group-input {
+  background: var(--panel-2); border: 1px solid var(--accent);
+  border-radius: 6px; padding: 3px 6px; font-size: 12px; color: var(--ink);
+  width: 64px; outline: none; font-family: var(--mono); text-align: center;
+}
+
 /* ── UPLOAD MODAL ── */
 #upload-modal {
   position: fixed; inset: 0; background: rgba(0,0,0,.75);
@@ -265,6 +286,7 @@ a { color: inherit; text-decoration: none; }
               <th>파일명</th>
               <th style="text-align:right">금액 (환산)</th>
               <th>메모</th>
+              <th class="td-group">묶음</th>
               <th></th>
             </tr>
           </thead>
@@ -449,7 +471,9 @@ async function loadQuotes(vendor) {
     const krwStr   = (isJPY && row.total_price != null)
       ? `≈ ${formatWon(Math.round(row.total_price * rate))}`
       : '';
-    const memoVal  = row.memo || '';
+    const memoVal  = row.memo    || '';
+    const groupVal = row.group_no || '';
+    const badgeStyle = groupVal ? `background:${groupColor(groupVal)};` : '';
 
     return `
       <tr>
@@ -464,6 +488,12 @@ async function loadQuotes(vendor) {
         </td>
         <td class="td-memo">
           <span class="memo-cell" data-id="${row.id}" data-memo="${esc(memoVal)}" onclick="startMemoEdit(this)">${memoVal ? esc(memoVal) : '<span class="memo-hint">+ 메모</span>'}</span>
+        </td>
+        <td class="td-group">
+          ${groupVal
+            ? `<span class="group-badge" style="${badgeStyle}" data-id="${row.id}" data-group="${esc(groupVal)}" onclick="startGroupEdit(this)">${esc(groupVal)}</span>`
+            : `<span class="group-empty" data-id="${row.id}" data-group="" onclick="startGroupEdit(this)">+ 묶음</span>`
+          }
         </td>
         <td class="td-pdf">
           <button class="btn-pdf" onclick="openPDF(${row.id})">PDF 열기</button>
@@ -657,6 +687,74 @@ async function apiFetch(path) {
 
 function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── 묶음 색상 (같은 번호 = 같은 색) ──────────────────
+const GROUP_PALETTE = [
+  '#4ade80','#60a5fa','#f97316','#e879f9','#facc15',
+  '#34d399','#f87171','#a78bfa','#fb923c','#38bdf8',
+];
+function groupColor(val) {
+  if (!val) return 'transparent';
+  let h = 0;
+  for (const c of String(val)) h = (h * 31 + c.charCodeAt(0)) & 0xfff;
+  return GROUP_PALETTE[h % GROUP_PALETTE.length];
+}
+
+// ── 묶음 인라인 편집 ───────────────────────────────────
+function startGroupEdit(cell) {
+  const id           = parseInt(cell.dataset.id);
+  const currentGroup = cell.dataset.group || '';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'group-input';
+  input.value = currentGroup;
+  input.maxLength = 20;
+  input.placeholder = '번호 입력';
+  cell.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function renderCell(val) {
+    let el;
+    if (val) {
+      el = document.createElement('span');
+      el.className = 'group-badge';
+      el.style.background = groupColor(val);
+      el.dataset.id    = id;
+      el.dataset.group = val;
+      el.textContent   = val;
+      el.onclick = () => startGroupEdit(el);
+    } else {
+      el = document.createElement('span');
+      el.className = 'group-empty';
+      el.dataset.id    = id;
+      el.dataset.group = '';
+      el.textContent   = '+ 묶음';
+      el.onclick = () => startGroupEdit(el);
+    }
+    input.replaceWith(el);
+  }
+
+  let saved = false;
+  async function save() {
+    if (saved) return;
+    saved = true;
+    const newVal = input.value.trim();
+    renderCell(newVal);
+    await fetch(`${API_BASE}/api/quotes/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': authToken },
+      body: JSON.stringify({ group_no: newVal || null }),
+    });
+  }
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { saved = true; renderCell(currentGroup); }
+  });
 }
 
 // ── 메모 인라인 편집 ───────────────────────────────────
