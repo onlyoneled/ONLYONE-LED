@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ONLYONE LED — 견적서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;700&family=Gothic+A1:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --ink: #f6f4ef; --bg: #0a0a0a; --panel: #141414; --panel-2: #1c1c1c;
+  --line: rgba(246,244,239,.14); --line-strong: rgba(246,244,239,.28);
+  --mute: rgba(246,244,239,.55); --accent: oklch(0.92 0.22 130);
+  --danger: oklch(0.7 0.2 28);
+  --display: "Archivo Black", sans-serif;
+  --body: "Gothic A1", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: var(--body); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+a { color: var(--accent); text-decoration: none; }
+button, input, select { font: inherit; color: inherit; background: none; border: none; }
+
+/* ── LOGIN ── */
+#login-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.login-box {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 40px 36px; width: min(380px, 92vw); display: flex; flex-direction: column; gap: 20px;
+}
+.login-box h1 { font-family: var(--display); font-size: 22px; }
+.login-box p { font-size: 13px; color: var(--mute); }
+.login-box input[type=password] {
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px 16px; font-size: 15px; width: 100%;
+  outline: none; transition: border-color .15s;
+}
+.login-box input[type=password]:focus { border-color: var(--accent); }
+.login-box .btn-login {
+  background: var(--accent); color: #0a0a0a; font-weight: 700;
+  border-radius: 10px; padding: 12px; font-size: 15px;
+  cursor: pointer; transition: opacity .15s;
+}
+.login-box .btn-login:hover { opacity: .85; }
+.login-box .err { color: var(--danger); font-size: 13px; min-height: 18px; }
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+aside.sidebar {
+  background: #060606; border-right: 1px solid var(--line);
+  padding: 24px 18px; display: flex; flex-direction: column; gap: 6px;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 20px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.brand .dot { width: 9px; height: 9px; background: var(--accent); border-radius: 50%; animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; transform: scale(.85); } }
+.brand b { font-family: var(--display); font-size: 15px; letter-spacing: .02em; }
+.brand span { font-family: var(--mono); font-size: 10px; color: var(--mute); margin-left: auto; }
+.navitem {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 9px; cursor: pointer;
+  font-size: 14px; color: var(--mute); transition: all .15s;
+}
+.navitem:hover { background: var(--panel); color: var(--ink); }
+.navitem[aria-current="true"] { background: var(--panel); color: var(--ink); }
+.navitem[aria-current="true"]::before {
+  content:""; width: 4px; height: 16px; background: var(--accent);
+  border-radius: 2px; margin-left: -6px; margin-right: 4px;
+}
+.vendor-list { display: flex; flex-direction: column; gap: 3px; padding-left: 4px; }
+.vendor-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 7px; cursor: pointer;
+  font-size: 13px; color: var(--mute); transition: all .13s;
+}
+.vendor-btn:hover { color: var(--ink); background: var(--panel); }
+.vendor-btn.active { color: var(--accent); }
+.vendor-count { margin-left: auto; font-family: var(--mono); font-size: 10px; }
+.sidebar-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--mute); padding: 8px 12px 4px; margin-top: 10px; }
+.sidebar .foot { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); }
+.sidebar .foot a { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--mute); display: block; padding: 6px 0; }
+.sidebar .foot a:hover { color: var(--accent); }
+
+/* ── MAIN ── */
+main { padding: 32px 36px; max-width: 1100px; }
+.topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.page-title { font-family: var(--display); font-size: 26px; flex: 1; min-width: 200px; }
+.search-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.search-input {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 9px; padding: 9px 14px; font-size: 14px; min-width: 220px;
+  outline: none; transition: border-color .15s;
+}
+.search-input:focus { border-color: var(--line-strong); }
+.date-input {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 9px; padding: 9px 12px; font-size: 13px; width: 138px;
+  outline: none; color: var(--ink); transition: border-color .15s;
+  color-scheme: dark;
+}
+.date-input:focus { border-color: var(--line-strong); }
+.btn-search {
+  background: var(--accent); color: #0a0a0a; font-weight: 700;
+  border-radius: 9px; padding: 9px 18px; font-size: 14px; cursor: pointer;
+  transition: opacity .15s; white-space: nowrap;
+}
+.btn-search:hover { opacity: .85; }
+.btn-clear {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 9px; padding: 9px 14px; font-size: 13px; cursor: pointer;
+  color: var(--mute); transition: all .15s;
+}
+.btn-clear:hover { color: var(--ink); border-color: var(--line-strong); }
+.btn-sync {
+  background: none; border: 1px solid var(--line);
+  border-radius: 9px; padding: 9px 14px; font-size: 12px; font-family: var(--mono);
+  cursor: pointer; color: var(--mute); letter-spacing: .06em; transition: all .15s;
+}
+.btn-sync:hover { color: var(--ink); border-color: var(--line-strong); }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead th {
+  text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+  color: var(--mute); padding: 10px 14px; border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: background .1s; }
+tbody tr:hover { background: var(--panel); }
+tbody td { padding: 13px 14px; vertical-align: middle; }
+.td-vendor { font-weight: 700; font-size: 14px; }
+.td-title { color: var(--mute); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-date { font-family: var(--mono); font-size: 12px; color: var(--mute); white-space: nowrap; }
+.td-price { font-family: var(--mono); font-size: 13px; text-align: right; white-space: nowrap; }
+
+.empty { text-align: center; padding: 60px 20px; color: var(--mute); font-size: 15px; }
+.loading-row td { text-align: center; padding: 50px; color: var(--mute); font-size: 14px; }
+
+/* ── PAGINATION ── */
+.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 28px; }
+.pg-btn {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
+  padding: 7px 13px; font-size: 13px; cursor: pointer; color: var(--mute);
+  transition: all .13s; font-family: var(--mono);
+}
+.pg-btn:hover:not(:disabled) { color: var(--ink); border-color: var(--line-strong); }
+.pg-btn.active { background: var(--accent); color: #0a0a0a; font-weight: 700; border-color: var(--accent); }
+.pg-btn:disabled { opacity: .35; cursor: default; }
+.pg-info { font-family: var(--mono); font-size: 12px; color: var(--mute); padding: 0 8px; }
+
+/* ── DETAIL MODAL ── */
+#detail-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  display: none; align-items: flex-start; justify-content: center;
+  z-index: 50; padding: 40px 20px; overflow-y: auto;
+}
+#detail-modal.open { display: flex; }
+.modal-box {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 32px; width: min(720px, 100%); position: relative; margin: auto;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px;
+  width: 34px; height: 34px; cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center; color: var(--mute);
+  transition: all .13s;
+}
+.modal-close:hover { color: var(--ink); }
+.modal-vendor { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--mute); margin-bottom: 8px; }
+.modal-title { font-family: var(--display); font-size: 22px; margin-bottom: 6px; line-height: 1.3; }
+.modal-meta { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.meta-chip {
+  font-family: var(--mono); font-size: 11px; color: var(--mute);
+  background: var(--panel-2); padding: 4px 10px; border-radius: 999px;
+}
+.modal-section { margin-bottom: 22px; }
+.modal-section h3 { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--mute); margin-bottom: 10px; }
+.items-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.items-table th {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em; color: var(--mute);
+  padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line);
+}
+.items-table td { padding: 10px 10px; border-bottom: 1px solid var(--line); }
+.items-table td:nth-child(2), .items-table td:nth-child(3),
+.items-table td:nth-child(4) { text-align: right; font-family: var(--mono); font-size: 12px; }
+.modal-content { background: var(--panel-2); border-radius: 9px; padding: 14px 16px; font-size: 14px; color: var(--mute); line-height: 1.7; white-space: pre-wrap; }
+.total-row { display: flex; justify-content: flex-end; align-items: center; gap: 16px; padding-top: 14px; }
+.total-label { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+.total-value { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); }
+
+/* ── UPLOAD MODAL ── */
+#upload-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.75);
+  display: none; align-items: center; justify-content: center; z-index: 60;
+  padding: 20px;
+}
+#upload-modal.open { display: flex; }
+.upload-box {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 32px; width: min(500px, 100%); display: flex; flex-direction: column; gap: 18px;
+}
+.upload-box h2 { font-family: var(--display); font-size: 20px; }
+.upload-box label { font-size: 12px; font-family: var(--mono); letter-spacing: .08em; color: var(--mute); display: block; margin-bottom: 6px; }
+.upload-box input[type=text] {
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 9px; padding: 10px 14px; font-size: 14px; width: 100%; outline: none;
+  transition: border-color .15s;
+}
+.upload-box input[type=text]:focus { border-color: var(--accent); }
+.file-drop {
+  background: var(--panel-2); border: 2px dashed var(--line);
+  border-radius: 12px; padding: 28px; text-align: center;
+  cursor: pointer; transition: border-color .15s; position: relative;
+}
+.file-drop:hover, .file-drop.drag { border-color: var(--accent); }
+.file-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.file-drop p { font-size: 14px; color: var(--mute); pointer-events: none; }
+.file-drop strong { color: var(--accent); pointer-events: none; }
+.file-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
+.file-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel-2); border-radius: 8px; padding: 8px 12px; font-size: 13px;
+}
+.file-item .fi-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-item .fi-status { font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+.fi-wait   { color: var(--mute); }
+.fi-ok     { color: var(--accent); }
+.fi-skip   { color: var(--mute); }
+.fi-err    { color: var(--danger); }
+.fi-proc   { color: oklch(0.85 0.15 60); }
+.upload-btn-row { display: flex; gap: 10px; }
+.btn-do-upload {
+  flex: 1; background: var(--accent); color: #0a0a0a; font-weight: 700;
+  border-radius: 9px; padding: 11px; font-size: 14px; cursor: pointer; transition: opacity .15s;
+}
+.btn-do-upload:hover:not(:disabled) { opacity: .85; }
+.btn-do-upload:disabled { opacity: .4; cursor: default; }
+.btn-upload-cancel {
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 9px; padding: 11px 16px; font-size: 14px; cursor: pointer;
+  color: var(--mute); transition: all .15s;
+}
+.btn-upload-cancel:hover { color: var(--ink); }
+.upload-progress { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  .layout { grid-template-columns: 1fr; }
+  aside.sidebar { position: static; height: auto; }
+  main { padding: 20px 16px; }
+  .topbar { flex-direction: column; align-items: stretch; }
+  .search-row { flex-direction: column; }
+  .search-input, .date-input { width: 100%; min-width: unset; }
+  .td-title, .td-date { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>ONLYONE LED</h1>
+    <p>견적서 관리 시스템에 접근하려면 비밀번호를 입력하세요.</p>
+    <input type="password" id="pw-input" placeholder="비밀번호" autocomplete="current-password" />
+    <button class="btn-login" onclick="doLogin()">접속</button>
+    <div class="err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div class="layout" id="app" style="display:none">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="dot"></div>
+      <b>ONLYONE</b>
+      <span>견적서</span>
+    </div>
+
+    <a class="navitem" href="admin.html">
+      <svg class="ico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M3 9l6-6 6 6M4.5 7.5V15h9V7.5"/>
+      </svg>
+      어드민 홈
+    </a>
+    <div class="navitem" aria-current="true">
+      <svg class="ico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="2" width="12" height="14" rx="1.5"/>
+        <path d="M6 6h6M6 9h6M6 12h4"/>
+      </svg>
+      견적서
+    </div>
+
+    <div class="sidebar-label">업체</div>
+    <div class="vendor-list" id="vendor-list">
+      <div class="vendor-btn" onclick="filterVendor('')">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px">
+          <circle cx="7" cy="7" r="5"/>
+        </svg>
+        전체
+        <span class="vendor-count" id="total-count">—</span>
+      </div>
+    </div>
+
+    <div class="foot">
+      <a href="admin.html">← 어드민 홈</a>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="page-title">견적서</div>
+      <button class="btn-sync" onclick="openUpload()">+ PDF 업로드</button>
+    </div>
+
+    <div class="search-row" style="margin-bottom:24px; gap:8px;">
+      <input class="search-input" id="q-input" type="text" placeholder="업체명, 제목, 내용 검색…" onkeydown="if(event.key==='Enter')doSearch()" />
+      <input class="date-input" id="from-input" type="date" title="시작일" />
+      <input class="date-input" id="to-input" type="date" title="종료일" />
+      <button class="btn-search" onclick="doSearch()">검색</button>
+      <button class="btn-clear" onclick="clearSearch()">초기화</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>업체</th>
+            <th>제목</th>
+            <th>날짜</th>
+            <th style="text-align:right">금액</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty-msg" style="display:none">검색 결과가 없습니다.</div>
+    <div class="pagination" id="pagination"></div>
+  </main>
+</div>
+
+<!-- ── DETAIL MODAL ── -->
+<div id="detail-modal" onclick="if(event.target===this)closeDetail()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeDetail()">✕</button>
+    <div class="modal-vendor" id="d-vendor"></div>
+    <div class="modal-title" id="d-title"></div>
+    <div class="modal-meta" id="d-meta"></div>
+    <div class="modal-section" id="d-items-section">
+      <h3>품목</h3>
+      <table class="items-table">
+        <thead><tr><th>품목명</th><th>수량</th><th>단가</th><th>금액</th></tr></thead>
+        <tbody id="d-items"></tbody>
+      </table>
+    </div>
+    <div class="modal-section" id="d-content-section" style="display:none">
+      <h3>내용</h3>
+      <div class="modal-content" id="d-content"></div>
+    </div>
+    <div class="total-row">
+      <span class="total-label">합계</span>
+      <span class="total-value" id="d-total"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ── UPLOAD MODAL ── -->
+<div id="upload-modal" onclick="if(event.target===this)closeUpload()">
+  <div class="upload-box">
+    <h2>PDF 견적서 업로드</h2>
+
+    <div>
+      <label>업체명</label>
+      <input type="text" id="upload-vendor" placeholder="예: 삼성전자" autocomplete="off" list="vendor-datalist" />
+      <datalist id="vendor-datalist"></datalist>
+    </div>
+
+    <div>
+      <label>PDF 파일 (여러 개 선택 가능)</label>
+      <div class="file-drop" id="file-drop">
+        <input type="file" id="file-input" accept=".pdf" multiple onchange="onFilesSelected(this.files)" />
+        <p>여기를 클릭하거나 PDF를 드래그해서 놓으세요<br><strong>여러 파일 동시 선택 가능</strong></p>
+      </div>
+    </div>
+
+    <div class="file-list" id="file-list" style="display:none"></div>
+
+    <div class="upload-progress" id="upload-progress"></div>
+
+    <div class="upload-btn-row">
+      <button class="btn-do-upload" id="btn-do-upload" onclick="runUpload()" disabled>업로드 시작</button>
+      <button class="btn-upload-cancel" onclick="closeUpload()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────
+// Worker 배포 후 실제 URL로 변경하세요
+const API_BASE = 'https://onlyone-quote-worker.only1-d71.workers.dev';
+// ────────────────────────────────────────────────────
+
+let authToken = '';
+let currentVendor = '';
+let currentPage = 1;
+let totalPages = 1;
+
+// ── LOGIN ──
+const PW_KEY = 'ql_token';
+
+function doLogin() {
+  const pw = document.getElementById('pw-input').value.trim();
+  if (!pw) return;
+  authToken = pw;
+  localStorage.setItem(PW_KEY, pw);
+  initApp();
+}
+
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+(function bootstrap() {
+  const saved = localStorage.getItem(PW_KEY);
+  if (saved) { authToken = saved; initApp(); }
+})();
+
+async function initApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'grid';
+  await loadVendors();
+  await loadQuotes();
+}
+
+// ── API ──
+async function apiFetch(path) {
+  const url = `${API_BASE}${path}`;
+  const res = await fetch(url, {
+    headers: { 'X-Auth-Token': authToken },
+  });
+  if (res.status === 401) {
+    localStorage.removeItem(PW_KEY);
+    document.getElementById('login-err').textContent = '비밀번호가 틀렸습니다.';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    return null;
+  }
+  return res.json();
+}
+
+// ── VENDORS ──
+async function loadVendors() {
+  const vendors = await apiFetch('/api/vendors');
+  if (!vendors) return;
+  const list = document.getElementById('vendor-list');
+  // Keep "전체" button, remove old vendor buttons
+  list.querySelectorAll('.vendor-btn:not(:first-child)').forEach(el => el.remove());
+  vendors.forEach(v => {
+    const btn = document.createElement('div');
+    btn.className = 'vendor-btn';
+    btn.innerHTML = `<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><rect x="2" y="2" width="10" height="10" rx="1"/></svg>${v}`;
+    btn.onclick = () => filterVendor(v);
+    list.appendChild(btn);
+  });
+}
+
+function filterVendor(vendor) {
+  currentVendor = vendor;
+  currentPage = 1;
+  document.querySelectorAll('.vendor-btn').forEach(b => b.classList.remove('active'));
+  if (!vendor) {
+    document.querySelector('.vendor-btn').classList.add('active');
+  } else {
+    document.querySelectorAll('.vendor-btn').forEach(b => {
+      if (b.textContent.trim().includes(vendor)) b.classList.add('active');
+    });
+  }
+  loadQuotes();
+}
+
+// ── QUOTES LIST ──
+async function loadQuotes() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="4">불러오는 중…</td></tr>';
+  document.getElementById('empty-msg').style.display = 'none';
+
+  const q = document.getElementById('q-input').value.trim();
+  const from = document.getElementById('from-input').value;
+  const to = document.getElementById('to-input').value;
+
+  let qs = `?page=${currentPage}`;
+  if (currentVendor) qs += `&vendor=${encodeURIComponent(currentVendor)}`;
+  if (q) qs += `&q=${encodeURIComponent(q)}`;
+  if (from) qs += `&from=${from}`;
+  if (to) qs += `&to=${to}`;
+
+  const data = await apiFetch(`/api/quotes${qs}`);
+  if (!data) return;
+
+  totalPages = data.pages || 1;
+  document.getElementById('total-count').textContent = data.total;
+
+  tbody.innerHTML = '';
+  if (!data.data || data.data.length === 0) {
+    document.getElementById('empty-msg').style.display = 'block';
+    renderPagination(data);
+    return;
+  }
+
+  data.data.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-vendor">${esc(row.vendor)}</td>
+      <td class="td-title">${esc(row.title || row.drive_file_name || '—')}</td>
+      <td class="td-date">${row.date || '—'}</td>
+      <td class="td-price">${row.total_price ? formatWon(row.total_price) : '—'}</td>
+    `;
+    tr.onclick = () => openDetail(row.id);
+    tbody.appendChild(tr);
+  });
+
+  renderPagination(data);
+}
+
+function renderPagination(data) {
+  const el = document.getElementById('pagination');
+  el.innerHTML = '';
+  if (data.pages <= 1) return;
+
+  const prev = document.createElement('button');
+  prev.className = 'pg-btn';
+  prev.textContent = '←';
+  prev.disabled = data.page <= 1;
+  prev.onclick = () => { currentPage--; loadQuotes(); };
+  el.appendChild(prev);
+
+  const range = pagRange(data.page, data.pages);
+  range.forEach(p => {
+    if (p === '…') {
+      const sp = document.createElement('span');
+      sp.className = 'pg-info';
+      sp.textContent = '…';
+      el.appendChild(sp);
+    } else {
+      const btn = document.createElement('button');
+      btn.className = `pg-btn${p === data.page ? ' active' : ''}`;
+      btn.textContent = p;
+      btn.onclick = () => { currentPage = p; loadQuotes(); };
+      el.appendChild(btn);
+    }
+  });
+
+  const next = document.createElement('button');
+  next.className = 'pg-btn';
+  next.textContent = '→';
+  next.disabled = data.page >= data.pages;
+  next.onclick = () => { currentPage++; loadQuotes(); };
+  el.appendChild(next);
+}
+
+function pagRange(cur, total) {
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  const pages = [1];
+  if (cur > 3) pages.push('…');
+  for (let p = Math.max(2, cur-1); p <= Math.min(total-1, cur+1); p++) pages.push(p);
+  if (cur < total - 2) pages.push('…');
+  pages.push(total);
+  return pages;
+}
+
+// ── DETAIL ──
+async function openDetail(id) {
+  const data = await apiFetch(`/api/quotes/${id}`);
+  if (!data) return;
+
+  document.getElementById('d-vendor').textContent = data.vendor;
+  document.getElementById('d-title').textContent = data.title || data.drive_file_name || '—';
+
+  const meta = document.getElementById('d-meta');
+  meta.innerHTML = '';
+  if (data.date) meta.innerHTML += `<span class="meta-chip">📅 ${data.date}</span>`;
+  if (data.drive_file_name) meta.innerHTML += `<span class="meta-chip">📄 ${esc(data.drive_file_name)}</span>`;
+
+  const items = data.items || [];
+  const tb = document.getElementById('d-items');
+  tb.innerHTML = '';
+  if (items.length) {
+    items.forEach(it => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${esc(it.name || '—')}</td>
+        <td>${it.quantity != null ? it.quantity : '—'}</td>
+        <td>${it.unit_price != null ? formatWon(it.unit_price) : '—'}</td>
+        <td>${it.amount != null ? formatWon(it.amount) : '—'}</td>
+      `;
+      tb.appendChild(tr);
+    });
+    document.getElementById('d-items-section').style.display = '';
+  } else {
+    document.getElementById('d-items-section').style.display = 'none';
+  }
+
+  const contentEl = document.getElementById('d-content-section');
+  if (data.content) {
+    document.getElementById('d-content').textContent = data.content;
+    contentEl.style.display = '';
+  } else {
+    contentEl.style.display = 'none';
+  }
+
+  document.getElementById('d-total').textContent =
+    data.total_price ? formatWon(data.total_price) : '—';
+
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeDetail(); closeUpload(); }
+});
+
+// ── UPLOAD ──
+let selectedFiles = [];
+
+function openUpload() {
+  selectedFiles = [];
+  document.getElementById('upload-vendor').value = '';
+  document.getElementById('file-input').value = '';
+  document.getElementById('file-list').style.display = 'none';
+  document.getElementById('file-list').innerHTML = '';
+  document.getElementById('upload-progress').textContent = '';
+  document.getElementById('btn-do-upload').disabled = true;
+  document.getElementById('upload-modal').classList.add('open');
+
+  // 업체 목록 datalist 채우기
+  apiFetch('/api/vendors').then(vendors => {
+    if (!vendors) return;
+    const dl = document.getElementById('vendor-datalist');
+    dl.innerHTML = vendors.map(v => `<option value="${esc(v)}">`).join('');
+  });
+
+  // 드래그앤드롭
+  const drop = document.getElementById('file-drop');
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('drag');
+    onFilesSelected(e.dataTransfer.files);
+  });
+}
+
+function closeUpload() {
+  document.getElementById('upload-modal').classList.remove('open');
+}
+
+function onFilesSelected(files) {
+  selectedFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  const listEl = document.getElementById('file-list');
+  listEl.innerHTML = '';
+  if (selectedFiles.length === 0) { listEl.style.display = 'none'; return; }
+  listEl.style.display = 'flex';
+  selectedFiles.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.id = `fi-${i}`;
+    div.innerHTML = `<span class="fi-name">${esc(f.name)}</span><span class="fi-status fi-wait" id="fi-s-${i}">대기</span>`;
+    listEl.appendChild(div);
+  });
+  document.getElementById('btn-do-upload').disabled = false;
+}
+
+async function runUpload() {
+  const vendor = document.getElementById('upload-vendor').value.trim();
+  if (!vendor) { alert('업체명을 입력해주세요.'); return; }
+  if (selectedFiles.length === 0) return;
+
+  const btn = document.getElementById('btn-do-upload');
+  btn.disabled = true;
+  const prog = document.getElementById('upload-progress');
+
+  let ok = 0, skipped = 0, errors = 0;
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    const statusEl = document.getElementById(`fi-s-${i}`);
+    statusEl.textContent = '처리 중…';
+    statusEl.className = 'fi-status fi-proc';
+    prog.textContent = `${i + 1} / ${selectedFiles.length} 처리 중…`;
+
+    try {
+      const fd = new FormData();
+      fd.append('vendor', vendor);
+      fd.append('pdf', file);
+
+      const res = await fetch(`${API_BASE}/api/upload`, {
+        method: 'POST',
+        headers: { 'X-Auth-Token': authToken },
+        body: fd,
+      });
+      const data = await res.json();
+
+      if (data.skipped) {
+        statusEl.textContent = '이미 처리됨';
+        statusEl.className = 'fi-status fi-skip';
+        skipped++;
+      } else if (data.ok) {
+        statusEl.textContent = '완료';
+        statusEl.className = 'fi-status fi-ok';
+        ok++;
+      } else {
+        statusEl.textContent = data.error || '오류';
+        statusEl.className = 'fi-status fi-err';
+        errors++;
+      }
+    } catch (err) {
+      statusEl.textContent = '네트워크 오류';
+      statusEl.className = 'fi-status fi-err';
+      errors++;
+    }
+  }
+
+  prog.textContent = `완료: ${ok}건 추가 / ${skipped}건 스킵 / ${errors}건 오류`;
+  btn.disabled = false;
+  btn.textContent = '다시 업로드';
+
+  if (ok > 0) { await loadVendors(); await loadQuotes(); }
+}
+
+// ── SEARCH ──
+function doSearch() { currentPage = 1; loadQuotes(); }
+function clearSearch() {
+  document.getElementById('q-input').value = '';
+  document.getElementById('from-input').value = '';
+  document.getElementById('to-input').value = '';
+  currentVendor = '';
+  currentPage = 1;
+  document.querySelectorAll('.vendor-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  loadQuotes();
+}
+
+// ── UTILS ──
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatWon(n) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('ko-KR') + '원';
+}
+</script>
+</body>
+</html>
