@@ -262,10 +262,9 @@ a { color: inherit; text-decoration: none; }
             <tr>
               <th class="td-check"><input type="checkbox" class="cb" id="cb-all" onchange="toggleAll(this)" /></th>
               <th>날짜</th>
-              <th>제목</th>
+              <th>파일명</th>
               <th style="text-align:right">금액 (환산)</th>
               <th>메모</th>
-              <th>파일명</th>
               <th></th>
             </tr>
           </thead>
@@ -458,7 +457,7 @@ async function loadQuotes(vendor) {
           <input type="checkbox" class="cb row-cb" data-id="${row.id}" onchange="updateDeleteBtn()" />
         </td>
         <td class="td-date">${row.date || '—'}</td>
-        <td class="td-title">${esc(row.title || row.drive_file_name || '—')}</td>
+        <td class="td-title">${esc(row.drive_file_name || '—')}</td>
         <td class="td-price">
           ${priceStr}
           ${krwStr ? `<span class="td-price-sub">${krwStr}</span>` : ''}
@@ -466,7 +465,6 @@ async function loadQuotes(vendor) {
         <td class="td-memo">
           <span class="memo-cell" data-id="${row.id}" data-memo="${esc(memoVal)}" onclick="startMemoEdit(this)">${memoVal ? esc(memoVal) : '<span class="memo-hint">+ 메모</span>'}</span>
         </td>
-        <td class="td-file">${esc(row.drive_file_name || '—')}</td>
         <td class="td-pdf">
           <button class="btn-pdf" onclick="openPDF(${row.id})">PDF 열기</button>
         </td>
