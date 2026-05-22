@@ -372,7 +372,7 @@ function goVendorDetail(vendor) {
 // ── 업체 목록 ──────────────────────────────────────────
 async function showVendorList() {
   currentVendor = '';
-  document.getElementById('view-vendors').style.display = '';
+  document.getElementById('view-vendors').style.display = 'block';
   document.getElementById('view-detail').style.display  = 'none';
   document.getElementById('topbar-back').style.display  = 'none';
   document.getElementById('topbar-logo').style.display  = '';
@@ -401,7 +401,7 @@ async function showVendorList() {
 async function showVendorDetail(vendor) {
   currentVendor = vendor;
   document.getElementById('view-vendors').style.display = 'none';
-  document.getElementById('view-detail').style.display  = '';
+  document.getElementById('view-detail').style.display  = 'block';
   document.getElementById('topbar-back').style.display  = 'flex';
   document.getElementById('topbar-logo').style.display  = 'none';
   document.getElementById('topbar-vendor-name').textContent = vendor;
