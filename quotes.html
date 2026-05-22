@@ -464,7 +464,7 @@ async function loadQuotes(vendor) {
           ${krwStr ? `<span class="td-price-sub">${krwStr}</span>` : ''}
         </td>
         <td class="td-memo">
-          <span class="memo-cell" onclick="startMemoEdit(this, ${row.id}, ${JSON.stringify(memoVal)})">${memoVal ? esc(memoVal) : '<span class="memo-hint">+ 메모</span>'}</span>
+          <span class="memo-cell" data-id="${row.id}" data-memo="${esc(memoVal)}" onclick="startMemoEdit(this)">${memoVal ? esc(memoVal) : '<span class="memo-hint">+ 메모</span>'}</span>
         </td>
         <td class="td-file">${esc(row.drive_file_name || '—')}</td>
         <td class="td-pdf">
@@ -662,7 +662,10 @@ function esc(s) {
 }
 
 // ── 메모 인라인 편집 ───────────────────────────────────
-function startMemoEdit(cell, id, currentMemo) {
+function startMemoEdit(cell) {
+  const id          = parseInt(cell.dataset.id);
+  const currentMemo = cell.dataset.memo || '';
+
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'memo-input';
@@ -675,12 +678,17 @@ function startMemoEdit(cell, id, currentMemo) {
   function renderCell(memo) {
     const span = document.createElement('span');
     span.className = 'memo-cell';
+    span.dataset.id   = id;
+    span.dataset.memo = memo;
     span.innerHTML = memo ? esc(memo) : '<span class="memo-hint">+ 메모</span>';
-    span.onclick = () => startMemoEdit(span, id, memo);
+    span.onclick = () => startMemoEdit(span);
     input.replaceWith(span);
   }
 
+  let saved = false;
   async function save() {
+    if (saved) return;
+    saved = true;
     const newMemo = input.value.trim();
     renderCell(newMemo);
     await fetch(`${API_BASE}/api/quotes/${id}`, {
@@ -693,7 +701,7 @@ function startMemoEdit(cell, id, currentMemo) {
   input.addEventListener('blur', save);
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
-    if (e.key === 'Escape') { renderCell(currentMemo); }
+    if (e.key === 'Escape') { saved = true; renderCell(currentMemo); }
   });
 }
 
