@@ -1,6 +1,6 @@
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token',
 };
 
@@ -28,6 +28,7 @@ export default {
     if (path === '/api/quotes'          && request.method === 'GET')    return handleList(url, env);
     if (path === '/api/quotes'          && request.method === 'DELETE') return handleBatchDelete(request, env);
     if (path.startsWith('/api/quotes/') && request.method === 'GET')    return handleGet(path.split('/')[3], env);
+    if (path.startsWith('/api/quotes/') && request.method === 'PATCH')  return handleMemo(path.split('/')[3], request, env);
     if (path === '/api/vendors'         && request.method === 'GET')    return handleVendors(env);
 
     // PDF 업로드 (multipart: vendor + currency + parsed_data + pdf)
@@ -36,9 +37,31 @@ export default {
     // PDF 서빙 (R2에서)
     if (path.startsWith('/api/pdf/')    && request.method === 'GET')    return handlePDF(path.split('/')[3], env);
 
+    // DB 마이그레이션 (일회용)
+    if (path === '/api/migrate'         && request.method === 'POST')   return handleMigrate(env);
+
     return json({ error: 'Not Found' }, 404);
   },
 };
+
+// ── memo 업데이트 ────────────────────────────────────────
+async function handleMemo(id, request, env) {
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+  await env.DB.prepare('UPDATE quotes SET memo = ? WHERE id = ?')
+    .bind(body.memo ?? null, id).run();
+  return json({ ok: true });
+}
+
+// ── DB 마이그레이션 (memo 컬럼 추가) ────────────────────
+async function handleMigrate(env) {
+  try {
+    await env.DB.prepare('ALTER TABLE quotes ADD COLUMN memo TEXT').run();
+    return json({ ok: true, message: 'memo column added' });
+  } catch (e) {
+    return json({ ok: false, error: e.message });
+  }
+}
 
 // ── PDF 업로드 → R2 저장 + D1 저장 ─────────────────────
 async function handleUpload(request, env) {
@@ -139,7 +162,7 @@ async function handleList(url, env) {
   if (to)   { where += ' AND date <= ?'; params.push(to); }
 
   const { results } = await env.DB.prepare(
-    `SELECT id, vendor, title, date, total_price, currency, drive_file_name
+    `SELECT id, vendor, title, date, total_price, currency, drive_file_name, memo
      FROM quotes WHERE ${where}
      ORDER BY date DESC, created_at DESC`
   ).bind(...params).all();
