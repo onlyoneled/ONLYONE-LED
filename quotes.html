@@ -195,6 +195,34 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
 .total-label { font-family: var(--mono); font-size: 12px; color: var(--mute); }
 .total-value { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); }
 
+/* ── VENDOR COMBOBOX ── */
+.vendor-combo { position: relative; }
+.vendor-drop {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--panel); border: 1px solid var(--line-strong);
+  border-radius: 10px; overflow: hidden; z-index: 200;
+  display: none; max-height: 200px; overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.vendor-drop.open { display: block; }
+.vd-item {
+  padding: 10px 14px; font-size: 14px; cursor: pointer;
+  transition: background .1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vd-item:hover { background: var(--panel-2); }
+.vd-new { color: var(--accent); border-top: 1px solid var(--line); }
+.rate-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--mute); font-family: var(--mono);
+}
+.rate-row input {
+  width: 72px; background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 4px 8px; font-size: 13px; color: var(--ink); outline: none;
+  font-family: var(--mono); text-align: right;
+}
+.rate-row input:focus { border-color: var(--accent); }
+.total-krw { font-size: 13px; color: var(--mute); margin-left: 8px; }
+
 /* ── UPLOAD MODAL ── */
 #upload-modal {
   position: fixed; inset: 0; background: rgba(0,0,0,.75);
@@ -367,6 +395,7 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
     <div class="total-row">
       <span class="total-label">합계</span>
       <span class="total-value" id="d-total"></span>
+      <span class="total-krw" id="d-total-krw"></span>
     </div>
   </div>
 </div>
@@ -379,12 +408,19 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
     <div style="display:flex;gap:12px">
       <div style="flex:1">
         <label>업체명</label>
-        <input type="text" id="upload-vendor" placeholder="예: 사사키 전설" autocomplete="off" list="vendor-datalist" />
-        <datalist id="vendor-datalist"></datalist>
+        <div class="vendor-combo">
+          <input type="text" id="upload-vendor" placeholder="업체 검색 또는 입력"
+            autocomplete="off" class="upload-box input[type=text]"
+            style="background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:14px;width:100%;outline:none;transition:border-color .15s"
+            oninput="onVendorInput(this.value)"
+            onfocus="onVendorInput(this.value)"
+            onblur="setTimeout(()=>closeVendorDrop(),150)" />
+          <div class="vendor-drop" id="vendor-drop"></div>
+        </div>
       </div>
       <div style="width:140px">
         <label>견적서 양식</label>
-        <select id="upload-template" style="background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:14px;width:100%;outline:none;color:var(--ink)">
+        <select id="upload-template" onchange="onTemplateChange()" style="background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:14px;width:100%;outline:none;color:var(--ink)">
           <option value="jp">일본 견적서</option>
           <option value="kr">한국 견적서</option>
         </select>
@@ -400,6 +436,13 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
     </div>
 
     <div class="file-list" id="file-list" style="display:none"></div>
+
+    <div class="rate-row" id="rate-row" style="display:none">
+      <span>¥1 =</span>
+      <input type="number" id="jpy-rate" min="1" max="100" step="0.01" value="9.5"
+        onchange="localStorage.setItem('jpy_rate', this.value)" />
+      <span>원 (엔→원 환율)</span>
+    </div>
 
     <div class="upload-progress" id="upload-progress"></div>
 
@@ -529,7 +572,7 @@ async function loadQuotes() {
       <td class="td-vendor">${esc(row.vendor)}</td>
       <td class="td-title">${esc(row.title || row.drive_file_name || '—')}</td>
       <td class="td-date">${row.date || '—'}</td>
-      <td class="td-price">${row.total_price ? formatWon(row.total_price) : '—'}</td>
+      <td class="td-price">${row.total_price ? formatPrice(row.total_price, row.currency) : '—'}</td>
     `;
     tr.onclick = () => openDetail(row.id);
     tbody.appendChild(tr);
@@ -606,8 +649,8 @@ async function openDetail(id) {
       tr.innerHTML = `
         <td>${esc(it.name || '—')}</td>
         <td>${it.quantity != null ? it.quantity : '—'}</td>
-        <td>${it.unit_price != null ? formatWon(it.unit_price) : '—'}</td>
-        <td>${it.amount != null ? formatWon(it.amount) : '—'}</td>
+        <td>${it.unit_price != null ? formatPrice(it.unit_price, data.currency) : '—'}</td>
+        <td>${it.amount != null ? formatPrice(it.amount, data.currency) : '—'}</td>
       `;
       tb.appendChild(tr);
     });
@@ -624,8 +667,19 @@ async function openDetail(id) {
     contentEl.style.display = 'none';
   }
 
-  document.getElementById('d-total').textContent =
-    data.total_price ? formatWon(data.total_price) : '—';
+  const totalEl   = document.getElementById('d-total');
+  const totalKrwEl = document.getElementById('d-total-krw');
+  if (data.total_price) {
+    totalEl.textContent = formatPrice(data.total_price, data.currency);
+    if (data.currency === 'JPY') {
+      totalKrwEl.textContent = krwEquiv(data.total_price);
+    } else {
+      totalKrwEl.textContent = '';
+    }
+  } else {
+    totalEl.textContent = '—';
+    totalKrwEl.textContent = '';
+  }
 
   document.getElementById('detail-modal').classList.add('open');
 }
@@ -642,6 +696,47 @@ document.addEventListener('keydown', e => {
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// ── 환율 ──
+function jpyRate() { return parseFloat(localStorage.getItem('jpy_rate') || '9.5'); }
+
+function formatPrice(amount, currency) {
+  if (amount == null) return '—';
+  if (currency === 'JPY') return `¥${amount.toLocaleString()}`;
+  return formatWon(amount);
+}
+
+function krwEquiv(amount) {
+  const rate = jpyRate();
+  return `≈ ${formatWon(Math.round(amount * rate))}`;
+}
+
+// ── 업체명 드롭다운 ──
+let allVendors = [];
+
+function onVendorInput(val) {
+  const drop = document.getElementById('vendor-drop');
+  const q = val.trim().toLowerCase();
+  const filtered = q ? allVendors.filter(v => v.toLowerCase().includes(q)) : allVendors;
+  const exact = allVendors.some(v => v.toLowerCase() === q);
+
+  if (filtered.length === 0 && (exact || !val.trim())) { drop.classList.remove('open'); return; }
+
+  drop.innerHTML = [
+    ...filtered.map(v => `<div class="vd-item" onmousedown="pickVendor('${esc(v)}')">${esc(v)}</div>`),
+    (!exact && val.trim()) ? `<div class="vd-item vd-new" onmousedown="pickVendor('${esc(val.trim())}')">+ "${esc(val.trim())}" 새 업체로 추가</div>` : '',
+  ].join('');
+  drop.classList.add('open');
+}
+
+function pickVendor(name) {
+  document.getElementById('upload-vendor').value = name;
+  document.getElementById('vendor-drop').classList.remove('open');
+}
+
+function closeVendorDrop() {
+  document.getElementById('vendor-drop').classList.remove('open');
+}
+
 // ── UPLOAD ──
 let selectedFiles = [];
 
@@ -653,12 +748,12 @@ function openUpload() {
   document.getElementById('file-list').innerHTML = '';
   document.getElementById('upload-progress').textContent = '';
   document.getElementById('btn-do-upload').disabled = true;
+  document.getElementById('jpy-rate').value = jpyRate();
+  document.getElementById('rate-row').style.display = 'none';
   document.getElementById('upload-modal').classList.add('open');
 
   apiFetch('/api/vendors').then(vendors => {
-    if (!vendors) return;
-    const dl = document.getElementById('vendor-datalist');
-    dl.innerHTML = vendors.map(v => `<option value="${esc(v)}">`).join('');
+    allVendors = vendors || [];
   });
 
   const drop = document.getElementById('file-drop');
@@ -687,6 +782,11 @@ function onFilesSelected(files) {
   document.getElementById('btn-do-upload').disabled = false;
 }
 
+function onTemplateChange() {
+  const isJP = document.getElementById('upload-template').value === 'jp';
+  document.getElementById('rate-row').style.display = isJP ? 'flex' : 'none';
+}
+
 async function runUpload() {
   const vendor   = document.getElementById('upload-vendor').value.trim();
   const template = document.getElementById('upload-template').value;
@@ -709,10 +809,11 @@ async function runUpload() {
       const parsed = await parsePDF(file, template);
       const fileKey = `${vendor}/${file.name}`;
 
+      const currency = template === 'jp' ? 'JPY' : 'KRW';
       const rawRes = await fetch(`${API_BASE}/api/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Auth-Token': authToken },
-        body: JSON.stringify({ ...parsed, vendor, file_key: fileKey, file_name: file.name }),
+        body: JSON.stringify({ ...parsed, vendor, currency, file_key: fileKey, file_name: file.name }),
       });
       const res = await rawRes.json();
 
