@@ -5,9 +5,9 @@
     "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/videos/hero_1778820608849.mp4"
   ],
   "heroImages": [
-    "/slide2.png",
-    "/slide6.png",
-    "/slide4.png"
+    "/images/slide2.png",
+    "/images/slide6.png",
+    "/images/slide4.png"
   ],
   "heroImageEnabled": false,
   "heroVideoEnabled": false,
