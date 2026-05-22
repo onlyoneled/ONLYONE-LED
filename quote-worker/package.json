@@ -1,0 +1,15 @@
+{
+  "name": "onlyone-quote-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev":        "wrangler dev",
+    "deploy":     "wrangler deploy",
+    "db:create":  "wrangler d1 create onlyone-quotes",
+    "db:migrate": "wrangler d1 execute onlyone-quotes --file ./schema.sql",
+    "db:migrate:local": "wrangler d1 execute onlyone-quotes --local --file ./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

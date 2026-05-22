@@ -4,10 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ONLYONE LED — 견적서</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;700&family=Gothic+A1:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Gothic+A1:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root {
   --ink: #f6f4ef; --bg: #0a0a0a; --panel: #141414; --panel-2: #1c1c1c;
@@ -19,9 +19,10 @@
   --mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: var(--bg); color: var(--ink); font-family: var(--body); -webkit-font-smoothing: antialiased; min-height: 100vh; }
-a { color: var(--accent); text-decoration: none; }
+html, body { background: var(--bg); color: var(--ink); font-family: var(--body);
+  -webkit-font-smoothing: antialiased; min-height: 100vh; }
 button, input, select { font: inherit; color: inherit; background: none; border: none; }
+a { color: inherit; text-decoration: none; }
 
 /* ── LOGIN ── */
 #login-screen {
@@ -33,222 +34,137 @@ button, input, select { font: inherit; color: inherit; background: none; border:
   padding: 40px 36px; width: min(380px, 92vw); display: flex; flex-direction: column; gap: 20px;
 }
 .login-box h1 { font-family: var(--display); font-size: 22px; }
-.login-box p { font-size: 13px; color: var(--mute); }
+.login-box p  { font-size: 13px; color: var(--mute); }
 .login-box input[type=password] {
-  background: var(--panel-2); border: 1px solid var(--line);
-  border-radius: 10px; padding: 12px 16px; font-size: 15px; width: 100%;
-  outline: none; transition: border-color .15s;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 16px; font-size: 15px; width: 100%; outline: none; transition: border-color .15s;
 }
 .login-box input[type=password]:focus { border-color: var(--accent); }
-.login-box .btn-login {
+.btn-login {
   background: var(--accent); color: #0a0a0a; font-weight: 700;
-  border-radius: 10px; padding: 12px; font-size: 15px;
-  cursor: pointer; transition: opacity .15s;
+  border-radius: 10px; padding: 12px; font-size: 15px; cursor: pointer; transition: opacity .15s;
 }
-.login-box .btn-login:hover { opacity: .85; }
-.login-box .err { color: var(--danger); font-size: 13px; min-height: 18px; }
+.btn-login:hover { opacity: .85; }
+.login-err { color: var(--danger); font-size: 13px; min-height: 18px; }
 
-/* ── LAYOUT ── */
-.layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
-aside.sidebar {
-  background: #060606; border-right: 1px solid var(--line);
-  padding: 24px 18px; display: flex; flex-direction: column; gap: 6px;
-  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+/* ── APP SHELL ── */
+#app { display: none; flex-direction: column; min-height: 100vh; }
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 24px; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; background: var(--bg); z-index: 40;
 }
-.brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 20px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
-.brand .dot { width: 9px; height: 9px; background: var(--accent); border-radius: 50%; animation: pulse 1.8s ease-in-out infinite; }
-@keyframes pulse { 50% { opacity: .35; transform: scale(.85); } }
-.brand b { font-family: var(--display); font-size: 15px; letter-spacing: .02em; }
-.brand span { font-family: var(--mono); font-size: 10px; color: var(--mute); margin-left: auto; }
-.navitem {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: 9px; cursor: pointer;
-  font-size: 14px; color: var(--mute); transition: all .15s;
+.topbar-logo { font-family: var(--display); font-size: 16px; letter-spacing: -.02em; }
+.topbar-back {
+  display: none; align-items: center; gap: 6px; font-size: 14px; color: var(--mute);
+  cursor: pointer; transition: color .15s; background: none; border: none; padding: 0;
 }
-.navitem:hover { background: var(--panel); color: var(--ink); }
-.navitem[aria-current="true"] { background: var(--panel); color: var(--ink); }
-.navitem[aria-current="true"]::before {
-  content:""; width: 4px; height: 16px; background: var(--accent);
-  border-radius: 2px; margin-left: -6px; margin-right: 4px;
-}
-.vendor-list { display: flex; flex-direction: column; gap: 3px; padding-left: 4px; }
-.vendor-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px; border-radius: 7px; cursor: pointer;
-  font-size: 13px; color: var(--mute); transition: all .13s;
-}
-.vendor-btn:hover { color: var(--ink); background: var(--panel); }
-.vendor-btn.active { color: var(--accent); }
-.vendor-count { margin-left: auto; font-family: var(--mono); font-size: 10px; }
-.sidebar-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--mute); padding: 8px 12px 4px; margin-top: 10px; }
-.sidebar .foot { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); }
-.sidebar .foot a { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; color: var(--mute); display: block; padding: 6px 0; }
-.sidebar .foot a:hover { color: var(--accent); }
-
-/* ── MAIN ── */
-main { padding: 32px 36px; max-width: 1100px; }
-.topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
-.page-title { font-family: var(--display); font-size: 26px; flex: 1; min-width: 200px; }
-.search-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-.search-input {
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: 9px; padding: 9px 14px; font-size: 14px; min-width: 220px;
-  outline: none; transition: border-color .15s;
-}
-.search-input:focus { border-color: var(--line-strong); }
-.date-input {
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: 9px; padding: 9px 12px; font-size: 13px; width: 138px;
-  outline: none; color: var(--ink); transition: border-color .15s;
-  color-scheme: dark;
-}
-.date-input:focus { border-color: var(--line-strong); }
-.btn-search {
+.topbar-back:hover { color: var(--ink); }
+.topbar-back svg { width: 16px; height: 16px; }
+.topbar-title { font-size: 16px; font-weight: 700; }
+.topbar-spacer { flex: 1; }
+.btn-upload {
   background: var(--accent); color: #0a0a0a; font-weight: 700;
-  border-radius: 9px; padding: 9px 18px; font-size: 14px; cursor: pointer;
-  transition: opacity .15s; white-space: nowrap;
+  border-radius: 9px; padding: 9px 18px; font-size: 14px; cursor: pointer; transition: opacity .15s;
 }
-.btn-search:hover { opacity: .85; }
-.btn-clear {
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: 9px; padding: 9px 14px; font-size: 13px; cursor: pointer;
-  color: var(--mute); transition: all .15s;
+.btn-upload:hover { opacity: .85; }
+.btn-delete-sel {
+  background: var(--danger); color: #fff; font-weight: 700;
+  border-radius: 9px; padding: 9px 16px; font-size: 14px; cursor: pointer;
+  transition: opacity .15s; display: none;
 }
-.btn-clear:hover { color: var(--ink); border-color: var(--line-strong); }
-.btn-sync {
-  background: none; border: 1px solid var(--line);
-  border-radius: 9px; padding: 9px 14px; font-size: 12px; font-family: var(--mono);
-  cursor: pointer; color: var(--mute); letter-spacing: .06em; transition: all .15s;
-}
-.btn-sync:hover { color: var(--ink); border-color: var(--line-strong); }
+.btn-delete-sel:hover { opacity: .85; }
+.main { padding: 32px 24px; flex: 1; }
 
-/* ── TABLE ── */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-thead th {
-  text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
-  color: var(--mute); padding: 10px 14px; border-bottom: 1px solid var(--line);
+/* ── VENDOR LIST ── */
+#view-vendors { display: none; }
+.vendor-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;
+}
+.vendor-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px 20px; cursor: pointer; transition: border-color .15s, background .15s;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.vendor-card:hover { border-color: var(--accent); background: var(--panel-2); }
+.vc-name { font-weight: 700; font-size: 16px; }
+.vc-count { font-size: 13px; color: var(--mute); }
+.vc-date  { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+.empty-msg { color: var(--mute); font-size: 15px; padding: 40px 0; text-align: center; }
+
+/* ── VENDOR DETAIL ── */
+#view-detail { display: none; }
+.quotes-table-wrap { overflow-x: auto; }
+.quotes-table {
+  width: 100%; border-collapse: collapse; font-size: 14px;
+}
+.quotes-table th {
+  text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+  color: var(--mute); padding: 10px 12px; border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
-tbody tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: background .1s; }
-tbody tr:hover { background: var(--panel); }
-tbody td { padding: 13px 14px; vertical-align: middle; }
-.td-vendor { font-weight: 700; font-size: 14px; }
-.td-title { color: var(--mute); max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.td-date { font-family: var(--mono); font-size: 12px; color: var(--mute); white-space: nowrap; }
-.td-price { font-family: var(--mono); font-size: 13px; text-align: right; white-space: nowrap; }
-
-.empty { text-align: center; padding: 60px 20px; color: var(--mute); font-size: 15px; }
-.loading-row td { text-align: center; padding: 50px; color: var(--mute); font-size: 14px; }
-
-/* ── PAGINATION ── */
-.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 28px; }
-.pg-btn {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 7px;
-  padding: 7px 13px; font-size: 13px; cursor: pointer; color: var(--mute);
-  transition: all .13s; font-family: var(--mono);
+.quotes-table td {
+  padding: 14px 12px; border-bottom: 1px solid var(--line);
+  vertical-align: middle;
 }
-.pg-btn:hover:not(:disabled) { color: var(--ink); border-color: var(--line-strong); }
-.pg-btn.active { background: var(--accent); color: #0a0a0a; font-weight: 700; border-color: var(--accent); }
-.pg-btn:disabled { opacity: .35; cursor: default; }
-.pg-info { font-family: var(--mono); font-size: 12px; color: var(--mute); padding: 0 8px; }
-
-/* ── DETAIL MODAL ── */
-#detail-modal {
-  position: fixed; inset: 0; background: rgba(0,0,0,.7);
-  display: none; align-items: flex-start; justify-content: center;
-  z-index: 50; padding: 40px 20px; overflow-y: auto;
-}
-#detail-modal.open { display: flex; }
-.modal-box {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
-  padding: 32px; width: min(720px, 100%); position: relative; margin: auto;
-}
-.modal-close {
-  position: absolute; top: 16px; right: 16px;
+.quotes-table tr:hover td { background: var(--panel); }
+.td-check { width: 36px; }
+.td-date  { white-space: nowrap; font-family: var(--mono); font-size: 13px; }
+.td-title { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-price { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.td-price-sub { font-size: 11px; color: var(--mute); display: block; }
+.td-file  { font-size: 12px; color: var(--mute); max-width: 180px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-pdf   { width: 80px; text-align: center; }
+.btn-pdf {
   background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px;
-  width: 34px; height: 34px; cursor: pointer; font-size: 18px;
-  display: flex; align-items: center; justify-content: center; color: var(--mute);
-  transition: all .13s;
+  padding: 5px 10px; font-size: 12px; cursor: pointer; transition: all .15s; white-space: nowrap;
 }
-.modal-close:hover { color: var(--ink); }
-.modal-vendor { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--mute); margin-bottom: 8px; }
-.modal-title { font-family: var(--display); font-size: 22px; margin-bottom: 6px; line-height: 1.3; }
-.modal-meta { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-.meta-chip {
-  font-family: var(--mono); font-size: 11px; color: var(--mute);
-  background: var(--panel-2); padding: 4px 10px; border-radius: 999px;
-}
-.modal-section { margin-bottom: 22px; }
-.modal-section h3 { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--mute); margin-bottom: 10px; }
-.items-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.items-table th {
-  font-family: var(--mono); font-size: 10px; letter-spacing: .08em; color: var(--mute);
-  padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line);
-}
-.items-table td { padding: 10px 10px; border-bottom: 1px solid var(--line); }
-.items-table td:nth-child(2), .items-table td:nth-child(3),
-.items-table td:nth-child(4) { text-align: right; font-family: var(--mono); font-size: 12px; }
-.modal-content { background: var(--panel-2); border-radius: 9px; padding: 14px 16px; font-size: 14px; color: var(--mute); line-height: 1.7; white-space: pre-wrap; }
-.total-row { display: flex; justify-content: flex-end; align-items: center; gap: 16px; padding-top: 14px; }
-.total-label { font-family: var(--mono); font-size: 12px; color: var(--mute); }
-.total-value { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); }
-
-/* ── VENDOR COMBOBOX ── */
-.vendor-combo { position: relative; }
-.vendor-drop {
-  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-  background: var(--panel); border: 1px solid var(--line-strong);
-  border-radius: 10px; overflow: hidden; z-index: 200;
-  display: none; max-height: 200px; overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,.5);
-}
-.vendor-drop.open { display: block; }
-.vd-item {
-  padding: 10px 14px; font-size: 14px; cursor: pointer;
-  transition: background .1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.vd-item:hover { background: var(--panel-2); }
-.vd-new { color: var(--accent); border-top: 1px solid var(--line); }
-.rate-row {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 12px; color: var(--mute); font-family: var(--mono);
-}
-.rate-row input {
-  width: 72px; background: var(--panel-2); border: 1px solid var(--line);
-  border-radius: 6px; padding: 4px 8px; font-size: 13px; color: var(--ink); outline: none;
-  font-family: var(--mono); text-align: right;
-}
-.rate-row input:focus { border-color: var(--accent); }
-.total-krw { font-size: 13px; color: var(--mute); margin-left: 8px; }
+.btn-pdf:hover { border-color: var(--accent); color: var(--accent); }
+.btn-pdf:disabled { opacity: .3; cursor: default; }
+.cb { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 
 /* ── UPLOAD MODAL ── */
 #upload-modal {
   position: fixed; inset: 0; background: rgba(0,0,0,.75);
-  display: none; align-items: center; justify-content: center; z-index: 60;
-  padding: 20px;
+  display: none; align-items: center; justify-content: center; z-index: 60; padding: 20px;
 }
 #upload-modal.open { display: flex; }
 .upload-box {
   background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
-  padding: 32px; width: min(500px, 100%); display: flex; flex-direction: column; gap: 18px;
+  padding: 32px; width: min(520px, 100%); display: flex; flex-direction: column; gap: 18px;
 }
 .upload-box h2 { font-family: var(--display); font-size: 20px; }
-.upload-box label { font-size: 12px; font-family: var(--mono); letter-spacing: .08em; color: var(--mute); display: block; margin-bottom: 6px; }
-.upload-box input[type=text] {
+.upload-box label {
+  font-size: 12px; font-family: var(--mono); letter-spacing: .08em;
+  color: var(--mute); display: block; margin-bottom: 6px;
+}
+.upload-box input[type=text], .upload-box select {
   background: var(--panel-2); border: 1px solid var(--line);
   border-radius: 9px; padding: 10px 14px; font-size: 14px; width: 100%; outline: none;
-  transition: border-color .15s;
+  transition: border-color .15s; color: var(--ink);
 }
 .upload-box input[type=text]:focus { border-color: var(--accent); }
+.vendor-combo { position: relative; }
+.vendor-drop {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--panel); border: 1px solid var(--line-strong);
+  border-radius: 10px; overflow: hidden; z-index: 200; display: none;
+  max-height: 200px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.vendor-drop.open { display: block; }
+.vd-item { padding: 10px 14px; font-size: 14px; cursor: pointer; transition: background .1s; }
+.vd-item:hover { background: var(--panel-2); }
+.vd-new { color: var(--accent); border-top: 1px solid var(--line); }
 .file-drop {
   background: var(--panel-2); border: 2px dashed var(--line);
   border-radius: 12px; padding: 28px; text-align: center;
   cursor: pointer; transition: border-color .15s; position: relative;
 }
 .file-drop:hover, .file-drop.drag { border-color: var(--accent); }
-.file-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.file-drop input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
 .file-drop p { font-size: 14px; color: var(--mute); pointer-events: none; }
 .file-drop strong { color: var(--accent); pointer-events: none; }
 .file-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
@@ -256,38 +172,37 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
   display: flex; align-items: center; gap: 10px;
   background: var(--panel-2); border-radius: 8px; padding: 8px 12px; font-size: 13px;
 }
-.file-item .fi-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file-item .fi-status { font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+.fi-name   { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fi-status { font-family: var(--mono); font-size: 11px; white-space: nowrap; }
 .fi-wait   { color: var(--mute); }
 .fi-ok     { color: var(--accent); }
 .fi-skip   { color: var(--mute); }
 .fi-err    { color: var(--danger); }
 .fi-proc   { color: oklch(0.85 0.15 60); }
-.upload-btn-row { display: flex; gap: 10px; }
+.rate-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--mute); font-family: var(--mono);
+}
+.rate-row input {
+  width: 72px; background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 4px 8px; font-size: 13px; color: var(--ink);
+  outline: none; font-family: var(--mono); text-align: right;
+}
+.rate-row input:focus { border-color: var(--accent); }
+.upload-progress { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+.upload-btn-row  { display: flex; gap: 10px; }
 .btn-do-upload {
   flex: 1; background: var(--accent); color: #0a0a0a; font-weight: 700;
   border-radius: 9px; padding: 11px; font-size: 14px; cursor: pointer; transition: opacity .15s;
 }
 .btn-do-upload:hover:not(:disabled) { opacity: .85; }
 .btn-do-upload:disabled { opacity: .4; cursor: default; }
-.btn-upload-cancel {
+.btn-cancel {
   background: var(--panel-2); border: 1px solid var(--line);
   border-radius: 9px; padding: 11px 16px; font-size: 14px; cursor: pointer;
   color: var(--mute); transition: all .15s;
 }
-.btn-upload-cancel:hover { color: var(--ink); }
-.upload-progress { font-family: var(--mono); font-size: 12px; color: var(--mute); }
-
-/* ── MOBILE ── */
-@media (max-width: 700px) {
-  .layout { grid-template-columns: 1fr; }
-  aside.sidebar { position: static; height: auto; }
-  main { padding: 20px 16px; }
-  .topbar { flex-direction: column; align-items: stretch; }
-  .search-row { flex-direction: column; }
-  .search-input, .date-input { width: 100%; min-width: unset; }
-  .td-title, .td-date { display: none; }
-}
+.btn-cancel:hover { color: var(--ink); }
 </style>
 </head>
 <body>
@@ -296,106 +211,54 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
 <div id="login-screen">
   <div class="login-box">
     <h1>ONLYONE LED</h1>
-    <p>견적서 관리 시스템에 접근하려면 비밀번호를 입력하세요.</p>
-    <input type="password" id="pw-input" placeholder="비밀번호" autocomplete="current-password" />
-    <button class="btn-login" onclick="doLogin()">접속</button>
-    <div class="err" id="login-err"></div>
+    <p>견적서 관리 시스템</p>
+    <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="btn-login" onclick="doLogin()">로그인</button>
+    <div class="login-err" id="login-err"></div>
   </div>
 </div>
 
 <!-- ── APP ── -->
-<div class="layout" id="app" style="display:none">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="dot"></div>
-      <b>ONLYONE</b>
-      <span>견적서</span>
+<div id="app">
+  <!-- 상단 바 -->
+  <div class="topbar">
+    <button class="topbar-back" id="topbar-back" onclick="goVendorList()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M10 3L5 8l5 5"/>
+      </svg>
+      업체 목록
+    </button>
+    <div class="topbar-logo" id="topbar-logo">ONLYONE LED 견적서</div>
+    <div class="topbar-title" id="topbar-vendor-name" style="display:none"></div>
+    <div class="topbar-spacer"></div>
+    <button class="btn-delete-sel" id="btn-delete-sel" onclick="deleteSelected()">선택 삭제</button>
+    <button class="btn-upload" onclick="openUpload()">+ PDF 업로드</button>
+  </div>
+
+  <div class="main">
+    <!-- 업체 목록 -->
+    <div id="view-vendors">
+      <div class="vendor-grid" id="vendor-grid"></div>
     </div>
 
-    <a class="navitem" href="admin.html">
-      <svg class="ico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M3 9l6-6 6 6M4.5 7.5V15h9V7.5"/>
-      </svg>
-      어드민 홈
-    </a>
-    <div class="navitem" aria-current="true">
-      <svg class="ico" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="3" y="2" width="12" height="14" rx="1.5"/>
-        <path d="M6 6h6M6 9h6M6 12h4"/>
-      </svg>
-      견적서
-    </div>
-
-    <div class="sidebar-label">업체</div>
-    <div class="vendor-list" id="vendor-list">
-      <div class="vendor-btn" onclick="filterVendor('')">
-        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px">
-          <circle cx="7" cy="7" r="5"/>
-        </svg>
-        전체
-        <span class="vendor-count" id="total-count">—</span>
+    <!-- 견적서 목록 (업체별) -->
+    <div id="view-detail">
+      <div class="quotes-table-wrap">
+        <table class="quotes-table">
+          <thead>
+            <tr>
+              <th class="td-check"><input type="checkbox" class="cb" id="cb-all" onchange="toggleAll(this)" /></th>
+              <th>날짜</th>
+              <th>제목</th>
+              <th style="text-align:right">금액</th>
+              <th>파일명</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="quotes-tbody"></tbody>
+        </table>
       </div>
-    </div>
-
-    <div class="foot">
-      <a href="admin.html">← 어드민 홈</a>
-    </div>
-  </aside>
-
-  <main>
-    <div class="topbar">
-      <div class="page-title">견적서</div>
-      <button class="btn-sync" onclick="openUpload()">+ PDF 업로드</button>
-    </div>
-
-    <div class="search-row" style="margin-bottom:24px; gap:8px;">
-      <input class="search-input" id="q-input" type="text" placeholder="업체명, 제목, 내용 검색…" onkeydown="if(event.key==='Enter')doSearch()" />
-      <input class="date-input" id="from-input" type="date" title="시작일" />
-      <input class="date-input" id="to-input" type="date" title="종료일" />
-      <button class="btn-search" onclick="doSearch()">검색</button>
-      <button class="btn-clear" onclick="clearSearch()">초기화</button>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>업체</th>
-            <th>제목</th>
-            <th>날짜</th>
-            <th style="text-align:right">금액</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-    <div class="empty" id="empty-msg" style="display:none">검색 결과가 없습니다.</div>
-    <div class="pagination" id="pagination"></div>
-  </main>
-</div>
-
-<!-- ── DETAIL MODAL ── -->
-<div id="detail-modal" onclick="if(event.target===this)closeDetail()">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeDetail()">✕</button>
-    <div class="modal-vendor" id="d-vendor"></div>
-    <div class="modal-title" id="d-title"></div>
-    <div class="modal-meta" id="d-meta"></div>
-    <div class="modal-section" id="d-items-section">
-      <h3>품목</h3>
-      <table class="items-table">
-        <thead><tr><th>품목명</th><th>수량</th><th>단가</th><th>금액</th></tr></thead>
-        <tbody id="d-items"></tbody>
-      </table>
-    </div>
-    <div class="modal-section" id="d-content-section" style="display:none">
-      <h3>내용</h3>
-      <div class="modal-content" id="d-content"></div>
-    </div>
-    <div class="total-row">
-      <span class="total-label">합계</span>
-      <span class="total-value" id="d-total"></span>
-      <span class="total-krw" id="d-total-krw"></span>
+      <div class="empty-msg" id="detail-empty" style="display:none">등록된 견적서가 없습니다.</div>
     </div>
   </div>
 </div>
@@ -409,18 +272,16 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
       <div style="flex:1">
         <label>업체명</label>
         <div class="vendor-combo">
-          <input type="text" id="upload-vendor" placeholder="업체 검색 또는 입력"
-            autocomplete="off" class="upload-box input[type=text]"
-            style="background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:14px;width:100%;outline:none;transition:border-color .15s"
+          <input type="text" id="upload-vendor" placeholder="업체 검색 또는 입력" autocomplete="off"
             oninput="onVendorInput(this.value)"
             onfocus="onVendorInput(this.value)"
-            onblur="setTimeout(()=>closeVendorDrop(),150)" />
+            onblur="setTimeout(closeVendorDrop, 150)" />
           <div class="vendor-drop" id="vendor-drop"></div>
         </div>
       </div>
       <div style="width:140px">
         <label>견적서 양식</label>
-        <select id="upload-template" onchange="onTemplateChange()" style="background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:14px;width:100%;outline:none;color:var(--ink)">
+        <select id="upload-template" onchange="onTemplateChange()">
           <option value="jp">일본 견적서</option>
           <option value="kr">한국 견적서</option>
         </select>
@@ -448,23 +309,19 @@ tbody td { padding: 13px 14px; vertical-align: middle; }
 
     <div class="upload-btn-row">
       <button class="btn-do-upload" id="btn-do-upload" onclick="runUpload()" disabled>업로드 시작</button>
-      <button class="btn-upload-cancel" onclick="closeUpload()">닫기</button>
+      <button class="btn-cancel" onclick="closeUpload()">닫기</button>
     </div>
   </div>
 </div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────
-// Worker 배포 후 실제 URL로 변경하세요
 const API_BASE = 'https://onlyone-quote-worker.only1-d71.workers.dev';
-// ────────────────────────────────────────────────────
 
-let authToken = '';
+let authToken     = '';
 let currentVendor = '';
-let currentPage = 1;
-let totalPages = 1;
+let allVendors    = [];
 
-// ── LOGIN ──
+// ── LOGIN ──────────────────────────────────────────────
 const PW_KEY = 'ql_token';
 
 function doLogin() {
@@ -475,301 +332,231 @@ function doLogin() {
   initApp();
 }
 
-document.getElementById('pw-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-(function bootstrap() {
-  const saved = localStorage.getItem(PW_KEY);
-  if (saved) { authToken = saved; initApp(); }
-})();
-
 async function initApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'grid';
-  await loadVendors();
-  await loadQuotes();
-}
-
-// ── API ──
-async function apiFetch(path) {
-  const url = `${API_BASE}${path}`;
-  const res = await fetch(url, {
-    headers: { 'X-Auth-Token': authToken },
+  const res = await fetch(`${API_BASE}/api/vendors`, {
+    headers: { 'X-Auth-Token': authToken }
   });
   if (res.status === 401) {
     localStorage.removeItem(PW_KEY);
     document.getElementById('login-err').textContent = '비밀번호가 틀렸습니다.';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    return null;
+    return;
   }
-  return res.json();
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  route();
 }
 
-// ── VENDORS ──
-async function loadVendors() {
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(PW_KEY);
+  if (saved) { authToken = saved; initApp(); }
+});
+
+// ── ROUTING ────────────────────────────────────────────
+function route() {
+  const vendor = new URLSearchParams(location.search).get('vendor');
+  if (vendor) showVendorDetail(vendor);
+  else        showVendorList();
+}
+window.addEventListener('popstate', route);
+
+function goVendorList() {
+  history.pushState({}, '', location.pathname);
+  showVendorList();
+}
+
+function goVendorDetail(vendor) {
+  history.pushState({}, '', `?vendor=${encodeURIComponent(vendor)}`);
+  showVendorDetail(vendor);
+}
+
+// ── 업체 목록 ──────────────────────────────────────────
+async function showVendorList() {
+  currentVendor = '';
+  document.getElementById('view-vendors').style.display = '';
+  document.getElementById('view-detail').style.display  = 'none';
+  document.getElementById('topbar-back').style.display  = 'none';
+  document.getElementById('topbar-logo').style.display  = '';
+  document.getElementById('topbar-vendor-name').style.display = 'none';
+  document.getElementById('btn-delete-sel').style.display = 'none';
+
   const vendors = await apiFetch('/api/vendors');
-  if (!vendors) return;
-  const list = document.getElementById('vendor-list');
-  // Keep "전체" button, remove old vendor buttons
-  list.querySelectorAll('.vendor-btn:not(:first-child)').forEach(el => el.remove());
-  vendors.forEach(v => {
-    const btn = document.createElement('div');
-    btn.className = 'vendor-btn';
-    btn.innerHTML = `<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><rect x="2" y="2" width="10" height="10" rx="1"/></svg>${v}`;
-    btn.onclick = () => filterVendor(v);
-    list.appendChild(btn);
-  });
-}
+  allVendors = (vendors || []).map(v => v.vendor);
 
-function filterVendor(vendor) {
-  currentVendor = vendor;
-  currentPage = 1;
-  document.querySelectorAll('.vendor-btn').forEach(b => b.classList.remove('active'));
-  if (!vendor) {
-    document.querySelector('.vendor-btn').classList.add('active');
-  } else {
-    document.querySelectorAll('.vendor-btn').forEach(b => {
-      if (b.textContent.trim().includes(vendor)) b.classList.add('active');
-    });
-  }
-  loadQuotes();
-}
-
-// ── QUOTES LIST ──
-async function loadQuotes() {
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="4">불러오는 중…</td></tr>';
-  document.getElementById('empty-msg').style.display = 'none';
-
-  const q = document.getElementById('q-input').value.trim();
-  const from = document.getElementById('from-input').value;
-  const to = document.getElementById('to-input').value;
-
-  let qs = `?page=${currentPage}`;
-  if (currentVendor) qs += `&vendor=${encodeURIComponent(currentVendor)}`;
-  if (q) qs += `&q=${encodeURIComponent(q)}`;
-  if (from) qs += `&from=${from}`;
-  if (to) qs += `&to=${to}`;
-
-  const data = await apiFetch(`/api/quotes${qs}`);
-  if (!data) return;
-
-  totalPages = data.pages || 1;
-  document.getElementById('total-count').textContent = data.total;
-
-  tbody.innerHTML = '';
-  if (!data.data || data.data.length === 0) {
-    document.getElementById('empty-msg').style.display = 'block';
-    renderPagination(data);
+  const grid = document.getElementById('vendor-grid');
+  if (!vendors || !vendors.length) {
+    grid.innerHTML = '<div class="empty-msg">등록된 업체가 없습니다.<br>PDF를 업로드하면 업체가 자동 생성됩니다.</div>';
     return;
   }
 
-  data.data.forEach(row => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="td-vendor">${esc(row.vendor)}</td>
-      <td class="td-title">${esc(row.title || row.drive_file_name || '—')}</td>
-      <td class="td-date">${row.date || '—'}</td>
-      <td class="td-price">${row.total_price ? formatPrice(row.total_price, row.currency) : '—'}</td>
-    `;
-    tr.onclick = () => openDetail(row.id);
-    tbody.appendChild(tr);
-  });
-
-  renderPagination(data);
+  grid.innerHTML = vendors.map(v => `
+    <div class="vendor-card" onclick="goVendorDetail('${esc(v.vendor)}')">
+      <div class="vc-name">${esc(v.vendor)}</div>
+      <div class="vc-count">견적서 ${v.count}건</div>
+      <div class="vc-date">${v.latest_date || '날짜 없음'}</div>
+    </div>
+  `).join('');
 }
 
-function renderPagination(data) {
-  const el = document.getElementById('pagination');
-  el.innerHTML = '';
-  if (data.pages <= 1) return;
+// ── 업체 상세 (견적서 목록) ────────────────────────────
+async function showVendorDetail(vendor) {
+  currentVendor = vendor;
+  document.getElementById('view-vendors').style.display = 'none';
+  document.getElementById('view-detail').style.display  = '';
+  document.getElementById('topbar-back').style.display  = 'flex';
+  document.getElementById('topbar-logo').style.display  = 'none';
+  document.getElementById('topbar-vendor-name').textContent = vendor;
+  document.getElementById('topbar-vendor-name').style.display = '';
 
-  const prev = document.createElement('button');
-  prev.className = 'pg-btn';
-  prev.textContent = '←';
-  prev.disabled = data.page <= 1;
-  prev.onclick = () => { currentPage--; loadQuotes(); };
-  el.appendChild(prev);
+  // 업로드 모달용 vendor 미리 설정
+  document.getElementById('upload-vendor').value = vendor;
 
-  const range = pagRange(data.page, data.pages);
-  range.forEach(p => {
-    if (p === '…') {
-      const sp = document.createElement('span');
-      sp.className = 'pg-info';
-      sp.textContent = '…';
-      el.appendChild(sp);
-    } else {
-      const btn = document.createElement('button');
-      btn.className = `pg-btn${p === data.page ? ' active' : ''}`;
-      btn.textContent = p;
-      btn.onclick = () => { currentPage = p; loadQuotes(); };
-      el.appendChild(btn);
-    }
-  });
-
-  const next = document.createElement('button');
-  next.className = 'pg-btn';
-  next.textContent = '→';
-  next.disabled = data.page >= data.pages;
-  next.onclick = () => { currentPage++; loadQuotes(); };
-  el.appendChild(next);
+  await loadQuotes(vendor);
 }
 
-function pagRange(cur, total) {
-  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
-  const pages = [1];
-  if (cur > 3) pages.push('…');
-  for (let p = Math.max(2, cur-1); p <= Math.min(total-1, cur+1); p++) pages.push(p);
-  if (cur < total - 2) pages.push('…');
-  pages.push(total);
-  return pages;
-}
+async function loadQuotes(vendor) {
+  const data = await apiFetch(`/api/quotes?vendor=${encodeURIComponent(vendor)}`);
+  const tbody = document.getElementById('quotes-tbody');
+  const emptyEl = document.getElementById('detail-empty');
+  document.getElementById('cb-all').checked = false;
+  updateDeleteBtn();
 
-// ── DETAIL ──
-async function openDetail(id) {
-  const data = await apiFetch(`/api/quotes/${id}`);
-  if (!data) return;
-
-  document.getElementById('d-vendor').textContent = data.vendor;
-  document.getElementById('d-title').textContent = data.title || data.drive_file_name || '—';
-
-  const meta = document.getElementById('d-meta');
-  meta.innerHTML = '';
-  if (data.date) meta.innerHTML += `<span class="meta-chip">📅 ${data.date}</span>`;
-  if (data.drive_file_name) meta.innerHTML += `<span class="meta-chip">📄 ${esc(data.drive_file_name)}</span>`;
-
-  const items = data.items || [];
-  const tb = document.getElementById('d-items');
-  tb.innerHTML = '';
-  if (items.length) {
-    items.forEach(it => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${esc(it.name || '—')}</td>
-        <td>${it.quantity != null ? it.quantity : '—'}</td>
-        <td>${it.unit_price != null ? formatPrice(it.unit_price, data.currency) : '—'}</td>
-        <td>${it.amount != null ? formatPrice(it.amount, data.currency) : '—'}</td>
-      `;
-      tb.appendChild(tr);
-    });
-    document.getElementById('d-items-section').style.display = '';
-  } else {
-    document.getElementById('d-items-section').style.display = 'none';
+  if (!data || !data.length) {
+    tbody.innerHTML = '';
+    emptyEl.style.display = '';
+    return;
   }
+  emptyEl.style.display = 'none';
 
-  const contentEl = document.getElementById('d-content-section');
-  if (data.content) {
-    document.getElementById('d-content').textContent = data.content;
-    contentEl.style.display = '';
-  } else {
-    contentEl.style.display = 'none';
-  }
-
-  const totalEl   = document.getElementById('d-total');
-  const totalKrwEl = document.getElementById('d-total-krw');
-  if (data.total_price) {
-    totalEl.textContent = formatPrice(data.total_price, data.currency);
-    if (data.currency === 'JPY') {
-      totalKrwEl.textContent = krwEquiv(data.total_price);
-    } else {
-      totalKrwEl.textContent = '';
-    }
-  } else {
-    totalEl.textContent = '—';
-    totalKrwEl.textContent = '';
-  }
-
-  document.getElementById('detail-modal').classList.add('open');
-}
-
-function closeDetail() {
-  document.getElementById('detail-modal').classList.remove('open');
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeDetail(); closeUpload(); }
-});
-
-// ── PDF.js 설정 ──
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-// ── 환율 ──
-function jpyRate() { return parseFloat(localStorage.getItem('jpy_rate') || '9.5'); }
-
-function formatPrice(amount, currency) {
-  if (amount == null) return '—';
-  if (currency === 'JPY') return `¥${amount.toLocaleString()}`;
-  return formatWon(amount);
-}
-
-function krwEquiv(amount) {
   const rate = jpyRate();
-  return `≈ ${formatWon(Math.round(amount * rate))}`;
+  tbody.innerHTML = data.map(row => {
+    const isJPY    = row.currency === 'JPY';
+    const priceStr = row.total_price != null
+      ? (isJPY ? `¥${row.total_price.toLocaleString()}` : formatWon(row.total_price))
+      : '—';
+    const krwStr   = (isJPY && row.total_price)
+      ? `≈ ${formatWon(Math.round(row.total_price * rate))}`
+      : '';
+    const hasPDF   = !!row.r2_key || true; // r2_key field may not be in list response; use id-based endpoint
+
+    return `
+      <tr>
+        <td class="td-check">
+          <input type="checkbox" class="cb row-cb" data-id="${row.id}" onchange="updateDeleteBtn()" />
+        </td>
+        <td class="td-date">${row.date || '—'}</td>
+        <td class="td-title">${esc(row.title || row.drive_file_name || '—')}</td>
+        <td class="td-price">
+          ${priceStr}
+          ${krwStr ? `<span class="td-price-sub">${krwStr}</span>` : ''}
+        </td>
+        <td class="td-file">${esc(row.drive_file_name || '—')}</td>
+        <td class="td-pdf">
+          <button class="btn-pdf" onclick="openPDF(${row.id})">PDF 열기</button>
+        </td>
+      </tr>`;
+  }).join('');
 }
 
-// ── 업체명 드롭다운 ──
-let allVendors = [];
+function openPDF(id) {
+  window.open(`${API_BASE}/api/pdf/${id}?token=${encodeURIComponent(authToken)}`, '_blank');
+}
 
+// ── 체크박스 / 삭제 ────────────────────────────────────
+function toggleAll(cb) {
+  document.querySelectorAll('.row-cb').forEach(el => el.checked = cb.checked);
+  updateDeleteBtn();
+}
+
+function updateDeleteBtn() {
+  const count = document.querySelectorAll('.row-cb:checked').length;
+  const btn   = document.getElementById('btn-delete-sel');
+  btn.style.display   = count > 0 ? '' : 'none';
+  btn.textContent     = count > 0 ? `선택 삭제 (${count}건)` : '';
+}
+
+async function deleteSelected() {
+  const ids = [...document.querySelectorAll('.row-cb:checked')].map(el => parseInt(el.dataset.id));
+  if (!ids.length) return;
+  if (!confirm(`${ids.length}건을 삭제합니다. 복구할 수 없습니다.`)) return;
+
+  const res = await fetch(`${API_BASE}/api/quotes`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', 'X-Auth-Token': authToken },
+    body: JSON.stringify({ ids }),
+  });
+  if (res.ok) {
+    await loadQuotes(currentVendor);
+    // 업체 목록 갱신 (삭제 후 업체가 사라질 수 있음)
+  }
+}
+
+// ── 환율 ───────────────────────────────────────────────
+function jpyRate() { return parseFloat(localStorage.getItem('jpy_rate') || '9.5'); }
+function formatWon(n) { return '₩' + Math.round(n).toLocaleString(); }
+
+// ── 업체명 드롭다운 ────────────────────────────────────
 function onVendorInput(val) {
   const drop = document.getElementById('vendor-drop');
-  const q = val.trim().toLowerCase();
+  const q    = val.trim().toLowerCase();
   const filtered = q ? allVendors.filter(v => v.toLowerCase().includes(q)) : allVendors;
-  const exact = allVendors.some(v => v.toLowerCase() === q);
-
-  if (filtered.length === 0 && (exact || !val.trim())) { drop.classList.remove('open'); return; }
+  const exact    = allVendors.some(v => v.toLowerCase() === q);
 
   drop.innerHTML = [
     ...filtered.map(v => `<div class="vd-item" onmousedown="pickVendor('${esc(v)}')">${esc(v)}</div>`),
     (!exact && val.trim()) ? `<div class="vd-item vd-new" onmousedown="pickVendor('${esc(val.trim())}')">+ "${esc(val.trim())}" 새 업체로 추가</div>` : '',
   ].join('');
-  drop.classList.add('open');
+
+  drop.classList.toggle('open', !!(filtered.length || (!exact && val.trim())));
 }
 
 function pickVendor(name) {
   document.getElementById('upload-vendor').value = name;
   document.getElementById('vendor-drop').classList.remove('open');
 }
-
 function closeVendorDrop() {
   document.getElementById('vendor-drop').classList.remove('open');
 }
 
-// ── UPLOAD ──
+function onTemplateChange() {
+  const isJP = document.getElementById('upload-template').value === 'jp';
+  document.getElementById('rate-row').style.display = isJP ? 'flex' : 'none';
+}
+
+// ── UPLOAD ─────────────────────────────────────────────
 let selectedFiles = [];
 
 function openUpload() {
   selectedFiles = [];
-  document.getElementById('upload-vendor').value = '';
   document.getElementById('file-input').value = '';
   document.getElementById('file-list').style.display = 'none';
   document.getElementById('file-list').innerHTML = '';
   document.getElementById('upload-progress').textContent = '';
   document.getElementById('btn-do-upload').disabled = true;
+  document.getElementById('btn-do-upload').textContent = '업로드 시작';
   document.getElementById('jpy-rate').value = jpyRate();
   document.getElementById('rate-row').style.display = 'none';
+  if (currentVendor) document.getElementById('upload-vendor').value = currentVendor;
   document.getElementById('upload-modal').classList.add('open');
 
+  // 업체 목록 로드
   apiFetch('/api/vendors').then(vendors => {
-    allVendors = vendors || [];
+    allVendors = (vendors || []).map(v => v.vendor);
   });
 
+  // 드래그앤드롭
   const drop = document.getElementById('file-drop');
-  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
-  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
-  drop.addEventListener('drop', e => {
-    e.preventDefault(); drop.classList.remove('drag');
-    onFilesSelected(e.dataTransfer.files);
-  });
+  drop.ondragover  = e => { e.preventDefault(); drop.classList.add('drag'); };
+  drop.ondragleave = () => drop.classList.remove('drag');
+  drop.ondrop      = e => { e.preventDefault(); drop.classList.remove('drag'); onFilesSelected(e.dataTransfer.files); };
 }
 
-function closeUpload() { document.getElementById('upload-modal').classList.remove('open'); }
+function closeUpload() {
+  document.getElementById('upload-modal').classList.remove('open');
+}
 
 function onFilesSelected(files) {
   selectedFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
-  const listEl = document.getElementById('file-list');
+  const listEl  = document.getElementById('file-list');
   listEl.innerHTML = '';
   if (!selectedFiles.length) { listEl.style.display = 'none'; return; }
   listEl.style.display = 'flex';
@@ -782,15 +569,10 @@ function onFilesSelected(files) {
   document.getElementById('btn-do-upload').disabled = false;
 }
 
-function onTemplateChange() {
-  const isJP = document.getElementById('upload-template').value === 'jp';
-  document.getElementById('rate-row').style.display = isJP ? 'flex' : 'none';
-}
-
 async function runUpload() {
   const vendor   = document.getElementById('upload-vendor').value.trim();
   const template = document.getElementById('upload-template').value;
-  if (!vendor) { alert('업체명을 입력해주세요.'); return; }
+  if (!vendor)             { alert('업체명을 입력해주세요.'); return; }
   if (!selectedFiles.length) return;
 
   const btn  = document.getElementById('btn-do-upload');
@@ -798,6 +580,7 @@ async function runUpload() {
   btn.disabled = true;
 
   let ok = 0, skipped = 0, errors = 0;
+  const currency = template === 'jp' ? 'JPY' : 'KRW';
 
   for (let i = 0; i < selectedFiles.length; i++) {
     const file     = selectedFiles[i];
@@ -806,102 +589,126 @@ async function runUpload() {
     prog.textContent = `${i + 1} / ${selectedFiles.length} 처리 중…`;
 
     try {
+      // 1. PDF.js로 파싱
       const parsed = await parsePDF(file, template);
-      const fileKey = `${vendor}/${file.name}`;
 
-      const currency = template === 'jp' ? 'JPY' : 'KRW';
-      const rawRes = await fetch(`${API_BASE}/api/save`, {
+      // 2. multipart로 Worker에 전송 (PDF 원본 + 파싱 결과)
+      const fd = new FormData();
+      fd.append('vendor',      vendor);
+      fd.append('currency',    currency);
+      fd.append('parsed_data', JSON.stringify(parsed));
+      fd.append('pdf',         file);
+
+      const res  = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Auth-Token': authToken },
-        body: JSON.stringify({ ...parsed, vendor, currency, file_key: fileKey, file_name: file.name }),
+        headers: { 'X-Auth-Token': authToken },
+        body: fd,
       });
-      const res = await rawRes.json();
+      const data = await res.json();
 
-      if (res?.skipped) {
+      if (data.skipped) {
         statusEl.textContent = '이미 처리됨'; statusEl.className = 'fi-status fi-skip'; skipped++;
-      } else if (res?.ok) {
+      } else if (data.ok) {
         statusEl.textContent = '완료'; statusEl.className = 'fi-status fi-ok'; ok++;
       } else {
-        statusEl.textContent = res?.error || '저장 오류'; statusEl.className = 'fi-status fi-err'; errors++;
+        statusEl.textContent = data.error || '오류'; statusEl.className = 'fi-status fi-err'; errors++;
       }
     } catch (err) {
-      statusEl.textContent = err.message || '파싱 오류'; statusEl.className = 'fi-status fi-err'; errors++;
+      statusEl.textContent = err.message || '오류'; statusEl.className = 'fi-status fi-err'; errors++;
     }
   }
 
   prog.textContent = `완료: ${ok}건 추가 / ${skipped}건 스킵 / ${errors}건 오류`;
   btn.disabled = false; btn.textContent = '다시 업로드';
-  if (ok > 0) { await loadVendors(); await loadQuotes(); }
+
+  if (ok > 0) {
+    if (currentVendor) await loadQuotes(currentVendor);
+    else await showVendorList();
+  }
 }
 
-// ── PDF 파싱 ─────────────────────────────────────────────
+// ── API ────────────────────────────────────────────────
+async function apiFetch(path) {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { headers: { 'X-Auth-Token': authToken } });
+    if (res.status === 401) {
+      localStorage.removeItem(PW_KEY);
+      location.reload();
+      return null;
+    }
+    return await res.json();
+  } catch { return null; }
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUpload(); });
+
+// ── PDF.js ─────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
 async function parsePDF(file, templateId) {
-  const ab  = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  const ab   = await file.arrayBuffer();
+  const pdf  = await pdfjsLib.getDocument({ data: ab }).promise;
   const page = await pdf.getPage(1);
   const tc   = await page.getTextContent();
 
-  // x,y 위치 포함 텍스트 아이템
   const raw = tc.items
     .filter(it => it.str.trim())
     .map(it => ({ str: it.str.trim(), x: Math.round(it.transform[4]), y: Math.round(it.transform[5]) }));
 
-  // y 내림차순(위→아래), x 오름차순(좌→우) 정렬
   raw.sort((a, b) => b.y - a.y || a.x - b.x);
 
-  // y가 비슷한 항목을 한 줄로 묶기 (threshold: 4pt)
   const rows = [];
   for (const item of raw) {
     const last = rows[rows.length - 1];
-    if (last && Math.abs(item.y - last[0].y) <= 4) {
-      last.push(item);
-    } else {
-      rows.push([item]);
-    }
+    if (last && Math.abs(item.y - last[0].y) <= 4) last.push(item);
+    else rows.push([item]);
   }
-  const lines = rows.map(r => r.map(i => i.str).join(' '));
+  const lines    = rows.map(r => r.map(i => i.str).join(' '));
   const fullText = lines.join('\n');
 
-  if (templateId === 'jp') return parseTemplateJP(lines, fullText, rows);
-  if (templateId === 'kr') return parseTemplateKR(lines, fullText, rows);
+  if (templateId === 'jp') return parseTemplateJP(lines, fullText);
+  if (templateId === 'kr') return parseTemplateKR(lines, fullText);
   throw new Error('알 수 없는 템플릿');
 }
 
-function after(text, pattern) {
-  const m = text.match(pattern);
+function matchAfter(text, re) {
+  const m = text.match(re);
   return m ? (m[1] || m[0]).trim() : null;
 }
 
 function parseAmount(str) {
   if (!str) return null;
-  const m = str.replace(/,/g, '').match(/[\d]+/);
+  const m = str.replace(/,/g, '').match(/\d+/);
   return m ? parseInt(m[0]) : null;
 }
 
-// ── 일본 견적서 파서 ──────────────────────────────────────
-function parseTemplateJP(lines, fullText, rows) {
-  const title    = after(fullText, /Subject[：:]\s*(.+)/);
-  const quoteNo  = after(fullText, /Quote No[.．：:]\s*([^\n\s]+)/);
-  const date     = after(fullText, /Issue Date[：:]\s*(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/);
-  const attnLine = lines.find(l => /御中/.test(l));
-  const attn     = attnLine ? attnLine.replace(/御中.*/, '').trim() : null;
-  const totalLine= lines.find(l => /合\s*計.*Total/.test(l));
-  const total    = totalLine ? parseAmount(totalLine.replace(/[^¥\d,]/g, '')) : null;
-  const remIdx   = lines.findIndex(l => /備考.*Remarks/.test(l));
-  const remarks  = remIdx >= 0 ? lines.slice(remIdx + 1).find(l => l.trim()) || null : null;
-
-  const items = extractItemsJP(lines);
+// ── JP 파서 ────────────────────────────────────────────
+function parseTemplateJP(lines, fullText) {
+  const title   = matchAfter(fullText, /Subject[：:]\s*(.+)/);
+  const quoteNo = matchAfter(fullText, /Quote No[.．：:.]\s*([^\n\s]+)/);
+  const date    = matchAfter(fullText, /Issue Date[：:]\s*(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/);
+  const attnLn  = lines.find(l => /御中/.test(l));
+  const attn    = attnLn ? attnLn.replace(/御中.*/, '').trim() : null;
+  const totalLn = lines.find(l => /合\s*計.*Total/.test(l));
+  const total   = totalLn ? parseAmount(totalLn.replace(/[^¥\d,]/g, '')) : null;
+  const remIdx  = lines.findIndex(l => /備考.*Remarks/.test(l));
+  const remarks = remIdx >= 0 ? lines.slice(remIdx + 1).find(l => l.trim()) || null : null;
 
   const content = [
-    attn     ? `수신: ${attn}`     : null,
-    quoteNo  ? `견적번호: ${quoteNo}` : null,
-    remarks  ? `비고: ${remarks}`  : null,
+    attn    ? `수신: ${attn}`         : null,
+    quoteNo ? `견적번호: ${quoteNo}` : null,
+    remarks ? `비고: ${remarks}`      : null,
   ].filter(Boolean).join('\n') || null;
 
   return {
     title: title || (quoteNo ? `견적서 #${quoteNo}` : null),
     date:  date ? date.replace(/\//g, '-') : null,
-    items,
+    items: extractItemsJP(lines),
     content,
     total_price: total,
   };
@@ -920,18 +727,14 @@ function extractItemsJP(lines) {
     const line = lines[i];
     if (!line || /^ページ|^Page/.test(line)) continue;
 
-    // 숫자만 뽑기 (콤마 제거 후)
     const nums = [...line.matchAll(/([\d]{1,3}(?:,[\d]{3})*(?:\.[\d]+)?)/g)]
-      .map(m => parseFloat(m[0].replace(/,/g, '')))
-      .filter(n => !isNaN(n));
+      .map(m => parseFloat(m[0].replace(/,/g, ''))).filter(n => !isNaN(n));
 
-    // 숫자가 없으면 품목명의 일부(줄바꿈된 셀)
     if (nums.length === 0) {
       pendingName += (pendingName ? ' ' : '') + line.replace(/\s+/g, ' ');
       continue;
     }
 
-    // 텍스트 부분 (단위 및 숫자 제거)
     const namePart = line
       .replace(/([\d]{1,3}(?:,[\d]{3})*(?:\.[\d]+)?)/g, '')
       .replace(/[¥￥]/g, '')
@@ -941,66 +744,34 @@ function extractItemsJP(lines) {
     const name = (pendingName + ' ' + namePart).trim();
     pendingName = '';
 
-    // TBD(별도) 항목은 금액 0으로 저장
     const isTBD = /別途|TBD/.test(line);
-    if (isTBD) {
-      items.push({ name, quantity: nums[1] || 1, unit_price: 0, amount: 0 });
-      continue;
-    }
+    if (isTBD) { items.push({ name, quantity: nums[1] || 1, unit_price: 0, amount: 0 }); continue; }
 
-    // 숫자 배열: [rate, qty, unit_price, amount] 또는 [qty, unit_price, amount]
     if (nums.length >= 3) {
-      const amount     = nums[nums.length - 1];
-      const unit_price = nums[nums.length - 2];
-      const quantity   = nums.length >= 4 ? nums[nums.length - 3] : nums[0];
-      items.push({ name, quantity, unit_price, amount });
+      items.push({
+        name,
+        quantity:   nums.length >= 4 ? nums[nums.length - 3] : nums[0],
+        unit_price: nums[nums.length - 2],
+        amount:     nums[nums.length - 1],
+      });
     } else if (nums.length === 2) {
       items.push({ name, quantity: null, unit_price: nums[0], amount: nums[1] });
     }
   }
-
   return items;
 }
 
-// ── 한국 견적서 파서 (샘플 확인 후 완성 예정) ────────────
+// ── KR 파서 (샘플 확인 후 완성 예정) ──────────────────
 function parseTemplateKR(lines, fullText) {
-  const title = after(fullText, /건\s*명\s*[：:]\s*(.+)/) ||
-                after(fullText, /품\s*명\s*[：:]\s*(.+)/);
-  const date  = after(fullText, /견적일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/) ||
-                after(fullText, /작성일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/);
-  const totalLine = lines.find(l => /합\s*계|총\s*액|total/i.test(l));
-  const total = totalLine ? parseAmount(totalLine) : null;
+  const title = matchAfter(fullText, /건\s*명\s*[：:]\s*(.+)/) ||
+                matchAfter(fullText, /품\s*명\s*[：:]\s*(.+)/);
+  const date  = matchAfter(fullText, /견적일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/) ||
+                matchAfter(fullText, /작성일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/);
+  const totalLn = lines.find(l => /합\s*계|총\s*액/i.test(l));
+  const total   = totalLn ? parseAmount(totalLn) : null;
 
-  return {
-    title: title || null,
-    date:  date ? date.replace(/[.\/]/g, '-') : null,
-    items: [],
-    content: null,
-    total_price: total,
-  };
-}
-
-// ── SEARCH ──
-function doSearch() { currentPage = 1; loadQuotes(); }
-function clearSearch() {
-  document.getElementById('q-input').value = '';
-  document.getElementById('from-input').value = '';
-  document.getElementById('to-input').value = '';
-  currentVendor = '';
-  currentPage = 1;
-  document.querySelectorAll('.vendor-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
-  loadQuotes();
-}
-
-// ── UTILS ──
-function esc(s) {
-  if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function formatWon(n) {
-  if (n == null) return '—';
-  return Number(n).toLocaleString('ko-KR') + '원';
+  return { title: title || null, date: date ? date.replace(/[.\/]/g, '-') : null,
+           items: [], content: null, total_price: total };
 }
 </script>
 </body>

@@ -1,0 +1,12 @@
+name            = "onlyone-quote-worker"
+main            = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "onlyone-quotes"
+database_id   = "a803304a-2e41-4b07-94a3-200ca2306abb"
+
+[[r2_buckets]]
+binding     = "PDF_BUCKET"
+bucket_name = "onlyone-quote-pdfs"
