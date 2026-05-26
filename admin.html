@@ -93,6 +93,8 @@
 
   .page { display: none; }
   .page.active { display: block; }
+  .page[data-page="quotes"].active,
+  .page[data-page="costcalc"].active { display: flex; flex-direction: column; }
 
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
   .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
@@ -681,12 +683,12 @@
       </div>
     </section>
     <!-- =============== COST CALC =============== -->
-    <section class="page" data-page="costcalc" style="padding:0;height:calc(100vh);display:flex;flex-direction:column;">
+    <section class="page" data-page="costcalc" style="padding:0;height:calc(100vh);">
       <iframe id="costcalcFrame" src="/onlyone_admin.html" style="flex:1;border:0;width:100%;height:100%;display:block;"></iframe>
     </section>
 
     <!-- =============== QUOTES =============== -->
-    <section class="page" data-page="quotes" style="padding:0;height:calc(100vh - 0px);display:flex;flex-direction:column;">
+    <section class="page" data-page="quotes" style="padding:0;height:calc(100vh);">
       <iframe id="quotesFrame" src="/quotes" style="flex:1;border:0;width:100%;height:100%;display:block;"></iframe>
     </section>
 
