@@ -196,136 +196,82 @@ table.ctbl .sep-row td{background:#f1f5f9;font-size:10px;font-weight:700;color:v
 }
 
 @media print{
-  .sidebar,.tab-bar,.hamburger,.sb-overlay,.no-print{display:none!important;}
-  .main-area{padding:0;height:auto;}
+  .topbar,.tab-bar,.hamburger,.sb-overlay,.no-print{display:none!important;}
+  .main-area{padding:0;height:auto;overflow:visible;}
   .app-wrap{display:block;}
   .tab-content{display:none!important;}
   #tab-quote{display:block!important;}
   .quote-wrap{box-shadow:none;padding:15px;}
   body{background:#fff;}
 }
+
+/* ─── TOP LAYOUT ─── */
+.app-wrap{display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.sidebar{display:none;}
+.hamburger,.sb-overlay{display:none!important;}
+.topbar{background:#1a2332;color:#e0e8f0;padding:8px 16px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid #0f1c2e;}
+.topbar-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.topbar-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.topbar .logo{padding:0;border-bottom:none;margin:0;text-align:left;display:flex;align-items:center;gap:8px;}
+.topbar .logo h1{font-size:14px;letter-spacing:0;}
+.topbar .logo p{display:none;}
+.topbar .tab-bar{margin-bottom:0;}
+.topbar .tab{font-size:12px;padding:6px 14px;border-radius:6px;}
+.topbar .rate-box{margin:0;padding:5px 10px;min-width:185px;}
+.topbar .rate-btn{margin-top:2px;padding:3px 6px;}
+.topbar .margin-row{margin:0;gap:6px;}
+.main-area{flex:1;overflow-y:auto;min-width:0;padding:16px;}
+
+/* ─── CTRL IN CC-STRIP ─── */
+.ctrl-strip-wrap{background:#1a2332;border-radius:7px;padding:7px 8px;margin-top:4px;}
+.ctrl-strip-wrap .rsb label{color:#b0cfe0;margin:0;}
+.ctrl-strip-wrap .ctrl-list{max-height:160px;margin-top:4px;}
+
+/* ─── QUOTE SETTINGS PANEL ─── */
+.quote-settings{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;align-items:start;}
+.quote-settings-col h3{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.quote-settings-col .rsb label{color:var(--text);}
+.quote-settings-col .rsb input[type=radio]{accent-color:var(--primary);}
+.quote-settings .calc-box{background:#f8fafc;border:1px solid var(--border);margin-top:6px;}
+.quote-settings .calc-label{color:var(--muted);}
+.quote-settings .calc-value{color:var(--primary);}
+.quote-settings .calc-value.warn{color:#f59e0b;}
+.quote-settings .calc-value.ok{color:var(--green);}
 </style>
 </head>
 <body>
 
-<button class="hamburger" onclick="toggleSidebar()">☰</button>
-<div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
-
 <div class="app-wrap">
 
-<!-- ===== SIDEBAR ===== -->
-<div class="sidebar no-print" id="sidebar">
-  <div class="logo">
-    <h1>㈜ 온리원 LED</h1>
-    <p>OnlyOne Co., Ltd. — 통합 관리자</p>
-  </div>
-
-  <div class="section-title">💱 실시간 환율</div>
-  <div class="rate-box">
-    <div class="rate-row2"><span class="rate-lbl">위안(CNY) 1 =</span><span class="rate-val" id="rate-val-cny">조회 중…</span></div>
-    <div class="rate-row2"><span class="rate-lbl">엔(JPY) 1 =</span><span class="rate-val" id="rate-val-jpy">–</span></div>
-    <div class="rate-row2" style="margin-top:4px;">
-      <span class="rate-badge loading" id="rate-badge">LOADING</span>
-      <span class="rate-time" id="rate-time"></span>
-    </div>
-    <button class="rate-btn" onclick="fetchRate()">↻ 새로고침</button>
-  </div>
-  <input type="hidden" id="inp-rate" value="200">
-  <input type="hidden" id="inp-rate-jpy" value="9.0">
-
-  <div class="section-title">① 목표 마진</div>
-  <div class="margin-row">
-    <input type="number" class="margin-inp" id="inp-margin" value="30" min="0" max="99" step="0.5" oninput="onMarginChange()">
-    <span class="margin-pct">%</span>
-    <span style="font-size:10px;color:#6a8da6;">공통 적용</span>
-  </div>
-
-  <div class="section-title">② 컨트롤러</div>
-  <div class="rsb">
-    <label><input type="radio" name="ctrlbrand" value="novastar" checked onchange="onCtrlBrandChange()"> 노바스타</label>
-    <label><input type="radio" name="ctrlbrand" value="huidu" onchange="onCtrlBrandChange()"> 후이두</label>
-    <label><input type="radio" name="ctrlbrand" value="colorlight" onchange="onCtrlBrandChange()"> 컬러라이트</label>
-  </div>
-  <div class="ctrl-list" id="ctrl-list"></div>
-  <div id="cl-section" style="display:none;margin-top:7px;">
-    <div class="notice" style="font-size:10px;margin-bottom:6px;">⚠️ Colorlight — 단가 직접 입력</div>
-    <div class="row2">
-      <div><label>컨트롤러 모델</label><input type="text" id="cl-ctrl-name" placeholder="예: C16" oninput="ccCalc()"></div>
-      <div><label>단가 (CNY)</label><input type="number" id="cl-ctrl-price" value="0" oninput="ccCalc()"></div>
-      <div><label>수신카드 모델</label><input type="text" id="cl-rcv-name" placeholder="예: 5A" oninput="ccCalc()"></div>
-      <div><label>수신카드 (CNY)</label><input type="number" id="cl-rcv-price" value="0" oninput="ccCalc()"></div>
+<!-- ===== TOPBAR ===== -->
+<div class="topbar no-print">
+  <div class="topbar-left">
+    <div class="logo"><h1>㈜ 온리원 LED</h1></div>
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('tab-cost-calc',this)">🧮 원가계산기</div>
+      <div class="tab" onclick="switchTab('tab-quote',this)">📄 견적서</div>
+      <div class="tab" onclick="switchTab('tab-db',this)">🗃️ 제품DB</div>
     </div>
   </div>
-
-  <!-- QUOTE-ONLY SIDEBAR SECTIONS -->
-  <div class="section-title quote-only">③ 화면 사양 <span style="font-size:9px;color:#6a8da6;">(견적서)</span></div>
-  <div class="quote-only">
-    <div class="rsb">
-      <label><input type="radio" name="ptype" value="indoor" checked onchange="onTypeChange()"> 실내</label>
-      <label><input type="radio" name="ptype" value="outdoor" onchange="onTypeChange()"> 옥외</label>
-      <label><input type="radio" name="ptype" value="outdoor_front" onchange="onTypeChange()"> 옥외전면</label>
+  <div class="topbar-right">
+    <div class="rate-box">
+      <div class="rate-row2"><span class="rate-lbl">CNY 1 =</span><span class="rate-val" id="rate-val-cny">조회 중…</span></div>
+      <div class="rate-row2"><span class="rate-lbl">JPY 1 =</span><span class="rate-val" id="rate-val-jpy">–</span></div>
+      <div class="rate-row2" style="margin-top:2px;"><span class="rate-badge loading" id="rate-badge">LOADING</span><span class="rate-time" id="rate-time"></span></div>
+      <button class="rate-btn" onclick="fetchRate()">↻ 새로고침</button>
     </div>
-    <label>픽셀 피치</label>
-    <select id="sel-pitch" onchange="onPitchChange()"></select>
-    <div class="row2">
-      <div><label>가로 (W) mm</label><input type="number" id="inp-width" value="2560" step="10" oninput="calcAll()"></div>
-      <div><label>세로 (H) mm</label><input type="number" id="inp-height" value="1440" step="10" oninput="calcAll()"></div>
-    </div>
-    <div class="calc-box" id="size-result">
-      <div class="calc-row"><span class="calc-label">640×640 박스 수</span><span class="calc-value" id="r-q640">–</span></div>
-      <div class="calc-row"><span class="calc-label">640×480 박스 수</span><span class="calc-value" id="r-q480">–</span></div>
-      <div class="calc-row"><span class="calc-label">실제 치수</span><span class="calc-value" id="r-size">–</span></div>
-      <div class="calc-row"><span class="calc-label">면적 (㎡)</span><span class="calc-value" id="r-area">–</span></div>
-      <div class="calc-row"><span class="calc-label">해상도</span><span class="calc-value" id="r-res">–</span></div>
+    <input type="hidden" id="inp-rate" value="200">
+    <input type="hidden" id="inp-rate-jpy" value="9.0">
+    <div class="margin-row">
+      <span class="rate-lbl" style="white-space:nowrap;">목표 마진</span>
+      <input type="number" class="margin-inp" id="inp-margin" value="30" min="0" max="99" step="0.5" oninput="onMarginChange()">
+      <span class="margin-pct">%</span>
     </div>
   </div>
-
-  <div class="section-title quote-only">④ 추가 항목 <span style="font-size:9px;color:#6a8da6;">(견적서)</span></div>
-  <div class="quote-only">
-    <div class="row2">
-      <div><label>설치비 (원/㎡)</label><input type="number" id="inp-install" value="250000" step="10000" oninput="calcAll()"></div>
-      <div><label>구조물/함체 (원)</label><input type="number" id="inp-struct" value="500000" step="100000" oninput="calcAll()"></div>
-    </div>
-    <div class="row2">
-      <div><label>공과잡비 (원)</label><input type="number" id="inp-misc" value="300000" step="10000" oninput="calcAll()"></div>
-      <div><label>전기통신 (원)</label><input type="number" id="inp-elec" value="200000" step="10000" oninput="calcAll()"></div>
-    </div>
-    <label>운송비 (원)</label>
-    <input type="number" id="inp-ship" value="0" step="10000" oninput="calcAll()">
-  </div>
-
-  <div class="section-title quote-only">⑤ 고객 · 견적 정보 <span style="font-size:9px;color:#6a8da6;">(견적서)</span></div>
-  <div class="quote-only">
-    <label>견적 번호</label><input type="text" id="inp-qno" value="OL-260520-01">
-    <label>수 신 (고객사명)</label><input type="text" id="inp-client" value="">
-    <label>건 명</label><input type="text" id="inp-subject" value="LED 스크린 납품 및 설치" oninput="updatePreview()">
-    <label>담당자 연락처</label><input type="text" id="inp-contact" value="">
-    <label>결제 조건</label><input type="text" id="inp-payment" value="70%(발주 시), 30%(검수 후 14일 이내)">
-    <label>납기 (일)</label><input type="number" id="inp-delivery" value="50">
-  </div>
-
-  <div id="sb-actions-quote" class="quote-only" style="margin-top:12px;">
-    <button class="btn btn-primary" onclick="calcAll();renderQuote();">🔄 견적 생성</button>
-    <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄 / PDF</button>
-    <button class="btn btn-save" onclick="saveJSON()">💾 JSON 저장</button>
-    <button class="btn btn-secondary" onclick="loadJSON()">📂 JSON 불러오기</button>
-    <input type="file" id="file-load" accept=".json" style="display:none" onchange="loadFromFile(event)">
-  </div>
-
-  <div id="sb-actions-db" style="display:none;margin-top:12px;">
-    <button id="btn-edit-db" class="btn btn-secondary" onclick="toggleEditMode()">✏️ 편집 모드</button>
-    <button class="btn btn-secondary" style="border-color:#e65100;color:#e65100;" onclick="resetDB()">🔄 DB 초기화</button>
-    <div id="db-save-notice" style="display:none;color:#81c784;font-size:11px;margin-top:4px;text-align:center;">저장됨 ✓</div>
-  </div>
-</div><!-- /sidebar -->
+</div>
 
 <!-- ===== MAIN AREA ===== -->
 <div class="main-area">
-  <div class="tab-bar no-print">
-    <div class="tab active" onclick="switchTab('tab-cost-calc',this)">🧮 원가계산기</div>
-    <div class="tab" onclick="switchTab('tab-quote',this)">📄 견적서</div>
-    <div class="tab" onclick="switchTab('tab-db',this)">🗃️ 제품DB</div>
-  </div>
 
   <!-- ===== TAB: 원가계산기 ===== -->
   <div id="tab-cost-calc" class="tab-content active">
@@ -345,6 +291,26 @@ table.ctbl .sep-row td{background:#f1f5f9;font-size:10px;font-weight:700;color:v
           <option value="1.25">P1.25 — ¥380</option>
         </select>
         <div style="font-size:10px;color:var(--muted);margin-top:3px;" id="disp-module-krw-mini"></div>
+      </div>
+      <div class="cc-strip-group" style="min-width:210px;">
+        <div class="sg-label">🎛️ 컨트롤러</div>
+        <div class="ctrl-strip-wrap">
+          <div class="rsb">
+            <label><input type="radio" name="ctrlbrand" value="novastar" checked onchange="onCtrlBrandChange()"> 노바스타</label>
+            <label><input type="radio" name="ctrlbrand" value="huidu" onchange="onCtrlBrandChange()"> 후이두</label>
+            <label><input type="radio" name="ctrlbrand" value="colorlight" onchange="onCtrlBrandChange()"> 컬러라이트</label>
+          </div>
+          <div class="ctrl-list" id="ctrl-list"></div>
+          <div id="cl-section" style="display:none;margin-top:6px;">
+            <div style="font-size:10px;color:#8ab4cf;background:#162840;border:1px solid #2d4060;border-radius:4px;padding:5px 7px;margin-bottom:5px;">⚠️ Colorlight — 단가 직접 입력</div>
+            <div class="row2">
+              <div><label style="color:#b0cfe0;font-size:11px;display:block;margin-bottom:2px;">컨트롤러 모델</label><input type="text" id="cl-ctrl-name" placeholder="예: C16" oninput="ccCalc()" style="width:100%;padding:4px 6px;background:#0f1c2e;border:1px solid #2d4060;color:#e0e8f0;border-radius:4px;font-size:12px;"></div>
+              <div><label style="color:#b0cfe0;font-size:11px;display:block;margin-bottom:2px;">단가 (CNY)</label><input type="number" id="cl-ctrl-price" value="0" oninput="ccCalc()" style="width:100%;padding:4px 6px;background:#0f1c2e;border:1px solid #2d4060;color:#e0e8f0;border-radius:4px;font-size:12px;"></div>
+              <div><label style="color:#b0cfe0;font-size:11px;display:block;margin-bottom:2px;">수신카드 모델</label><input type="text" id="cl-rcv-name" placeholder="예: 5A" oninput="ccCalc()" style="width:100%;padding:4px 6px;background:#0f1c2e;border:1px solid #2d4060;color:#e0e8f0;border-radius:4px;font-size:12px;"></div>
+              <div><label style="color:#b0cfe0;font-size:11px;display:block;margin-bottom:2px;">수신카드 (CNY)</label><input type="number" id="cl-rcv-price" value="0" oninput="ccCalc()" style="width:100%;padding:4px 6px;background:#0f1c2e;border:1px solid #2d4060;color:#e0e8f0;border-radius:4px;font-size:12px;"></div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="cc-strip-group">
         <div class="sg-label">⚡ SMPS</div>
@@ -389,8 +355,8 @@ table.ctbl .sep-row td{background:#f1f5f9;font-size:10px;font-weight:700;color:v
           <div class="notice">💡 여분 총 비용을 판매 수량으로 나눠 박스당 원가에 반영</div>
           <div class="g3">
             <div class="frow"><label id="spare-module-lbl">모듈 여분 (수량)</label><input type="number" id="inp-spare-module" value="0" min="0" oninput="calcSale(false)"></div>
-            <div class="frow"><label id="spare-rcv-lbl">수신카드 여분 (수량)</label><input type="number" id="inp-spare-rcv" value="0" min="0" oninput="calcSale(false)"></div>
-            <div class="frow"><label>SMPS 여분 (수량)</label><input type="number" id="inp-spare-smps" value="0" min="0" oninput="calcSale(false)"></div>
+            <div class="frow"><label id="spare-rcv-lbl">수신카드 여분 (수량)</label><input type="number" id="inp-spare-rcv" value="1" min="0" oninput="calcSale(false)"></div>
+            <div class="frow"><label>SMPS 여분 (수량)</label><input type="number" id="inp-spare-smps" value="1" min="0" oninput="calcSale(false)"></div>
           </div>
           <div class="frow"><label>여분 합계 → 박스당 배분</label><input type="text" id="disp-spare-total" readonly></div>
         </div>
@@ -400,7 +366,7 @@ table.ctbl .sep-row td{background:#f1f5f9;font-size:10px;font-weight:700;color:v
           <h2>✈️ 한국 수입 비용 <span class="badge-sm">전체 총액 기준</span></h2>
           <div class="notice">💡 전체 수입 총액을 입력 → 판매 수량으로 나눠 박스당 반영</div>
           <div class="g2">
-            <div class="frow"><label>국제 운송비 (KRW)</label><input type="number" id="inp-intl-freight" value="0" step="10000" oninput="calcSale(false)"></div>
+            <div class="frow"><label>국제 운송비 (KRW)</label><input type="number" id="inp-intl-freight" value="200000" step="10000" oninput="calcSale(false)"></div>
             <div class="frow"><label>관세 (KRW)</label><input type="number" id="inp-duty" value="0" step="10000" oninput="calcSale(false)"></div>
             <div class="frow"><label>부가세 (KRW)</label><input type="number" id="inp-vat-imp" value="0" step="10000" oninput="calcSale(false)"></div>
             <div class="frow"><label>기타 부대비용 (KRW)</label><input type="number" id="inp-extra" value="0" step="10000" oninput="calcSale(false)"></div>
@@ -452,6 +418,60 @@ table.ctbl .sep-row td{background:#f1f5f9;font-size:10px;font-weight:700;color:v
 
   <!-- ===== TAB: 견적서 ===== -->
   <div id="tab-quote" class="tab-content">
+
+    <!-- 견적서 설정 패널 -->
+    <div class="quote-settings no-print">
+      <div class="quote-settings-col">
+        <h3>③ 화면 사양</h3>
+        <div class="rsb" style="margin-bottom:7px;">
+          <label><input type="radio" name="ptype" value="indoor" checked onchange="onTypeChange()"> 실내</label>
+          <label><input type="radio" name="ptype" value="outdoor" onchange="onTypeChange()"> 옥외</label>
+          <label><input type="radio" name="ptype" value="outdoor_front" onchange="onTypeChange()"> 옥외전면</label>
+        </div>
+        <div class="frow"><label>픽셀 피치</label><select id="sel-pitch" onchange="onPitchChange()"></select></div>
+        <div class="g2">
+          <div class="frow"><label>가로 (W) mm</label><input type="number" id="inp-width" value="2560" step="10" oninput="calcAll()"></div>
+          <div class="frow"><label>세로 (H) mm</label><input type="number" id="inp-height" value="1440" step="10" oninput="calcAll()"></div>
+        </div>
+        <div class="calc-box" id="size-result">
+          <div class="calc-row"><span class="calc-label">640×640 박스 수</span><span class="calc-value" id="r-q640">–</span></div>
+          <div class="calc-row"><span class="calc-label">640×480 박스 수</span><span class="calc-value" id="r-q480">–</span></div>
+          <div class="calc-row"><span class="calc-label">실제 치수</span><span class="calc-value" id="r-size">–</span></div>
+          <div class="calc-row"><span class="calc-label">면적 (㎡)</span><span class="calc-value" id="r-area">–</span></div>
+          <div class="calc-row"><span class="calc-label">해상도</span><span class="calc-value" id="r-res">–</span></div>
+        </div>
+      </div>
+      <div class="quote-settings-col">
+        <h3>④ 추가 항목</h3>
+        <div class="g2">
+          <div class="frow"><label>설치비 (원/㎡)</label><input type="number" id="inp-install" value="250000" step="10000" oninput="calcAll()"></div>
+          <div class="frow"><label>구조물/함체 (원)</label><input type="number" id="inp-struct" value="500000" step="100000" oninput="calcAll()"></div>
+          <div class="frow"><label>공과잡비 (원)</label><input type="number" id="inp-misc" value="300000" step="10000" oninput="calcAll()"></div>
+          <div class="frow"><label>전기통신 (원)</label><input type="number" id="inp-elec" value="200000" step="10000" oninput="calcAll()"></div>
+        </div>
+        <div class="frow"><label>운송비 (원)</label><input type="number" id="inp-ship" value="0" step="10000" oninput="calcAll()"></div>
+      </div>
+      <div class="quote-settings-col">
+        <h3>⑤ 고객 · 견적 정보</h3>
+        <div class="frow"><label>견적 번호</label><input type="text" id="inp-qno" value="OL-260520-01"></div>
+        <div class="frow"><label>수신 (고객사명)</label><input type="text" id="inp-client" value=""></div>
+        <div class="frow"><label>건 명</label><input type="text" id="inp-subject" value="LED 스크린 납품 및 설치" oninput="updatePreview()"></div>
+        <div class="frow"><label>담당자 연락처</label><input type="text" id="inp-contact" value=""></div>
+        <div class="frow"><label>결제 조건</label><input type="text" id="inp-payment" value="70%(발주 시), 30%(검수 후 14일 이내)"></div>
+        <div class="frow"><label>납기 (일)</label><input type="number" id="inp-delivery" value="50"></div>
+      </div>
+      <div class="quote-settings-col" style="min-width:130px;max-width:170px;">
+        <h3>실행</h3>
+        <div id="sb-actions-quote" style="display:flex;flex-direction:column;gap:6px;">
+          <button class="btn btn-primary" onclick="calcAll();renderQuote();">🔄 견적 생성</button>
+          <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄 / PDF</button>
+          <button class="btn btn-save" onclick="saveJSON()">💾 JSON 저장</button>
+          <button class="btn btn-secondary" onclick="loadJSON()">📂 불러오기</button>
+          <input type="file" id="file-load" accept=".json" style="display:none" onchange="loadFromFile(event)">
+        </div>
+      </div>
+    </div>
+
     <div class="quote-wrap" id="quotation-output">
       <div class="quote-header">QUOTATION</div>
       <table style="width:100%;margin-bottom:12px;">
@@ -500,6 +520,11 @@ table.ctbl .sep-row td{background:#f1f5f9;font-size:10px;font-weight:700;color:v
   <div id="tab-db" class="tab-content">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
       <h2 style="color:#1a2332;margin:0;font-size:15px;">🗃️ 제품 데이터베이스</h2>
+      <div id="sb-actions-db" style="display:flex;gap:8px;margin-left:auto;align-items:center;">
+        <button id="btn-edit-db" class="btn btn-secondary" onclick="toggleEditMode()">✏️ 편집 모드</button>
+        <button class="btn btn-secondary" style="border-color:#e65100;color:#e65100;" onclick="resetDB()">🔄 DB 초기화</button>
+        <div id="db-save-notice" style="display:none;color:#16a34a;font-size:11px;">저장됨 ✓</div>
+      </div>
     </div>
     <div id="db-output"></div>
   </div>
@@ -793,6 +818,9 @@ function ccScreenSpec() {
   if (count > 0) {
     document.getElementById('inp-box-total').value = count;
     document.getElementById('sale-qty').value = count;
+    const mqMap = {'480':6,'640':8,'320x480':3,'320x640':4};
+    const mq = mqMap[size] || 6;
+    document.getElementById('inp-spare-module').value = Math.round(mq * count * 0.1);
     ccCalc();
   }
 }
@@ -879,6 +907,9 @@ function ccCalc() {
   html+='<tr class="total-row"><td colspan="4">박스 1개 제조 원가</td>'+
     '<td class="tr">¥'+fmt(res.cnySum)+'</td><td class="tr">₩'+fmt(res.totalKRW)+'</td></tr>';
   document.getElementById('tbody-main').innerHTML = html;
+  const autoVat = Math.round(res.totalKRW * inp.boxTotal * 0.1);
+  const vatEl = document.getElementById('inp-vat-imp');
+  if (vatEl) vatEl.value = autoVat;
   calcSale(false);
 }
 
@@ -1190,10 +1221,6 @@ function switchTab(id, el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   el.classList.add('active');
-  const isQ=id==='tab-quote', isD=id==='tab-db';
-  document.querySelectorAll('.quote-only').forEach(e=>e.style.display=isQ?'':'none');
-  document.getElementById('sb-actions-quote').style.display=isQ?'':'none';
-  document.getElementById('sb-actions-db').style.display=isD?'':'none';
   if(id==='tab-db') renderDB();
   if(id==='tab-cost-calc') ccCalc();
   if(id==='tab-quote'){ calcAll(); renderQuote(); }
@@ -1353,10 +1380,6 @@ function loadFromFile(evt){
   renderControllers();
   buildSizeRadio();
   buildSmpsRadio();
-
-  document.querySelectorAll('.quote-only').forEach(e=>e.style.display='none');
-  document.getElementById('sb-actions-quote').style.display='none';
-  document.getElementById('sb-actions-db').style.display='none';
 
   // Hidden unit price fields for cost calc
   document.body.insertAdjacentHTML('beforeend',
