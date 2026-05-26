@@ -9,9 +9,9 @@
     "/images/slide4.png",
     "/images/slide2.png"
   ],
-  "heroImageEnabled": true,
+  "heroImageEnabled": false,
   "heroVideoEnabled": false,
-  "heroYoutubeEnabled": false,
+  "heroYoutubeEnabled": true,
   "svcBg": null,
   "aboutBg": null,
   "fsHero": 70,
