@@ -151,7 +151,8 @@ async function handlePDF(id, env) {
 // ── 업체 목록 (건수 + 최근날짜 포함) ────────────────────
 async function handleVendors(env) {
   const { results } = await env.DB.prepare(
-    `SELECT vendor, COUNT(*) as count, MAX(date) as latest_date
+    `SELECT vendor, COUNT(*) as count, MAX(date) as latest_date,
+            GROUP_CONCAT(DISTINCT currency) as currencies
      FROM quotes GROUP BY vendor ORDER BY vendor`
   ).all();
   return json(results);
