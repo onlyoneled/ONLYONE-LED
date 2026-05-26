@@ -136,6 +136,7 @@ a { color: inherit; text-decoration: none; }
   border-radius: 6px; padding: 4px 8px; font-size: 13px; color: var(--ink);
   width: 100%; min-width: 120px; outline: none; font-family: var(--body);
 }
+.flag-ico { font-size: 13px; margin-right: 5px; vertical-align: middle; }
 
 /* ── 묶음 배지 ── */
 .td-group { width: 72px; text-align: center; }
@@ -474,13 +475,14 @@ async function loadQuotes(vendor) {
     const memoVal  = row.memo    || '';
     const groupVal = row.group_no || '';
     const badgeStyle = groupVal ? `background:${groupColor(groupVal)};` : '';
+    const flag     = row.currency === 'JPY' ? '🇯🇵' : row.currency === 'KRW' ? '🇰🇷' : '';
 
     return `
       <tr>
         <td class="td-check">
           <input type="checkbox" class="cb row-cb" data-id="${row.id}" onchange="updateDeleteBtn()" />
         </td>
-        <td class="td-date">${row.date || '—'}</td>
+        <td class="td-date">${flag ? `<span class="flag-ico">${flag}</span>` : ''}${row.date || '—'}</td>
         <td class="td-title">${esc(row.drive_file_name || '—')}</td>
         <td class="td-price">
           ${priceStr}
@@ -918,17 +920,66 @@ function extractItemsJP(lines) {
   return items;
 }
 
-// ── KR 파서 (샘플 확인 후 완성 예정) ──────────────────
+// ── KR 파서 (온리원 LED 한국 견적서 양식) ─────────────
 function parseTemplateKR(lines, fullText) {
-  const title = matchAfter(fullText, /건\s*명\s*[：:]\s*(.+)/) ||
-                matchAfter(fullText, /품\s*명\s*[：:]\s*(.+)/);
-  const date  = matchAfter(fullText, /견적일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/) ||
-                matchAfter(fullText, /작성일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/);
-  const totalLn = lines.find(l => /합\s*계|총\s*액/i.test(l));
-  const total   = totalLn ? parseAmount(totalLn) : null;
+  const date = matchAfter(fullText, /일\s*자\s*[：:]\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/) ||
+               matchAfter(fullText, /견적일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/) ||
+               matchAfter(fullText, /작성일\s*[：:]?\s*(\d{4}[.\-\/]\d{1,2}[.\-\/]\d{1,2})/);
 
-  return { title: title || null, date: date ? date.replace(/[.\/]/g, '-') : null,
-           items: [], content: null, total_price: total };
+  // "건 명 :" 줄에서 제목 추출 — 오른쪽 회사 정보(팀장/담당) 제거
+  const titleLine = lines.find(l => /건\s*명/.test(l));
+  const title = titleLine
+    ? (titleLine.replace(/.*건\s*명\s*[：:]\s*/, '').replace(/\s*팀장.*/, '').replace(/\s*담당.*/, '').trim() || null)
+    : (matchAfter(fullText, /품\s*명\s*[：:]\s*(.+)/) || null);
+
+  const quoteNo   = matchAfter(fullText, /번\s*호\s*[：:]\s*([A-Z0-9\-]+)/);
+  const recipient = matchAfter(fullText, /수\s*신\s*[：:]\s*(.+?)(?=\s{3,}|등록번호)/);
+
+  // 합 계 행: 가장 큰 숫자를 총액으로
+  let total = null;
+  const totalIdx = lines.findIndex(l => /합\s*계/.test(l));
+  if (totalIdx >= 0) {
+    const txt  = lines[totalIdx] + ' ' + (lines[totalIdx + 1] || '');
+    const nums = [...txt.matchAll(/[\d,]{4,}/g)].map(m => parseAmount(m[0])).filter(n => n > 0);
+    if (nums.length) total = Math.max(...nums);
+  }
+  // 폴백: 금 액 행의 ₩ 금액
+  if (!total) {
+    const amtLn = lines.find(l => /금\s*액/.test(l) && /₩/.test(l));
+    if (amtLn) { const m = amtLn.match(/₩([\d,]+)/); total = m ? parseAmount(m[1]) : null; }
+  }
+
+  const content = [
+    quoteNo   ? `견적번호: ${quoteNo}` : null,
+    recipient ? `수신: ${recipient.trim()}` : null,
+  ].filter(Boolean).join('\n') || null;
+
+  return {
+    title: title || null,
+    date:  date ? date.replace(/[.\/]/g, '-') : null,
+    items: extractItemsKR(lines),
+    content,
+    total_price: total,
+  };
+}
+
+function extractItemsKR(lines) {
+  const items = [];
+  for (const line of lines) {
+    // "#  한글ITEM  영문DESC  pcs/식/set/sqm  QTY  UNITPRICE  SUBTOTAL"
+    const m = line.match(/^(\d{1,2})\s+(.+?)\s+(pcs|식|set|sqm)\s+([\d.]+)\s+([\d,]+)\s+([\d,]+)/i);
+    if (!m) continue;
+    const unitPrice = parseAmount(m[5]);
+    const amount    = parseAmount(m[6]);
+    if (!unitPrice || !amount) continue;
+    items.push({
+      name:       m[2].replace(/\s{2,}/g, ' ').trim(),
+      quantity:   parseFloat(m[4]),
+      unit_price: unitPrice,
+      amount,
+    });
+  }
+  return items;
 }
 </script>
 </body>
