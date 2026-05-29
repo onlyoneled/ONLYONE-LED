@@ -14,7 +14,7 @@
   "heroYoutubeEnabled": true,
   "svcBg": null,
   "aboutBg": null,
-  "fsHero": 50,
-  "fsSection": 100,
+  "fsHero": 40,
+  "fsSection": 50,
   "fsBody": 100
 }
