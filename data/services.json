@@ -19,11 +19,11 @@
         },
         "en": {
           "t": "KI Series Indoor LED Display",
-          "d": "High-resolution indoor LED display optimized for conference rooms, hotels, shopping malls, dispatching rooms, monitoring rooms, and studio applications."
+          "d": "A high-resolution LED display optimized for a variety of indoor spaces, including conference rooms, hotels, shopping malls, situational rooms, monitoring rooms, stage backdrops, and studios."
         },
         "jp": {
-          "t": "KIシリーズ 屋内LEDディスプレイ",
-          "d": "会議室、ホテル、ショッピングモール、指令室、モニタリングルーム、ステージ背景、スタジオなど様々な屋内空間に最適化されています。"
+          "t": "KIシリーズ屋内用LEDディスプレイ",
+          "d": "会議室、ホテル、ショッピングモール、状況対応室、監視室、舞台背景、スタジオなど、さまざまな屋内空間に最適化された高解像度LEDディスプレイ。"
         }
       },
       "spec": {
@@ -319,12 +319,12 @@
           "d": "모니터링 센터, 회의실, AV센터, 전시관, 방송센터 등 초정밀 화질이 요구되는 실내 공간에 최적화된 COB 기반 마이크로 LED 디스플레이입니다."
         },
         "en": {
-          "t": "LC Series COB Micro LED Display",
-          "d": "COB-based micro LED display optimized for monitoring centers, conference rooms, AV centers, exhibition halls, and broadcasting centers requiring ultra-precise image quality."
+          "t": "LC Series cob Micro LED Display",
+          "d": "A COB-based microLED display optimized for indoor spaces where ultra-precision image quality is required, such as monitoring centers, conference rooms, AV centers, exhibition halls, and broadcast centers."
         },
         "jp": {
-          "t": "LCシリーズ COBマイクロLEDディスプレイ",
-          "d": "モニタリングセンター、会議室、AVセンター、展示ホール、放送センターなど超精密な画質が求められる屋内空間に最適化されたCOBベースのマイクロLEDディスプレイです。"
+          "t": "LCシリーズCOBマイクロLEDディスプレイ",
+          "d": "モニタリングセンター、会議室、AVセンター、展示ホール、放送センターなど、超精密な画質が必要な屋内空間に最適化されたCOBベースのmicroLEDディスプレイ。"
         }
       },
       "spec": {
@@ -586,12 +586,12 @@
           "d": "실외 빌보드, 쇼핑몰, 복합상업시설, 주차장, 테마파크, 스포츠 경기장 등 다양한 실외 공간에 최적화된 고휘도 실외 LED 디스플레이입니다."
         },
         "en": {
-          "t": "KAH Series Outdoor LED Display",
-          "d": "High-brightness outdoor LED display optimized for outdoor billboards, shopping malls, commercial complexes, parking areas, theme parks, and sports stadiums."
+          "t": "Kah Series Outdoor LED Display",
+          "d": "It is a high brightness outdoor LED display optimized for various outdoor spaces such as outdoor billboards, shopping malls, complex commercial facilities, parking lots, theme parks, and sports stadiums."
         },
         "jp": {
-          "t": "KAHシリーズ 屋外LEDディスプレイ",
-          "d": "屋外ビルボード、ショッピングモール、複合商業施設、駐車場、テーマパーク、スポーツスタジアムなど様々な屋外空間に最適化された高輝度LEDディスプレイです。"
+          "t": "KAHシリーズ屋外LEDディスプレイ",
+          "d": "屋外看板、ショッピングモール、複合商業施設、駐車場、テーマパーク、スポーツスタジアムなど、さまざまな屋外スペースに最適化された高輝度屋外LEDディスプレイです。"
         }
       },
       "spec": {
@@ -927,12 +927,12 @@
           "d": "실외 빌보드, 쇼핑몰, 복합상업시설, 스포츠 경기장 등 다양한 실외 환경에 적합한 플라스틱 쉘 구조의 고성능 실외 LED 디스플레이입니다."
         },
         "en": {
-          "t": "KPH Series Outdoor LED Display",
-          "d": "High-performance outdoor LED display with plastic shell structure, suitable for outdoor billboards, shopping malls, commercial complexes, and sports stadiums."
+          "t": "Kph Series Outdoor LED Display",
+          "d": "A high-performance outdoor LED display with a plastic shell structure suitable for various outdoor environments such as outdoor billboards, shopping malls, complex commercial facilities, and sports stadiums."
         },
         "jp": {
-          "t": "KPHシリーズ 屋外LEDディスプレイ",
-          "d": "プラスチックシェル構造の高性能屋外LEDディスプレイ。屋外ビルボード、ショッピングモール、複合商業施設、スポーツスタジアムなどに適しています。"
+          "t": "Kphシリーズ屋外LEDディスプレイ",
+          "d": "屋外看板、ショッピングモール、複合商業施設、スポーツスタジアムなど、さまざまな屋外環境に適したプラスチックシェル構造の高性能屋外LEDディスプレイ。"
         }
       },
       "spec": {
@@ -1215,11 +1215,11 @@
         },
         "en": {
           "t": "KPS Series Outdoor LED Display (Standard)",
-          "d": "KPS Series standard outdoor LED display suitable for outdoor billboards, shopping malls, commercial complexes, and sports stadiums."
+          "d": "KPS series standard outdoor LED display suitable for various outdoor environments such as outdoor billboards, shopping malls, complex commercial facilities, and sports stadiums."
         },
         "jp": {
-          "t": "KPSシリーズ 屋外LEDディスプレイ (スタンダード)",
-          "d": "屋外ビルボード、ショッピングモール、複合商業施設、スポーツスタジアムなど様々な屋外環境に適したKPSシリーズスタンダード屋外LEDディスプレイです。"
+          "t": "KPSシリーズ屋外用LEDディスプレイ（標準）",
+          "d": "屋外看板、ショッピングモール、複合商業施設、スポーツスタジアムなど、さまざまな屋外環境に適したKPSシリーズ標準屋外LEDディスプレイ。"
         }
       },
       "spec": {
@@ -1551,12 +1551,12 @@
           "d": "표준형 및 소형 모듈로 구성된 KPS 시리즈의 고해상도 실외 LED 디스플레이입니다. P1.9~P2.6은 표준 규격, P1.9~P3.9는 소형 모듈 구성입니다."
         },
         "en": {
-          "t": "KPS Series Outdoor LED Display (Small Module)",
-          "d": "KPS Series high-resolution outdoor LED display with regular and small module configurations. P1.9–P2.6 are regular size; P1.9–P3.9 are small size modules."
+          "t": "KPS Series Outdoor LED Display (Compact Module)",
+          "d": "A high-resolution outdoor LED display of the KPS series consisting of standard and compact modules. P1.9 to P2.6 are standard specifications and P1.9 to P3.9 are small module configurations."
         },
         "jp": {
-          "t": "KPSシリーズ 屋外LEDディスプレイ (小型モジュール)",
-          "d": "標準および小型モジュール構成のKPSシリーズ高解像度屋外LEDディスプレイ。P1.9〜P2.6は標準サイズ、P1.9〜P3.9は小型モジュール構成です。"
+          "t": "KPSシリーズ屋外用LEDディスプレイ（コンパクトモジュール）",
+          "d": "標準モジュールとコンパクトモジュールで構成されたKPSシリーズの高解像度屋外LEDディスプレイです。 P1.9 ～ P2.6は標準仕様、P1.9 ～ P3.9は小型モジュール構成です。"
         }
       },
       "spec": {
@@ -1855,11 +1855,11 @@
         },
         "en": {
           "t": "LS Series Transparent LED Display",
-          "d": "Transparent LED display with up to 85% transmittance, widely used in airports, train stations, building facades, theaters, shopping centers, and indoor or outdoor stage activities."
+          "d": "A transparent LED display with up to 85% transmittance for airports, train stations, building facades, theaters, shopping centers, indoor and outdoor stages, and more."
         },
         "jp": {
-          "t": "LSシリーズ トランスペアレントLEDディスプレイ",
-          "d": "透過率最大85%のトランスペアレントLEDディスプレイ。空港、鉄道駅、建物外観、劇場、ショッピングセンター、屋内外ステージ等で幅広く活用されています。"
+          "t": "LSシリーズ透明LEDディスプレイ",
+          "d": "空港、駅、建物のファサード、劇場、ショッピングセンター、屋内外のステージなどの透過率が最大85 ％の透明LEDディスプレイ。"
         }
       },
       "spec": {
@@ -2147,12 +2147,12 @@
           "d": "직관적인 인터페이스를 통해 전 세계 어디서든 실시간으로 콘텐츠를 원격 제어하고 효율적으로 관리할 수 있는 통합 솔루션입니다."
         },
         "en": {
-          "t": "Smart Content Management",
-          "d": "Manage content remotely via PC or mobile app after install."
+          "t": "CMS Smart Content Management",
+          "d": "An integrated solution that allows you to remotely control and efficiently manage content in real time from anywhere in the world with an intuitive interface."
         },
         "jp": {
-          "t": "スマートコンテンツ管理",
-          "d": "PC・モバイルアプリからコンテンツを遠隔でアップロード・スケジューリングできます。"
+          "t": "CMSスマートコンテンツマネジメント",
+          "d": "直感的なインターフェースを使用して、世界中のどこからでもリアルタイムでコンテンツをリモートで制御し、効率的に管理できる統合ソリューションです。"
         }
       }
     }
