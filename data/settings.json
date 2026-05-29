@@ -13,7 +13,7 @@
   "heroVideoEnabled": false,
   "heroYoutubeEnabled": true,
   "svcBg": null,
-  "aboutBg": null,
+  "aboutBg": "https://raw.githubusercontent.com/onlyoneled/ONLYONE-LED/main/images/uploads/aboutbg_1780035210603.jpg",
   "fsHero": 40,
   "fsSection": 50,
   "fsBody": 100
