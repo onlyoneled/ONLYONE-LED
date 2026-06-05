@@ -59,10 +59,20 @@ html,body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-
 .brk-card .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase;margin-bottom:4px;}
 .brk-card .val{font-size:20px;font-weight:700;color:var(--ink);}
 .brk-card .sub{font-family:var(--mono);font-size:11px;color:var(--mute);margin-top:2px;}
+.brk-card .sub.accent{color:var(--accent);}
 .hint{font-family:var(--mono);font-size:10px;color:var(--mute);line-height:1.6;margin-top:6px;}
 .small-warn{font-family:var(--mono);font-size:11px;color:var(--danger);text-align:center;padding:40px 20px;}
 .svg-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .svg-wrap svg{max-width:100%;max-height:100%;}
+.saved-section{display:flex;flex-direction:column;gap:6px;}
+.saved-section h3{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase;margin-bottom:2px;}
+.saved-item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;transition:border-color .15s;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.saved-item:hover{border-color:var(--accent);}
+.si-info{flex:1;cursor:pointer;}
+.si-title{font-size:13px;font-weight:700;}
+.si-date{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:2px;}
+.si-del{background:none;border:none;color:var(--mute);cursor:pointer;font-size:18px;padding:0 0 0 8px;line-height:1;flex-shrink:0;}
+.si-del:hover{color:var(--danger);}
 @media(max-width:960px){
   .wrap{grid-template-columns:1fr;height:auto;}
   .left{height:auto;}
@@ -110,7 +120,8 @@ html,body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-
       <div class="hint" id="lbl-data-cap">데이터 라인 용량 650,000 px / line (고정)</div>
     </div>
     <button class="btn primary" id="btn-png">⬇ PNG 배치도 다운로드</button>
-    <button class="btn" id="btn-copy">⎘ 사양 복사</button>
+    <button class="btn" id="btn-save">☆ 사양 저장</button>
+    <div id="saved-list"></div>
   </div>
 
   <div class="right">
@@ -224,8 +235,9 @@ const T = {
   pitchL:     {ko:'픽셀 피치', en:'Pixel pitch', ja:'ピクセルピッチ'},
   dataCap:    {ko:'데이터 라인 용량 650,000 px / line (고정)', en:'Data line capacity: 650,000 px / line (fixed)', ja:'データライン容量 650,000 px / line (固定)'},
   dlPNG:      {ko:'⬇ PNG 배치도 다운로드', en:'⬇ Download PNG layout', ja:'⬇ PNG配置図ダウンロード'},
-  copySpec:   {ko:'⎘ 사양 복사', en:'⎘ Copy spec', ja:'⎘ 仕様コピー'},
-  copied:     {ko:'복사됨 ✓', en:'Copied ✓', ja:'コピー済み ✓'},
+  saveSpec:   {ko:'☆ 사양 저장', en:'☆ Save spec', ja:'☆ 仕様を保存'},
+  saved:      {ko:'저장됨 ✓', en:'Saved ✓', ja:'保存しました ✓'},
+  savedHd:    {ko:'저장된 사양', en:'Saved specs', ja:'保存済み仕様'},
   usable:     {ko:'유효', en:'Usable', ja:'有効'},
   waste:      {ko:'버림', en:'Waste', ja:'廃棄'},
   exact:      {ko:'딱 맞음 ✓', en:'Exact fit ✓', ja:'ぴったり ✓'},
@@ -243,6 +255,7 @@ const T = {
   pcs:        {ko:'장', en:'pcs', ja:'枚'},
   brkSingle:  {ko:'단상 차단기 (220V)', en:'Single-phase (220V)', ja:'単相ブレーカー (220V)'},
   brkThree:   {ko:'삼상 차단기 (380V PF0.8)', en:'Three-phase (380V PF0.8)', ja:'三相ブレーカー (380V PF0.8)'},
+  brk20A:     {ko:'20A 기준 {n}개 필요', en:'{n} × 20A breakers needed', ja:'20A換算 {n}個必要'},
   load:       {ko:'부하', en:'Load', ja:'負荷'},
   tooSmall:   {ko:'가로 320mm · 세로 160mm 이상을 입력하세요.', en:'Enter at least 320mm wide × 160mm tall.', ja:'横320mm · 縦160mm以上を入力してください。'},
   total:      {ko:'합계', en:'Total', ja:'合計'},
@@ -250,8 +263,16 @@ const T = {
   legCombine: {ko:'조합 640×640', en:'Combine 640×640', ja:'組合せ 640×640'},
   legFill:    {ko:'채움 기타', en:'Fill others', ja:'補充 その他'},
   area:       {ko:'면적', en:'Area', ja:'面積'},
+  dwgCol:     {ko:'{c}열 · {px}px', en:'{c} cols · {px} px', ja:'{c} 列 · {px} px'},
+  dwgRow:     {ko:'{r}행 · {px}px', en:'{r} rows · {px} px', ja:'{r} 行 · {px} px'},
+  dwgInput:   {ko:'입력 {n}mm', en:'input {n}mm', ja:'入力 {n}mm'},
 };
-function tr(key) { const e=T[key]; return e ? (e[LANG]||e.ko) : key; }
+function tr(key, vars) {
+  const e=T[key];
+  let s = e ? (e[LANG]||e.ko) : key;
+  if (vars) s = s.replace(/\{(\w+)\}/g, function(m,k){ return vars[k]!=null ? vars[k] : m; });
+  return s;
+}
 
 // ═══════════════════════════════════════════════
 // SVG DIAGRAM
@@ -307,8 +328,8 @@ function buildSVG(r) {
     waste+='<text x="'+(x0+r.usableW*s/2)+'" y="'+(uy+r.discardH*s/2)+'" fill="#E1322D" font-size="11" text-anchor="middle" dominant-baseline="central">'+tr('waste')+' '+r.discardH+'mm</text>';
   }
 
-  const colsLbl = r.cols.length+'열 · '+fmtInt(r.totalResW)+'px'+(r.discardW>0?' · 입력 '+fmtInt(r.inW)+'mm':'');
-  const rowsLbl = r.rows.length+'행 · '+fmtInt(r.totalResH)+'px';
+  const colsLbl = tr('dwgCol',{c:r.cols.length,px:fmtInt(r.totalResW)}) + (r.discardW>0 ? ' · '+tr('dwgInput',{n:fmtInt(r.inW)}) : '');
+  const rowsLbl = tr('dwgRow',{r:r.rows.length,px:fmtInt(r.totalResH)});
 
   const legendItems=[['base',tr('legBase')],['combine',tr('legCombine')],['fill',tr('legFill')]];
   let lgx=x0, legend='';
@@ -342,13 +363,14 @@ function buildSVG(r) {
 function exportPNG(r) {
   if (r.tooSmall) return;
   const RC = {
-    base:    { stroke:'rgba(246,244,239,0.34)', fill:'rgba(246,244,239,0.05)', label:'rgba(246,244,239,0.85)' },
-    combine: { stroke:'#c2ff4d',                fill:'rgba(194,255,77,0.10)',  label:'#c2ff4d' },
-    fill:    { stroke:'#5B9BD5',                fill:'rgba(91,155,213,0.10)',  label:'#9CC4E8' },
+    base:    { stroke:'rgba(246,244,239,0.55)', fill:'rgba(246,244,239,0.08)', label:'rgba(246,244,239,0.92)' },
+    combine: { stroke:'#c2ff4d',                fill:'rgba(194,255,77,0.15)',  label:'#c2ff4d' },
+    fill:    { stroke:'#5B9BD5',                fill:'rgba(91,155,213,0.15)', label:'#9CC4E8' },
   };
+  const ACCENT='#c2ff4d', INK='#f6f4ef', MUTED='rgba(246,244,239,0.55)', RED='#E1322D';
   const s = Math.min(1500/r.inW, 1080/r.inH);
   const innerW=r.inW*s, innerH=r.inH*s;
-  const PL=150, PT=130, PR=60, PB=230;
+  const PL=150, PT=130, PR=60, PB=240;
   const W=Math.round(innerW+PL+PR), H=Math.round(innerH+PT+PB);
   const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
   const ctx=cv.getContext('2d');
@@ -356,6 +378,19 @@ function exportPNG(r) {
   const x0=PL, y0=PT;
   let xs=[0]; r.cols.forEach(w=>xs.push(xs[xs.length-1]+w));
   let ys=[0]; r.rows.forEach(h=>ys.push(ys[ys.length-1]+h));
+
+  // Module grid lines
+  if (s*MODULE_MM_W>=9) {
+    ctx.strokeStyle='rgba(246,244,239,0.07)'; ctx.lineWidth=1;
+    for (let mx=MODULE_MM_W;mx<r.usableW;mx+=MODULE_MM_W) {
+      if (!xs.includes(mx)){ctx.beginPath();ctx.moveTo(x0+mx*s,y0);ctx.lineTo(x0+mx*s,y0+r.usableH*s);ctx.stroke();}
+    }
+    for (let my=MODULE_MM_H;my<r.usableH;my+=MODULE_MM_H) {
+      if (!ys.includes(my)){ctx.beginPath();ctx.moveTo(x0,y0+my*s);ctx.lineTo(x0+r.usableW*s,y0+my*s);ctx.stroke();}
+    }
+  }
+
+  // Cabinet cells
   for (let ci=0;ci<r.cols.length;ci++) for (let ri=0;ri<r.rows.length;ri++) {
     const w=r.cols[ci], h=r.rows[ri];
     const c=RC[cabRole(w,h)];
@@ -368,24 +403,155 @@ function exportPNG(r) {
       ctx.fillText(w+'×'+h, px+pw/2, py+ph/2);
     }
   }
+
   const ux=x0+r.usableW*s, uy=y0+r.usableH*s;
+
+  // Outer border
   ctx.strokeStyle='rgba(246,244,239,0.5)'; ctx.lineWidth=3; ctx.strokeRect(x0,y0,r.usableW*s,r.usableH*s);
+
+  // Waste hatching
   function drawHatch(hx,hy,hw,hh,label,vert) {
     ctx.save(); ctx.beginPath(); ctx.rect(hx,hy,hw,hh); ctx.clip();
     ctx.fillStyle='rgba(225,50,45,0.06)'; ctx.fillRect(hx,hy,hw,hh);
     ctx.strokeStyle='rgba(225,50,45,0.4)'; ctx.lineWidth=2;
     for (let d=-hh;d<hw;d+=14){ctx.beginPath();ctx.moveTo(hx+d,hy+hh);ctx.lineTo(hx+d+hh,hy);ctx.stroke();}
     ctx.restore();
-    ctx.fillStyle='#E1322D'; ctx.font='600 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=RED; ctx.font='600 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
     if (vert){ctx.save();ctx.translate(hx+hw/2,hy+hh/2);ctx.rotate(Math.PI/2);ctx.fillText(label,0,0);ctx.restore();}
     else ctx.fillText(label,hx+hw/2,hy+hh/2);
   }
   if (r.discardW>0) drawHatch(ux,y0,r.discardW*s,innerH,tr('waste')+' '+r.discardW+'mm',true);
   if (r.discardH>0) drawHatch(x0,uy,r.usableW*s,r.discardH*s,tr('waste')+' '+r.discardH+'mm',false);
+
+  // Top dimension line & labels
+  ctx.strokeStyle=ACCENT; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0,y0-36); ctx.lineTo(ux,y0-36); ctx.stroke();
+  ctx.strokeStyle=MUTED; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x0,y0-52); ctx.lineTo(x0,y0-12); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ux,y0-52); ctx.lineTo(ux,y0-12); ctx.stroke();
+  ctx.fillStyle=INK; ctx.font='700 24px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(fmtInt(r.usableW)+' mm', (x0+ux)/2, y0-68);
+  ctx.fillStyle=MUTED; ctx.font='15px sans-serif';
+  const colsLbl=tr('dwgCol',{c:r.cols.length,px:fmtInt(r.totalResW)})+(r.discardW>0?' · '+tr('dwgInput',{n:fmtInt(r.inW)}):'');
+  ctx.fillText(colsLbl, (x0+ux)/2, y0-32);
+
+  // Left dimension line & labels
+  ctx.strokeStyle=ACCENT; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0-46,y0); ctx.lineTo(x0-46,uy); ctx.stroke();
+  ctx.strokeStyle=MUTED; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x0-62,y0); ctx.lineTo(x0-22,y0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x0-62,uy); ctx.lineTo(x0-22,uy); ctx.stroke();
+  ctx.fillStyle=INK; ctx.font='700 24px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.save(); ctx.translate(x0-82,(y0+uy)/2); ctx.rotate(-Math.PI/2); ctx.fillText(fmtInt(r.usableH)+' mm',0,0); ctx.restore();
+  ctx.fillStyle=MUTED; ctx.font='15px sans-serif';
+  const rowsLbl=tr('dwgRow',{r:r.rows.length,px:fmtInt(r.totalResH)});
+  ctx.save(); ctx.translate(x0-34,(y0+uy)/2); ctx.rotate(-Math.PI/2); ctx.fillText(rowsLbl,0,0); ctx.restore();
+
+  // Title block
+  const tb=uy+28;
+  ctx.fillStyle='rgba(246,244,239,0.04)'; ctx.fillRect(x0,tb,r.usableW*s,H-tb-14);
+  ctx.strokeStyle='rgba(246,244,239,0.16)'; ctx.lineWidth=1; ctx.strokeRect(x0,tb,r.usableW*s,H-tb-14);
+  ctx.fillStyle=ACCENT; ctx.font='700 30px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('ONLYONE LED', x0+20, tb+40);
+  const specs=[
+    fmtInt(r.inW)+' × '+fmtInt(r.inH)+' mm',
+    fmtInt(r.totalResW)+' × '+fmtInt(r.totalResH)+' px',
+    'P'+r.model.pitch,
+    r.totalCabinets+tr('pcs'),
+    fmt1(r.totalWeight)+'kg',
+    fmtInt(r.power)+'W',
+  ];
+  let sx=x0+20;
+  ctx.font='600 16px sans-serif'; ctx.textBaseline='middle';
+  specs.forEach(function(spec,i){
+    if(i>0){ctx.fillStyle=MUTED;ctx.fillText('·',sx,tb+84);sx+=16;}
+    ctx.fillStyle=INK;ctx.fillText(spec,sx,tb+84);
+    sx+=ctx.measureText(spec).width+16;
+  });
+  const roleItems=[
+    [tr('legBase'),   'rgba(246,244,239,0.08)','rgba(246,244,239,0.55)'],
+    [tr('legCombine'),'rgba(194,255,77,0.15)', ACCENT],
+    [tr('legFill'),   'rgba(91,155,213,0.15)', '#5B9BD5'],
+  ];
+  let lx=x0+20;
+  ctx.font='13px sans-serif'; ctx.textBaseline='middle';
+  roleItems.forEach(function(ri){
+    ctx.fillStyle=ri[1]; ctx.fillRect(lx,tb+116,14,14);
+    ctx.strokeStyle=ri[2]; ctx.lineWidth=1.5; ctx.strokeRect(lx,tb+116,14,14);
+    ctx.fillStyle=MUTED; ctx.fillText(ri[0],lx+20,tb+123);
+    lx+=20+ctx.measureText(ri[0]).width+26;
+  });
+  ctx.fillStyle=INK; ctx.font='600 13px sans-serif'; ctx.textAlign='left';
+  ctx.fillText(tr('total')+' '+fmtInt(r.totalCabinets)+tr('pcs')+' · '+r.cabinets.map(function(c){return c.w+'×'+c.h+' '+c.n+tr('pcs');}).join(' · '), x0+20, tb+154);
+
   const a=document.createElement('a');
   a.href=cv.toDataURL('image/png');
   a.download='ONLYONE_LED_'+r.inW+'x'+r.inH+'_P'+r.model.pitch+'.png';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
+}
+
+// ═══════════════════════════════════════════════
+// SAVED SPEC LIST
+// ═══════════════════════════════════════════════
+const SAVED_KEY = 'ledcalc_saved_v1';
+
+function loadSavedSpecs() {
+  try { return JSON.parse(localStorage.getItem(SAVED_KEY)||'[]'); } catch(_){ return []; }
+}
+
+function saveCurrentSpec() {
+  if (!lastResult) return;
+  const r = lastResult;
+  const specs = loadSavedSpecs();
+  specs.unshift({ W:r.inW, H:r.inH, modelId:r.model.id,
+    title:fmtInt(r.inW)+'×'+fmtInt(r.inH)+'mm · P'+r.model.pitch, ts:Date.now() });
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify(specs)); } catch(_){}
+  renderSavedList();
+  const btn=document.getElementById('btn-save');
+  btn.textContent=tr('saved');
+  setTimeout(function(){ btn.textContent=tr('saveSpec'); }, 1800);
+}
+
+function deleteSavedSpec(ts) {
+  const specs=loadSavedSpecs().filter(function(s){ return s.ts!==ts; });
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify(specs)); } catch(_){}
+  renderSavedList();
+}
+
+function loadSpec(spec) {
+  document.getElementById('inp-w').value=spec.W;
+  document.getElementById('inp-h').value=spec.H;
+  document.getElementById('sel-pitch').value=spec.modelId;
+  render();
+}
+
+function renderSavedList() {
+  const specs=loadSavedSpecs();
+  const el=document.getElementById('saved-list');
+  if (specs.length===0){ el.innerHTML=''; return; }
+  const locale=LANG==='ja'?'ja-JP':LANG==='en'?'en-US':'ko-KR';
+  let html='<div class="saved-section"><h3>'+tr('savedHd')+'</h3>';
+  specs.forEach(function(spec,idx){
+    const dateStr=new Date(spec.ts).toLocaleDateString(locale,{year:'numeric',month:'2-digit',day:'2-digit'});
+    html+='<div class="saved-item">'
+      +'<div class="si-info" data-idx="'+idx+'"><div class="si-title">'+spec.title+'</div><div class="si-date">'+dateStr+'</div></div>'
+      +'<button class="si-del" data-ts="'+spec.ts+'">×</button>'
+      +'</div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+  el.querySelectorAll('.si-info').forEach(function(div){
+    const idx=parseInt(div.dataset.idx);
+    div.addEventListener('click', function(){ loadSpec(specs[idx]); });
+  });
+  el.querySelectorAll('.si-del').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      deleteSavedSpec(parseInt(btn.dataset.ts));
+    });
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -416,6 +582,7 @@ function render() {
   if (r.tooSmall) { document.getElementById('stats-area').innerHTML=''; return; }
 
   const roleKey = {base:'roleBase', combine:'roleCombine', fill:'roleFill'};
+  const brk20Count = Math.ceil(r.ampSingle / 20);
   document.getElementById('stats-area').innerHTML =
     '<div class="stat-grid">'
     +'<div class="stat accent"><div class="lbl">'+tr('resolution')+'</div><div class="val">'+fmtInt(r.totalResW)+'×'+fmtInt(r.totalResH)+'</div></div>'
@@ -434,37 +601,11 @@ function render() {
     }).join('')+'</div>'
     +'</div>'
     +'<div class="brk-row">'
-    +'<div class="brk-card"><div class="lbl">'+tr('brkSingle')+'</div><div class="val">'+r.brkSingle+'A</div><div class="sub">'+tr('load')+' '+fmt1(r.ampSingle)+'A</div></div>'
+    +'<div class="brk-card"><div class="lbl">'+tr('brkSingle')+'</div><div class="val">'+r.brkSingle+'A</div><div class="sub">'+tr('load')+' '+fmt1(r.ampSingle)+'A</div><div class="sub accent">'+tr('brk20A',{n:brk20Count})+'</div></div>'
     +'<div class="brk-card"><div class="lbl">'+tr('brkThree')+'</div><div class="val">'+r.brkThree+'A</div><div class="sub">'+tr('load')+' '+fmt1(r.ampThree)+'A</div></div>'
     +'</div>';
 
   try { localStorage.setItem('onlyone_led_calc_v2', JSON.stringify({modelId,W,H,lang:LANG})); } catch(_){}
-}
-
-// ═══════════════════════════════════════════════
-// SPEC TEXT
-// ═══════════════════════════════════════════════
-function buildSpecText(r) {
-  const m=r.model;
-  const cab=r.cabinets.map(function(c){
-    const rk={base:'roleBase',combine:'roleCombine',fill:'roleFill'};
-    return '   · '+c.w+'×'+c.h+'  '+c.n+tr('pcs')+' × '+fmt1(c.kg)+'kg = '+fmt1(c.kgTotal)+'kg  ('+tr(rk[c.role])+')';
-  }).join('\n');
-  return [
-    '[ONLYONE LED — '+tr('appTitle')+']',
-    '입력      : '+fmtInt(r.inW)+' × '+fmtInt(r.inH)+' mm',
-    tr('usableSize')+' : '+fmtInt(r.usableW)+' × '+fmtInt(r.usableH)+' mm  ('+fmt2(r.area)+' ㎡)',
-    tr('waste')+'      : '+fmtInt(r.discardW)+' / '+fmtInt(r.discardH)+' mm',
-    tr('cabinets')+'   : '+r.totalCabinets+tr('pcs'),
-    cab,
-    tr('modules')+'    : '+fmtInt(r.totalModules)+tr('pcs')+' ('+r.modCountW+' × '+r.modCountH+')',
-    tr('resolution')+' : '+fmtInt(r.totalResW)+' × '+fmtInt(r.totalResH)+' px',
-    tr('power')+'      : '+fmtInt(r.power)+' W',
-    tr('weight')+'     : '+fmt1(r.totalWeight)+' kg',
-    tr('dataLines')+'  : '+r.dataLines+'  ('+fmtInt(r.totalPx)+' ÷ '+fmtInt(PX_PER_LINE)+')',
-    tr('brkSingle')+'  : '+r.brkSingle+'A ('+tr('load')+' '+fmt1(r.ampSingle)+'A)',
-    tr('brkThree')+'   : '+r.brkThree+'A ('+tr('load')+' '+fmt1(r.ampThree)+'A)',
-  ].join('\n');
 }
 
 // ═══════════════════════════════════════════════
@@ -479,10 +620,11 @@ function applyLang() {
   document.getElementById('lbl-pitch').textContent = tr('pitchL');
   document.getElementById('lbl-data-cap').textContent = tr('dataCap');
   document.getElementById('btn-png').textContent = tr('dlPNG');
-  document.getElementById('btn-copy').textContent = tr('copySpec');
+  document.getElementById('btn-save').textContent = tr('saveSpec');
   document.querySelectorAll('.lang-pick button').forEach(function(b){
     b.setAttribute('aria-pressed', b.dataset.l===LANG ? 'true' : 'false');
   });
+  renderSavedList();
   render();
 }
 
@@ -494,15 +636,7 @@ document.getElementById('inp-h').addEventListener('input', render);
 document.getElementById('sel-pitch').addEventListener('change', render);
 
 document.getElementById('btn-png').addEventListener('click', function(){ if(lastResult) exportPNG(lastResult); });
-
-document.getElementById('btn-copy').addEventListener('click', function(){
-  if (!lastResult) return;
-  navigator.clipboard.writeText(buildSpecText(lastResult)).then(function(){
-    const btn=document.getElementById('btn-copy');
-    btn.textContent=tr('copied');
-    setTimeout(function(){btn.textContent=tr('copySpec');}, 1800);
-  });
-});
+document.getElementById('btn-save').addEventListener('click', saveCurrentSpec);
 
 document.querySelectorAll('.lang-pick button').forEach(function(b){
   b.addEventListener('click', function(){
