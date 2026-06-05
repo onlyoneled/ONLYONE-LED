@@ -41,9 +41,11 @@ function decompHeight(H) {
   } else if (r === 320) {
     for (let i = 0; i < q; i++) rows.push(480);
     rows.push(320);
-  } else { // r === 160
+  } else if (r === 160) {
     if (q >= 1) { for (let i = 0; i < q - 1; i++) rows.push(480); rows.push(640); }
     else rows.push(160);
+  } else {
+    throw new Error('decompHeight: unexpected remainder ' + r);
   }
   return { rows, usable, discard };
 }
