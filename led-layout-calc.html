@@ -73,6 +73,10 @@ html,body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-
 .si-date{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:2px;}
 .si-del{background:none;border:none;color:var(--mute);cursor:pointer;font-size:18px;padding:0 0 0 8px;line-height:1;flex-shrink:0;}
 .si-del:hover{color:var(--danger);}
+.saved-pages{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
+.pg-btn{background:var(--panel);border:1px solid var(--line);color:var(--mute);padding:4px 10px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s;}
+.pg-btn:hover{border-color:var(--line-s);color:var(--ink);}
+.pg-btn.active{background:var(--accent);border-color:var(--accent);color:#000;}
 @media(max-width:960px){
   .wrap{grid-template-columns:1fr;height:auto;}
   .left{height:auto;}
@@ -496,6 +500,8 @@ function exportPNG(r) {
 // SAVED SPEC LIST
 // ═══════════════════════════════════════════════
 const SAVED_KEY = 'ledcalc_saved_v1';
+const PAGE_SIZE = 10;
+let savedPage = 0;
 
 function loadSavedSpecs() {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY)||'[]'); } catch(_){ return []; }
@@ -531,15 +537,26 @@ function renderSavedList() {
   const specs=loadSavedSpecs();
   const el=document.getElementById('saved-list');
   if (specs.length===0){ el.innerHTML=''; return; }
+  const totalPages=Math.ceil(specs.length/PAGE_SIZE);
+  if (savedPage>=totalPages) savedPage=totalPages-1;
+  const pageSpecs=specs.slice(savedPage*PAGE_SIZE, (savedPage+1)*PAGE_SIZE);
   const locale=LANG==='ja'?'ja-JP':LANG==='en'?'en-US':'ko-KR';
   let html='<div class="saved-section"><h3>'+tr('savedHd')+'</h3>';
-  specs.forEach(function(spec,idx){
+  pageSpecs.forEach(function(spec,i){
+    const idx=savedPage*PAGE_SIZE+i;
     const dateStr=new Date(spec.ts).toLocaleDateString(locale,{year:'numeric',month:'2-digit',day:'2-digit'});
     html+='<div class="saved-item">'
       +'<div class="si-info" data-idx="'+idx+'"><div class="si-title">'+spec.title+'</div><div class="si-date">'+dateStr+'</div></div>'
       +'<button class="si-del" data-ts="'+spec.ts+'">×</button>'
       +'</div>';
   });
+  if (totalPages>1) {
+    html+='<div class="saved-pages">';
+    for (let p=0;p<totalPages;p++) {
+      html+='<button class="pg-btn'+(p===savedPage?' active':'')+'" data-page="'+p+'">'+(p+1)+'</button>';
+    }
+    html+='</div>';
+  }
   html+='</div>';
   el.innerHTML=html;
   el.querySelectorAll('.si-info').forEach(function(div){
@@ -550,6 +567,12 @@ function renderSavedList() {
     btn.addEventListener('click', function(e){
       e.stopPropagation();
       deleteSavedSpec(parseInt(btn.dataset.ts));
+    });
+  });
+  el.querySelectorAll('.pg-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      savedPage=parseInt(btn.dataset.page);
+      renderSavedList();
     });
   });
 }
