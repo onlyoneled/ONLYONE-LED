@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>다이캐스팅 배치 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Gothic+A1:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#f6f4ef;--bg:#0a0a0a;--panel:#141414;--panel2:#1c1c1c;
+  --line:rgba(246,244,239,.14);--line-s:rgba(246,244,239,.28);
+  --mute:rgba(246,244,239,.55);--accent:oklch(0.92 0.22 130);
+  --danger:oklch(0.7 0.2 28);
+  --body:"Gothic A1",sans-serif;--mono:"IBM Plex Mono",monospace;
+  --fill:#5B9BD5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;min-height:100vh;}
+.hdr{background:#060606;border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.hdr h1{font-family:var(--mono);font-size:14px;letter-spacing:.08em;text-transform:uppercase;}
+.hdr .lang-pick{display:flex;gap:4px;margin-left:auto;}
+.hdr .lang-pick button{background:var(--panel);border:1px solid var(--line);color:var(--mute);padding:5px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;cursor:pointer;border-radius:6px;transition:all .15s;}
+.hdr .lang-pick button[aria-pressed="true"]{background:var(--accent);color:#000;border-color:var(--accent);}
+.wrap{display:grid;grid-template-columns:380px 1fr;gap:0;height:calc(100vh - 49px);}
+.left{background:#060606;border-right:1px solid var(--line);padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.right{display:flex;flex-direction:column;overflow:hidden;}
+.diagram-pane{flex:1;overflow:hidden;padding:16px;min-height:0;}
+.results-pane{border-top:1px solid var(--line);padding:16px;overflow-y:auto;max-height:42%;}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;}
+.panel h3{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase;margin-bottom:12px;}
+.field{display:grid;gap:5px;margin-bottom:12px;}
+.field label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase;}
+.field input,.field select{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:8px;font-family:var(--body);font-size:15px;font-weight:700;outline:none;transition:border-color .15s;width:100%;}
+.field input:focus,.field select:focus{border-color:var(--accent);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info-row{font-family:var(--mono);font-size:11px;color:var(--mute);display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--line);}
+.info-row:last-child{border:none;}
+.info-row .val{color:var(--ink);font-weight:500;}
+.info-row .val.accent{color:var(--accent);}
+.info-row .val.warn{color:var(--danger);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:999px;border:1px solid var(--line-s);background:transparent;color:var(--ink);cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;transition:all .15s;width:100%;justify-content:center;margin-top:4px;}
+.btn:hover{background:var(--panel2);}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#000;}
+.btn.primary:hover{background:#d6ff35;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+.stat .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase;margin-bottom:4px;}
+.stat .val{font-family:var(--mono);font-size:15px;font-weight:700;}
+.stat.accent .val{color:var(--accent);}
+.cab-list{display:grid;gap:6px;}
+.cab-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:7px 10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;}
+.cab-row .tag{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:10px;background:var(--panel2);color:var(--mute);}
+.cab-row .tag.base{background:rgba(246,244,239,.1);color:var(--ink);}
+.cab-row .tag.combine{background:oklch(0.92 0.22 130 / 20%);color:var(--accent);}
+.cab-row .tag.fill{background:rgba(91,155,213,.18);color:#9CC4E8;}
+.brk-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.brk-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;}
+.brk-card .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase;margin-bottom:4px;}
+.brk-card .val{font-size:20px;font-weight:700;color:var(--ink);}
+.brk-card .sub{font-family:var(--mono);font-size:11px;color:var(--mute);margin-top:2px;}
+.hint{font-family:var(--mono);font-size:10px;color:var(--mute);line-height:1.6;margin-top:6px;}
+.small-warn{font-family:var(--mono);font-size:11px;color:var(--danger);text-align:center;padding:40px 20px;}
+.svg-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.svg-wrap svg{max-width:100%;max-height:100%;}
+@media(max-width:960px){
+  .wrap{grid-template-columns:1fr;height:auto;}
+  .left{height:auto;}
+  .right{height:auto;}
+  .diagram-pane{height:400px;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div style="width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 1.8s ease-in-out infinite;flex-shrink:0;"></div>
+  <h1 id="ttl">다이캐스팅 배치 계산기</h1>
+  <div class="lang-pick">
+    <button data-l="ko" aria-pressed="true">KO</button>
+    <button data-l="en" aria-pressed="false">EN</button>
+    <button data-l="ja" aria-pressed="false">JA</button>
+  </div>
+</div>
+<style>@keyframes pulse{50%{opacity:.35;transform:scale(.85);}}</style>
+
+<div class="wrap">
+  <div class="left">
+    <div class="panel">
+      <h3 id="lbl-size">화면 크기 (mm)</h3>
+      <div class="row2">
+        <div class="field"><label id="lbl-w">가로 W</label><input type="number" id="inp-w" value="2000" step="10" min="0"></div>
+        <div class="field"><label id="lbl-h">세로 H</label><input type="number" id="inp-h" value="1500" step="10" min="0"></div>
+      </div>
+      <div id="size-info"></div>
+    </div>
+    <div class="panel">
+      <h3 id="lbl-pitch-hd">모듈 패널 (피치)</h3>
+      <div class="field">
+        <label id="lbl-pitch">픽셀 피치</label>
+        <select id="sel-pitch">
+          <option value="p2.5">P2.5 · 128×64px · 35W/모듈</option>
+          <option value="p2.0">P2.0 · 160×80px · 33.3W/모듈</option>
+          <option value="p1.86" selected>P1.86 · 172×86px · 33.3W/모듈</option>
+          <option value="p1.538">P1.538 · 208×104px · 35W/모듈</option>
+          <option value="p1.25">P1.25 · 256×128px · 38W/모듈</option>
+        </select>
+      </div>
+      <div class="hint" id="lbl-data-cap">데이터 라인 용량 650,000 px / line (고정)</div>
+    </div>
+    <button class="btn primary" id="btn-png">⬇ PNG 배치도 다운로드</button>
+    <button class="btn" id="btn-copy">⎘ 사양 복사</button>
+  </div>
+
+  <div class="right">
+    <div class="diagram-pane">
+      <div class="svg-wrap" id="svg-wrap"></div>
+    </div>
+    <div class="results-pane" id="results-pane">
+      <div id="stats-area"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// ENGINE (inlined from admin-tools/led-layout-engine.js)
+// ═══════════════════════════════════════════════
+const MODULES = [
+  { id: 'p2.5',   pitch: 2.5,   resW: 128, resH: 64,  w: 35   },
+  { id: 'p2.0',   pitch: 2.0,   resW: 160, resH: 80,  w: 33.3 },
+  { id: 'p1.86',  pitch: 1.86,  resW: 172, resH: 86,  w: 33.3 },
+  { id: 'p1.538', pitch: 1.538, resW: 208, resH: 104, w: 35   },
+  { id: 'p1.25',  pitch: 1.25,  resW: 256, resH: 128, w: 38   },
+];
+const MODULE_MM_W = 320, MODULE_MM_H = 160;
+const PX_PER_LINE = 650000;
+const CABINET_WEIGHT = {
+  '640x640': 8.9, '640x480': 7.0, '640x320': 4.8, '640x160': 2.3,
+  '320x640': 4.2, '320x480': 4.1, '320x320': 2.2, '320x160': 1.8,
+};
+function cabWeight(w, h) { return CABINET_WEIGHT[w + 'x' + h] || 0; }
+const BREAKER_SIZES = [6,10,16,20,25,32,40,50,63,80,100,125,160,200,250,315,400,500,630,800];
+function nextBreaker(a) { for (const b of BREAKER_SIZES) if (b >= a) return b; return Math.ceil(a/100)*100; }
+const SINGLE_V = 220, THREE_V = 380, PF = 0.8;
+
+function decompWidth(W) {
+  const usable = Math.floor(W / 320) * 320;
+  const units = usable / 320;
+  const cols = [];
+  for (let i = 0; i < Math.floor(units/2); i++) cols.push(640);
+  if (units % 2 === 1) cols.push(320);
+  return { cols, usable, discard: W - usable };
+}
+
+function decompHeight(H) {
+  const usable = Math.floor(H / 160) * 160;
+  const rows = [];
+  const q = Math.floor(usable / 480), r = usable - q * 480;
+  if (r === 0)        { for (let i=0;i<q;i++) rows.push(480); }
+  else if (r === 320) { for (let i=0;i<q;i++) rows.push(480); rows.push(320); }
+  else if (r === 160) {
+    if (q >= 1) { for (let i=0;i<q-1;i++) rows.push(480); rows.push(640); }
+    else rows.push(160);
+  }
+  return { rows, usable, discard: H - usable };
+}
+
+function cabRole(w, h) {
+  if (w===640 && h===480) return 'base';
+  if (w===640 && h===640) return 'combine';
+  return 'fill';
+}
+
+function computeLED(input) {
+  const m = MODULES.find(x => x.id === input.modelId) || MODULES[0];
+  const inW = Math.max(0, Math.round(input.W||0));
+  const inH = Math.max(0, Math.round(input.H||0));
+  const dw = decompWidth(inW), dh = decompHeight(inH);
+  const cols = dw.cols, rows = dh.rows;
+  const tally = {};
+  for (const w of cols) for (const h of rows) {
+    const key = w+'x'+h;
+    if (!tally[key]) tally[key] = {w, h, n:0, role:cabRole(w,h)};
+    tally[key].n++;
+  }
+  const cabinets = Object.values(tally).sort((a,b)=>(b.w*b.h)-(a.w*a.h));
+  cabinets.forEach(c=>{ c.kg=cabWeight(c.w,c.h); c.kgTotal=c.kg*c.n; });
+  const totalCabinets = cols.length * rows.length;
+  const totalWeight = cabinets.reduce((s,c)=>s+c.kgTotal, 0);
+  const modCountW = dw.usable/320, modCountH = dh.usable/160;
+  const totalModules = modCountW * modCountH;
+  const totalResW = modCountW * m.resW, totalResH = modCountH * m.resH;
+  const totalPx = totalResW * totalResH;
+  const usableW = dw.usable, usableH = dh.usable;
+  const power = totalModules * m.w;
+  const ampSingle = power / SINGLE_V, ampThree = power / (Math.sqrt(3) * THREE_V * PF);
+  const dataLines = totalPx > 0 ? Math.ceil(totalPx / PX_PER_LINE) : 0;
+  return {
+    model:m, inW, inH, cols, rows, cabinets, totalCabinets,
+    usableW, usableH, discardW:dw.discard, discardH:dh.discard,
+    modCountW, modCountH, totalModules, totalResW, totalResH, totalPx,
+    area:(usableW/1000)*(usableH/1000), power, ampSingle, ampThree,
+    brkSingle:nextBreaker(ampSingle), brkThree:nextBreaker(ampThree),
+    dataLines, totalWeight, tooSmall: usableW===0||usableH===0,
+  };
+}
+
+function fmtInt(n) { return Math.round(n).toLocaleString('ko-KR'); }
+function fmt1(n) { return (Math.round(n*10)/10).toFixed(1); }
+function fmt2(n) { return (Math.round(n*100)/100).toFixed(2); }
+
+// ═══════════════════════════════════════════════
+// i18n
+// ═══════════════════════════════════════════════
+let LANG = localStorage.getItem('ledcalc_lang') || 'ko';
+const T = {
+  appTitle:   {ko:'다이캐스팅 배치 계산기', en:'Die-cast Layout Calculator', ja:'ダイカスト配置計算機'},
+  sizeHd:     {ko:'화면 크기 (mm)', en:'Screen size (mm)', ja:'画面サイズ (mm)'},
+  widthL:     {ko:'가로 W', en:'Width W', ja:'横 W'},
+  heightL:    {ko:'세로 H', en:'Height H', ja:'縦 H'},
+  pitchHd:    {ko:'모듈 패널 (피치)', en:'Module panel (pitch)', ja:'モジュール(ピッチ)'},
+  pitchL:     {ko:'픽셀 피치', en:'Pixel pitch', ja:'ピクセルピッチ'},
+  dataCap:    {ko:'데이터 라인 용량 650,000 px / line (고정)', en:'Data line capacity: 650,000 px / line (fixed)', ja:'データライン容量 650,000 px / line (固定)'},
+  dlPNG:      {ko:'⬇ PNG 배치도 다운로드', en:'⬇ Download PNG layout', ja:'⬇ PNG配置図ダウンロード'},
+  copySpec:   {ko:'⎘ 사양 복사', en:'⎘ Copy spec', ja:'⎘ 仕様コピー'},
+  copied:     {ko:'복사됨 ✓', en:'Copied ✓', ja:'コピー済み ✓'},
+  usable:     {ko:'유효', en:'Usable', ja:'有効'},
+  waste:      {ko:'버림', en:'Waste', ja:'廃棄'},
+  exact:      {ko:'딱 맞음 ✓', en:'Exact fit ✓', ja:'ぴったり ✓'},
+  resolution: {ko:'전체 해상도', en:'Resolution', ja:'総解像度'},
+  usableSize: {ko:'유효 크기', en:'Usable size', ja:'有効サイズ'},
+  cabinets:   {ko:'다이캐스팅', en:'Cabinets', ja:'ダイカスト'},
+  power:      {ko:'소비전력', en:'Power', ja:'消費電力'},
+  modules:    {ko:'총 모듈', en:'Modules', ja:'総モジュール'},
+  weight:     {ko:'예상 무게', en:'Est. weight', ja:'推定重量'},
+  dataLines:  {ko:'필요 데이터 라인', en:'Data lines', ja:'必要データライン'},
+  cabBill:    {ko:'다이캐스팅 구성', en:'Die-cast bill', ja:'ダイカスト構成'},
+  roleBase:   {ko:'기본', en:'Base', ja:'基本'},
+  roleCombine:{ko:'조합', en:'Combine', ja:'組合せ'},
+  roleFill:   {ko:'채움', en:'Fill', ja:'補充'},
+  pcs:        {ko:'장', en:'pcs', ja:'枚'},
+  brkSingle:  {ko:'단상 차단기 (220V)', en:'Single-phase (220V)', ja:'単相ブレーカー (220V)'},
+  brkThree:   {ko:'삼상 차단기 (380V PF0.8)', en:'Three-phase (380V PF0.8)', ja:'三相ブレーカー (380V PF0.8)'},
+  load:       {ko:'부하', en:'Load', ja:'負荷'},
+  tooSmall:   {ko:'가로 320mm · 세로 160mm 이상을 입력하세요.', en:'Enter at least 320mm wide × 160mm tall.', ja:'横320mm · 縦160mm以上を入力してください。'},
+  total:      {ko:'합계', en:'Total', ja:'合計'},
+  legBase:    {ko:'기본 640×480', en:'Base 640×480', ja:'基本 640×480'},
+  legCombine: {ko:'조합 640×640', en:'Combine 640×640', ja:'組合せ 640×640'},
+  legFill:    {ko:'채움 기타', en:'Fill others', ja:'補充 その他'},
+  area:       {ko:'면적', en:'Area', ja:'面積'},
+};
+function tr(key) { const e=T[key]; return e ? (e[LANG]||e.ko) : key; }
+
+// ═══════════════════════════════════════════════
+// SVG DIAGRAM
+// ═══════════════════════════════════════════════
+const ACCENT_HEX = '#c2ff4d';
+const ROLE_COLORS = {
+  base:    { stroke:'rgba(246,244,239,0.34)', fill:'rgba(246,244,239,0.05)', label:'rgba(246,244,239,0.85)' },
+  combine: { stroke:ACCENT_HEX,               fill:'rgba(194,255,77,0.10)',  label:ACCENT_HEX },
+  fill:    { stroke:'#5B9BD5',                fill:'rgba(91,155,213,0.10)',  label:'#9CC4E8' },
+};
+
+function buildSVG(r) {
+  if (r.tooSmall) return '<div class="small-warn">' + tr('tooSmall') + '</div>';
+  const inW = r.inW, inH = r.inH;
+  const s = Math.min(900/inW, 660/inH);
+  const innerW = inW*s, innerH = inH*s;
+  const PL=78, PT=70, PR=26, PB=92;
+  const VBW = innerW+PL+PR, VBH = innerH+PT+PB;
+  const x0=PL, y0=PT;
+  let xs=[0]; r.cols.forEach(w=>xs.push(xs[xs.length-1]+w));
+  let ys=[0]; r.rows.forEach(h=>ys.push(ys[ys.length-1]+h));
+  const muted='rgba(246,244,239,0.55)', ink='#f6f4ef';
+  const ux=x0+r.usableW*s, uy=y0+r.usableH*s;
+
+  let cells='';
+  for (let ci=0;ci<r.cols.length;ci++) for (let ri=0;ri<r.rows.length;ri++) {
+    const w=r.cols[ci], h=r.rows[ri];
+    const c=ROLE_COLORS[cabRole(w,h)];
+    const px=x0+xs[ci]*s, py=y0+ys[ri]*s, pw=w*s, ph=h*s;
+    const lbl = pw>=42&&ph>=26
+      ? '<text x="'+(px+pw/2)+'" y="'+(py+ph/2)+'" text-anchor="middle" dominant-baseline="central" fill="'+c.label+'" font-size="'+Math.min(15,pw/4.2)+'" font-weight="600">'+w+'×'+h+'</text>'
+      : '';
+    cells += '<rect x="'+px+'" y="'+py+'" width="'+pw+'" height="'+ph+'" fill="'+c.fill+'" stroke="'+c.stroke+'" stroke-width="1.5"/>'+lbl;
+  }
+
+  let modLines='';
+  if (s*MODULE_MM_W>=9) {
+    for (let mx=MODULE_MM_W;mx<r.usableW;mx+=MODULE_MM_W) {
+      if (!xs.includes(mx)) modLines+='<line x1="'+(x0+mx*s)+'" y1="'+y0+'" x2="'+(x0+mx*s)+'" y2="'+uy+'" stroke="rgba(246,244,239,0.07)" stroke-width="1"/>';
+    }
+    for (let my=MODULE_MM_H;my<r.usableH;my+=MODULE_MM_H) {
+      if (!ys.includes(my)) modLines+='<line x1="'+x0+'" y1="'+(y0+my*s)+'" x2="'+ux+'" y2="'+(y0+my*s)+'" stroke="rgba(246,244,239,0.07)" stroke-width="1"/>';
+    }
+  }
+
+  let waste='';
+  if (r.discardW>0) {
+    waste+='<rect x="'+ux+'" y="'+y0+'" width="'+(r.discardW*s)+'" height="'+innerH+'" fill="url(#hatch)"/>';
+    waste+='<text x="'+(ux+r.discardW*s/2)+'" y="'+(y0+innerH/2)+'" fill="#E1322D" font-size="11" text-anchor="middle" transform="rotate(90 '+(ux+r.discardW*s/2)+' '+(y0+innerH/2)+')">'+tr('waste')+' '+r.discardW+'mm</text>';
+  }
+  if (r.discardH>0) {
+    waste+='<rect x="'+x0+'" y="'+uy+'" width="'+(r.usableW*s)+'" height="'+(r.discardH*s)+'" fill="url(#hatch)"/>';
+    waste+='<text x="'+(x0+r.usableW*s/2)+'" y="'+(uy+r.discardH*s/2)+'" fill="#E1322D" font-size="11" text-anchor="middle" dominant-baseline="central">'+tr('waste')+' '+r.discardH+'mm</text>';
+  }
+
+  const colsLbl = r.cols.length+'열 · '+fmtInt(r.totalResW)+'px'+(r.discardW>0?' · 입력 '+fmtInt(r.inW)+'mm':'');
+  const rowsLbl = r.rows.length+'행 · '+fmtInt(r.totalResH)+'px';
+
+  const legendItems=[['base',tr('legBase')],['combine',tr('legCombine')],['fill',tr('legFill')]];
+  let lgx=x0, legend='';
+  legendItems.forEach(function(item){
+    const role=item[0], lbl=item[1], c=ROLE_COLORS[role];
+    legend+='<rect x="'+lgx+'" y="'+(y0+innerH+24)+'" width="14" height="14" fill="'+c.fill+'" stroke="'+c.stroke+'" stroke-width="1.5"/>';
+    legend+='<text x="'+(lgx+20)+'" y="'+(y0+innerH+35)+'" fill="'+muted+'" font-size="12">'+lbl+'</text>';
+    lgx+=20+lbl.length*7+22;
+  });
+  legend+='<text x="'+x0+'" y="'+(y0+innerH+66)+'" fill="'+ink+'" font-size="12" font-weight="600">'+tr('total')+' '+fmtInt(r.totalCabinets)+tr('pcs')+' · '+r.cabinets.map(function(c){return c.w+'×'+c.h+' '+c.n+tr('pcs');}).join('  ·  ')+'</text>';
+
+  return '<svg viewBox="0 0 '+VBW+' '+VBH+'" style="width:100%;height:100%;max-height:100%;" xmlns="http://www.w3.org/2000/svg">'
+    +'<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="rgba(225,50,45,0.06)"/><line x1="0" y1="0" x2="0" y2="8" stroke="rgba(225,50,45,0.4)" stroke-width="1.4"/></pattern></defs>'
+    +modLines+cells+waste
+    +'<rect x="'+x0+'" y="'+y0+'" width="'+(r.usableW*s)+'" height="'+(r.usableH*s)+'" fill="none" stroke="rgba(246,244,239,0.5)" stroke-width="2"/>'
+    +'<line x1="'+x0+'" y1="'+(y0-34)+'" x2="'+ux+'" y2="'+(y0-34)+'" stroke="'+ACCENT_HEX+'" stroke-width="1.5"/>'
+    +'<line x1="'+x0+'" y1="'+(y0-40)+'" x2="'+x0+'" y2="'+(y0-8)+'" stroke="'+muted+'" stroke-width="1"/>'
+    +'<line x1="'+ux+'" y1="'+(y0-40)+'" x2="'+ux+'" y2="'+(y0-8)+'" stroke="'+muted+'" stroke-width="1"/>'
+    +'<text x="'+((x0+ux)/2)+'" y="'+(y0-44)+'" text-anchor="middle" fill="'+ink+'" font-size="17" font-weight="700">'+fmtInt(r.usableW)+' mm</text>'
+    +'<text x="'+((x0+ux)/2)+'" y="'+(y0-22)+'" text-anchor="middle" fill="'+muted+'" font-size="12">'+colsLbl+'</text>'
+    +'<line x1="'+(x0-40)+'" y1="'+y0+'" x2="'+(x0-40)+'" y2="'+uy+'" stroke="'+ACCENT_HEX+'" stroke-width="1.5"/>'
+    +'<text x="'+(x0-46)+'" y="'+((y0+uy)/2)+'" text-anchor="middle" fill="'+ink+'" font-size="17" font-weight="700" transform="rotate(-90 '+(x0-46)+' '+((y0+uy)/2)+')">'+fmtInt(r.usableH)+' mm</text>'
+    +'<text x="'+(x0-26)+'" y="'+((y0+uy)/2)+'" text-anchor="middle" fill="'+muted+'" font-size="12" transform="rotate(-90 '+(x0-26)+' '+((y0+uy)/2)+')">'+rowsLbl+'</text>'
+    +legend
+    +'</svg>';
+}
+
+// ═══════════════════════════════════════════════
+// PNG EXPORT
+// ═══════════════════════════════════════════════
+function exportPNG(r) {
+  if (r.tooSmall) return;
+  const RC = {
+    base:    { stroke:'rgba(246,244,239,0.34)', fill:'rgba(246,244,239,0.05)', label:'rgba(246,244,239,0.85)' },
+    combine: { stroke:'#c2ff4d',                fill:'rgba(194,255,77,0.10)',  label:'#c2ff4d' },
+    fill:    { stroke:'#5B9BD5',                fill:'rgba(91,155,213,0.10)',  label:'#9CC4E8' },
+  };
+  const s = Math.min(1500/r.inW, 1080/r.inH);
+  const innerW=r.inW*s, innerH=r.inH*s;
+  const PL=150, PT=130, PR=60, PB=230;
+  const W=Math.round(innerW+PL+PR), H=Math.round(innerH+PT+PB);
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#0a0a0a'; ctx.fillRect(0,0,W,H);
+  const x0=PL, y0=PT;
+  let xs=[0]; r.cols.forEach(w=>xs.push(xs[xs.length-1]+w));
+  let ys=[0]; r.rows.forEach(h=>ys.push(ys[ys.length-1]+h));
+  for (let ci=0;ci<r.cols.length;ci++) for (let ri=0;ri<r.rows.length;ri++) {
+    const w=r.cols[ci], h=r.rows[ri];
+    const c=RC[cabRole(w,h)];
+    const px=x0+xs[ci]*s, py=y0+ys[ri]*s, pw=w*s, ph=h*s;
+    ctx.fillStyle=c.fill; ctx.fillRect(px,py,pw,ph);
+    ctx.strokeStyle=c.stroke; ctx.lineWidth=2; ctx.strokeRect(px,py,pw,ph);
+    if (pw>=60&&ph>=38) {
+      ctx.fillStyle=c.label; ctx.font='600 '+Math.min(26,pw/4.2)+'px sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(w+'×'+h, px+pw/2, py+ph/2);
+    }
+  }
+  const ux=x0+r.usableW*s, uy=y0+r.usableH*s;
+  ctx.strokeStyle='rgba(246,244,239,0.5)'; ctx.lineWidth=3; ctx.strokeRect(x0,y0,r.usableW*s,r.usableH*s);
+  function drawHatch(hx,hy,hw,hh,label,vert) {
+    ctx.save(); ctx.beginPath(); ctx.rect(hx,hy,hw,hh); ctx.clip();
+    ctx.fillStyle='rgba(225,50,45,0.06)'; ctx.fillRect(hx,hy,hw,hh);
+    ctx.strokeStyle='rgba(225,50,45,0.4)'; ctx.lineWidth=2;
+    for (let d=-hh;d<hw;d+=14){ctx.beginPath();ctx.moveTo(hx+d,hy+hh);ctx.lineTo(hx+d+hh,hy);ctx.stroke();}
+    ctx.restore();
+    ctx.fillStyle='#E1322D'; ctx.font='600 20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    if (vert){ctx.save();ctx.translate(hx+hw/2,hy+hh/2);ctx.rotate(Math.PI/2);ctx.fillText(label,0,0);ctx.restore();}
+    else ctx.fillText(label,hx+hw/2,hy+hh/2);
+  }
+  if (r.discardW>0) drawHatch(ux,y0,r.discardW*s,innerH,tr('waste')+' '+r.discardW+'mm',true);
+  if (r.discardH>0) drawHatch(x0,uy,r.usableW*s,r.discardH*s,tr('waste')+' '+r.discardH+'mm',false);
+  const a=document.createElement('a');
+  a.href=cv.toDataURL('image/png');
+  a.download='ONLYONE_LED_'+r.inW+'x'+r.inH+'_P'+r.model.pitch+'.png';
+  a.click();
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+let lastResult = null;
+
+function render() {
+  const W = parseFloat(document.getElementById('inp-w').value)||0;
+  const H = parseFloat(document.getElementById('inp-h').value)||0;
+  const modelId = document.getElementById('sel-pitch').value;
+  const r = computeLED({ W, H, modelId });
+  lastResult = r;
+
+  document.getElementById('svg-wrap').innerHTML = buildSVG(r);
+
+  const si = document.getElementById('size-info');
+  if (r.tooSmall) {
+    si.innerHTML = '<div class="info-row"><span>'+tr('usable')+'</span><span class="val warn">'+tr('tooSmall')+'</span></div>';
+  } else {
+    const wOk=r.discardW===0, hOk=r.discardH===0;
+    const wVal = wOk ? '<span class="val accent">'+tr('exact')+'</span>' : '<span class="val">'+fmtInt(r.usableW)+'mm</span> <span class="val warn">('+tr('waste')+' '+r.discardW+'mm)</span>';
+    const hVal = hOk ? '<span class="val accent">'+tr('exact')+'</span>' : '<span class="val">'+fmtInt(r.usableH)+'mm</span> <span class="val warn">('+tr('waste')+' '+r.discardH+'mm)</span>';
+    si.innerHTML = '<div class="info-row"><span>'+tr('widthL')+' '+tr('usable')+'</span>'+wVal+'</div>'
+      +'<div class="info-row"><span>'+tr('heightL')+' '+tr('usable')+'</span>'+hVal+'</div>';
+  }
+
+  if (r.tooSmall) { document.getElementById('stats-area').innerHTML=''; return; }
+
+  const roleKey = {base:'roleBase', combine:'roleCombine', fill:'roleFill'};
+  document.getElementById('stats-area').innerHTML =
+    '<div class="stat-grid">'
+    +'<div class="stat accent"><div class="lbl">'+tr('resolution')+'</div><div class="val">'+fmtInt(r.totalResW)+'×'+fmtInt(r.totalResH)+'</div></div>'
+    +'<div class="stat"><div class="lbl">'+tr('usableSize')+'</div><div class="val">'+fmtInt(r.usableW)+'×'+fmtInt(r.usableH)+'mm</div></div>'
+    +'<div class="stat accent"><div class="lbl">'+tr('cabinets')+'</div><div class="val">'+fmtInt(r.totalCabinets)+tr('pcs')+'</div></div>'
+    +'<div class="stat"><div class="lbl">'+tr('power')+'</div><div class="val">'+fmtInt(r.power)+'W</div></div>'
+    +'<div class="stat"><div class="lbl">'+tr('modules')+'</div><div class="val">'+fmtInt(r.totalModules)+tr('pcs')+'</div></div>'
+    +'<div class="stat"><div class="lbl">'+tr('weight')+'</div><div class="val">'+fmt1(r.totalWeight)+'kg</div></div>'
+    +'<div class="stat"><div class="lbl">'+tr('dataLines')+'</div><div class="val">'+r.dataLines+'</div></div>'
+    +'<div class="stat"><div class="lbl">'+tr('area')+'</div><div class="val">'+fmt2(r.area)+'㎡</div></div>'
+    +'</div>'
+    +'<div class="panel" style="margin-bottom:10px;">'
+    +'<h3>'+tr('cabBill')+'</h3>'
+    +'<div class="cab-list">'+r.cabinets.map(function(c){
+      return '<div class="cab-row"><span><b>'+c.w+'×'+c.h+'mm</b></span><span class="tag '+c.role+'">'+tr(roleKey[c.role])+'</span><span>'+fmtInt(c.n)+tr('pcs')+' × '+fmt1(c.kg)+'kg = <b>'+fmt1(c.kgTotal)+'kg</b></span></div>';
+    }).join('')+'</div>'
+    +'</div>'
+    +'<div class="brk-row">'
+    +'<div class="brk-card"><div class="lbl">'+tr('brkSingle')+'</div><div class="val">'+r.brkSingle+'A</div><div class="sub">'+tr('load')+' '+fmt1(r.ampSingle)+'A</div></div>'
+    +'<div class="brk-card"><div class="lbl">'+tr('brkThree')+'</div><div class="val">'+r.brkThree+'A</div><div class="sub">'+tr('load')+' '+fmt1(r.ampThree)+'A</div></div>'
+    +'</div>';
+
+  try { localStorage.setItem('onlyone_led_calc_v2', JSON.stringify({modelId,W,H,lang:LANG})); } catch(_){}
+}
+
+// ═══════════════════════════════════════════════
+// SPEC TEXT
+// ═══════════════════════════════════════════════
+function buildSpecText(r) {
+  const m=r.model;
+  const cab=r.cabinets.map(function(c){
+    const rk={base:'roleBase',combine:'roleCombine',fill:'roleFill'};
+    return '   · '+c.w+'×'+c.h+'  '+c.n+tr('pcs')+' × '+fmt1(c.kg)+'kg = '+fmt1(c.kgTotal)+'kg  ('+tr(rk[c.role])+')';
+  }).join('\n');
+  return [
+    '[ONLYONE LED — '+tr('appTitle')+']',
+    '입력      : '+fmtInt(r.inW)+' × '+fmtInt(r.inH)+' mm',
+    tr('usableSize')+' : '+fmtInt(r.usableW)+' × '+fmtInt(r.usableH)+' mm  ('+fmt2(r.area)+' ㎡)',
+    tr('waste')+'      : '+fmtInt(r.discardW)+' / '+fmtInt(r.discardH)+' mm',
+    tr('cabinets')+'   : '+r.totalCabinets+tr('pcs'),
+    cab,
+    tr('modules')+'    : '+fmtInt(r.totalModules)+tr('pcs')+' ('+r.modCountW+' × '+r.modCountH+')',
+    tr('resolution')+' : '+fmtInt(r.totalResW)+' × '+fmtInt(r.totalResH)+' px',
+    tr('power')+'      : '+fmtInt(r.power)+' W',
+    tr('weight')+'     : '+fmt1(r.totalWeight)+' kg',
+    tr('dataLines')+'  : '+r.dataLines+'  ('+fmtInt(r.totalPx)+' ÷ '+fmtInt(PX_PER_LINE)+')',
+    tr('brkSingle')+'  : '+r.brkSingle+'A ('+tr('load')+' '+fmt1(r.ampSingle)+'A)',
+    tr('brkThree')+'   : '+r.brkThree+'A ('+tr('load')+' '+fmt1(r.ampThree)+'A)',
+  ].join('\n');
+}
+
+// ═══════════════════════════════════════════════
+// i18n APPLY
+// ═══════════════════════════════════════════════
+function applyLang() {
+  document.getElementById('ttl').textContent = tr('appTitle');
+  document.getElementById('lbl-size').textContent = tr('sizeHd');
+  document.getElementById('lbl-w').textContent = tr('widthL');
+  document.getElementById('lbl-h').textContent = tr('heightL');
+  document.getElementById('lbl-pitch-hd').textContent = tr('pitchHd');
+  document.getElementById('lbl-pitch').textContent = tr('pitchL');
+  document.getElementById('lbl-data-cap').textContent = tr('dataCap');
+  document.getElementById('btn-png').textContent = tr('dlPNG');
+  document.getElementById('btn-copy').textContent = tr('copySpec');
+  document.querySelectorAll('.lang-pick button').forEach(function(b){
+    b.setAttribute('aria-pressed', b.dataset.l===LANG ? 'true' : 'false');
+  });
+  render();
+}
+
+// ═══════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════
+document.getElementById('inp-w').addEventListener('input', render);
+document.getElementById('inp-h').addEventListener('input', render);
+document.getElementById('sel-pitch').addEventListener('change', render);
+
+document.getElementById('btn-png').addEventListener('click', function(){ if(lastResult) exportPNG(lastResult); });
+
+document.getElementById('btn-copy').addEventListener('click', function(){
+  if (!lastResult) return;
+  navigator.clipboard.writeText(buildSpecText(lastResult)).then(function(){
+    const btn=document.getElementById('btn-copy');
+    btn.textContent=tr('copied');
+    setTimeout(function(){btn.textContent=tr('copySpec');}, 1800);
+  });
+});
+
+document.querySelectorAll('.lang-pick button').forEach(function(b){
+  b.addEventListener('click', function(){
+    LANG = b.dataset.l;
+    localStorage.setItem('ledcalc_lang', LANG);
+    applyLang();
+  });
+});
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+(function init(){
+  try {
+    const saved = JSON.parse(localStorage.getItem('onlyone_led_calc_v2')||'{}');
+    if (saved.W) document.getElementById('inp-w').value = saved.W;
+    if (saved.H) document.getElementById('inp-h').value = saved.H;
+    if (saved.modelId) document.getElementById('sel-pitch').value = saved.modelId;
+    if (saved.lang) LANG = saved.lang;
+  } catch(_){}
+  applyLang();
+})();
+</script>
+</body>
+</html>
