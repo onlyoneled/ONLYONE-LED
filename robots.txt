@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin.html
+Disallow: /onlyone_admin.html
+Disallow: /quotes.html
+Disallow: /led-cost-calculator.html
+Disallow: /quote-worker/
+
+Sitemap: https://only1led.com/sitemap.xml
