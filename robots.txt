@@ -7,4 +7,4 @@ Disallow: /quotes.html
 Disallow: /led-cost-calculator.html
 Disallow: /quote-worker/
 
-Sitemap: https://only1led.com/sitemap.xml
+Sitemap: https://www.only1led.com/sitemap.xml
