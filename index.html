@@ -98,13 +98,26 @@ body[data-lang="jp"]{font-family:var(--font-jp);}
 .ig-wrap-hd{display:flex;align-items:center;padding-left:14px;border-left:1px solid rgba(255,255,255,.2);}
 .ig-link{
   display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
-  border-radius:7px;
+  border-radius:7px;position:relative;
   background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);
   opacity:.88;transition:opacity .2s;
 }
 .ig-link:hover{opacity:1;}
+.ig-link::after{
+  content:"Only1LED 인스타그램 바로가기";
+  position:absolute;right:0;
+  background:#1a1a1a;color:var(--ink);
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.07em;
+  white-space:nowrap;padding:5px 10px;border-radius:5px;
+  border:1px solid var(--line);
+  opacity:0;pointer-events:none;
+  transition:opacity .18s;
+}
+.ig-link:hover::after{opacity:1;}
 .ig-link--hd{width:24px;height:24px;}
+.ig-link--hd::after{top:calc(100% + 8px);}
 .ig-link--ft{width:26px;height:26px;}
+.ig-link--ft::after{bottom:calc(100% + 8px);}
 .footer-right{display:flex;align-items:center;gap:12px;}
 
 /* Hamburger */
