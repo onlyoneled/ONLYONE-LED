@@ -95,6 +95,18 @@ body[data-lang="jp"]{font-family:var(--font-jp);}
 .langs button:hover{opacity:1;}
 .langs button[aria-pressed="true"]{opacity:1;color:var(--accent);}
 
+.ig-wrap-hd{display:flex;align-items:center;padding-left:14px;border-left:1px solid rgba(255,255,255,.2);}
+.ig-link{
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+  border-radius:7px;
+  background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%);
+  opacity:.88;transition:opacity .2s;
+}
+.ig-link:hover{opacity:1;}
+.ig-link--hd{width:24px;height:24px;}
+.ig-link--ft{width:26px;height:26px;}
+.footer-right{display:flex;align-items:center;gap:12px;}
+
 /* Hamburger */
 .menu-btn{
   display:none;background:transparent;border:0;color:#fff;
@@ -777,6 +789,12 @@ footer .logo{font-size:15px;}
     <button data-lang="jp" aria-pressed="false">JP</button>
   </div>
 
+  <div class="ig-wrap-hd">
+    <a href="https://www.instagram.com/onlyone.led/" target="_blank" rel="noopener noreferrer" class="ig-link ig-link--hd" aria-label="인스타그램">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    </a>
+  </div>
+
   <button class="menu-btn" id="menuBtn" aria-label="메뉴 열기" aria-expanded="false">
     <svg width="24" height="18" viewBox="0 0 24 18" fill="none" aria-hidden="true">
       <path d="M0 1h24M0 9h24M0 17h24" stroke="currentColor" stroke-width="1.8"/>
@@ -1042,7 +1060,12 @@ footer .logo{font-size:15px;}
 ═══════════════════════════════════════ -->
 <footer>
   <a class="logo" href="#hero"><span class="dot"></span>ONLYONE LED</a>
-  <span>© 2024 온리원 LED. ALL RIGHTS RESERVED.</span>
+  <div class="footer-right">
+    <span>© 2026 온리원 LED. ALL RIGHTS RESERVED.</span>
+    <a href="https://www.instagram.com/onlyone.led/" target="_blank" rel="noopener noreferrer" class="ig-link ig-link--ft" aria-label="인스타그램">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    </a>
+  </div>
 </footer>
 
 <!-- ═══════════════════════════════════════
