@@ -1311,18 +1311,20 @@ async function loadCMS() {
   try {
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 6000);
-    const [wRes, sRes, aRes, stRes, txRes] = await Promise.all([
+    const [wRes, sRes, aRes, stRes, txRes, faqRes] = await Promise.all([
       fetch('/data/works.json',    { signal: ctrl.signal }),
       fetch('/data/services.json', { signal: ctrl.signal }),
       fetch('/data/about.json',    { signal: ctrl.signal }),
       fetch('/data/settings.json', { signal: ctrl.signal }),
-      fetch('/data/texts.json',    { signal: ctrl.signal })
+      fetch('/data/texts.json',    { signal: ctrl.signal }),
+      fetch('/data/faq.json',      { signal: ctrl.signal })
     ]);
     clearTimeout(tid);
     if (wRes.ok)  { const j=await wRes.json();  if(j.works)    CMS.works    = j.works; }
     if (sRes.ok)  { const j=await sRes.json();  if(j.services) CMS.services = j.services; }
     if (aRes.ok)  { const j=await aRes.json();  if(j.about)    CMS.about    = j.about; }
     if (stRes.ok) { const j=await stRes.json(); CMS.settings = Object.assign({},DEFAULT.settings,j); }
+    if (faqRes.ok){ const j=await faqRes.json(); if(j.faq && window.faqSetData) window.faqSetData(j.faq); }
     if (txRes.ok) {
       const tx = await txRes.json();
       ['kr','en','jp'].forEach(lang => {
@@ -2005,6 +2007,15 @@ if ('IntersectionObserver' in window) {
   var state = { lang: 'ko', cat: 'all', open: 0 };
   var elList = document.getElementById('faqList');
   var elCats = document.getElementById('faqCats');
+
+  // ── 어드민에서 data/faq.json으로 데이터 교체 지원 ───────────────────
+  window.faqSetData = function(items) {
+    if (!Array.isArray(items) || !items.length) return;
+    DATA.splice(0, DATA.length);
+    items.forEach(function(d) { DATA.push(d); });
+    state.open = null;
+    render();
+  };
 
   // ── 사이트 상단 KR/EN/JP 전환과 연동 ────────────────────────────────
   // 기존 언어 전환 핸들러 안에서 window.setFaqLang('en') 을 호출하면 FAQ 도 같이 바뀝니다.
