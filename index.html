@@ -22,7 +22,7 @@
 <meta name="theme-color" content="#0a0a0a" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="preload" as="image" href="/images/slide2.png" />
+<link rel="preload" as="image" href="/images/slide2.png" fetchpriority="high" />
 <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
   href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Gothic+A1:wght@400;700;900&family=IBM+Plex+Mono:wght@400&family=Noto+Sans+JP:wght@400;700;900&display=swap" />
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Gothic+A1:wght@400;700;900&family=IBM+Plex+Mono:wght@400&family=Noto+Sans+JP:wght@400;700;900&display=swap" /></noscript>
@@ -1369,7 +1369,7 @@ function renderWorks() {
     const {t,m} = wText(w, lang);
     const n = String(i+1).padStart(2,'0');
     return `<a class="work-card ${SIZES[i%SIZES.length]}" href="#${w.id}" data-wid="${w.id}">
-      <div class="wc-img"><img src="${(w.images&&w.images[0])||w.image||''}" alt="${t}" loading="lazy"/></div>
+      <div class="wc-img"><img src="${(w.images&&w.images[0])||w.image||''}" alt="${t}" loading="lazy" decoding="async"/></div>
       <div class="wc-veil"></div>
       <span class="wc-num">${n}</span>
       <div class="wc-info"><h3>${t}</h3><p>${m}</p></div>
@@ -1427,7 +1427,7 @@ function renderServices() {
       <div class="svc-body"><div><div class="svc-body-inner" style="grid-template-columns:1fr;">
         <div><p>${d.replace(/\n/g,'<br/>')}</p>${specBlock}</div>
         ${(s.images&&s.images.length)?`<div class="svc-gallery" data-imgs='${JSON.stringify(s.images)}' data-idx="0">
-          <img src="${s.images[0]}" alt="${t}" loading="lazy"/>
+          <img src="${s.images[0]}" alt="${t}" loading="lazy" decoding="async"/>
           ${s.images.length>1?`<button class="svc-gal-btn svc-gal-prev" aria-label="이전">&#8249;</button>
           <button class="svc-gal-btn svc-gal-next" aria-label="다음">&#8250;</button>
           <div class="svc-gal-count">1/${s.images.length}</div>`:''}
