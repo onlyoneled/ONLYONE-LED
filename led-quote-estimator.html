@@ -142,7 +142,110 @@ tbody tr.spare-row{background:#fefce8;}
 <script src="data/led-cost-data.js"></script>
 <script src="admin-tools/led-quote-estimator-calc.js"></script>
 <script>
-// Task 5에서 채움
+let currentGroup = 'smd';
+
+function pitchOptionsFor(group) {
+  const rows = group === 'gobcob' ? LED_COST_DATA.ledModulesGobCob : LED_COST_DATA.ledModulesSmd;
+  const byPitch = {};
+  rows.forEach((r) => { byPitch[r.pitch] = byPitch[r.pitch] || r; });
+  return Object.values(byPitch).sort((a, b) => a.pitch - b.pitch);
+}
+
+function fillSelect(selectEl, rows, labelFn) {
+  selectEl.innerHTML = '';
+  rows.forEach((r, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = labelFn(r);
+    selectEl.appendChild(o);
+  });
+}
+
+function rebuildPitchSelect() {
+  const rows = pitchOptionsFor(currentGroup);
+  fillSelect(document.getElementById('sel-pitch'), rows, (r) => `P${r.pitch} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`);
+}
+
+function switchTab(group) {
+  currentGroup = group;
+  document.getElementById('tab-smd').classList.toggle('active', group === 'smd');
+  document.getElementById('tab-gobcob').classList.toggle('active', group === 'gobcob');
+  rebuildPitchSelect();
+  calc();
+}
+
+function fmt(n) {
+  if (n === undefined || n === null || isNaN(n)) return '-';
+  return Math.round(n).toLocaleString('ko-KR');
+}
+
+function card(cls, lbl, val) {
+  return `<div class="res-card ${cls}"><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`;
+}
+
+function calc() {
+  const pitchSel = document.getElementById('sel-pitch');
+  const pitchRows = pitchOptionsFor(currentGroup);
+  const pitch = pitchRows.length ? pitchRows[pitchSel.value || 0].pitch : null;
+  if (pitch === null) {
+    document.getElementById('tbody-items').innerHTML = '<tr><td colspan="5">이 그룹에 등록된 모듈 데이터가 없습니다.</td></tr>';
+    return;
+  }
+
+  const input = {
+    W: parseFloat(document.getElementById('inp-w').value) || 0,
+    H: parseFloat(document.getElementById('inp-h').value) || 0,
+    moduleGroup: currentGroup,
+    pitch,
+    receivingCardIndex: parseInt(document.getElementById('sel-rcv').value || 0, 10),
+    smpsIndex: parseInt(document.getElementById('sel-smps').value || 0, 10),
+    processorIndex: parseInt(document.getElementById('sel-proc').value || 0, 10),
+  };
+
+  const result = computeQuote(input, LED_COST_DATA);
+
+  document.getElementById('res-summary').innerHTML =
+    card('blue', '총 캐비닛 수', result.layout.totalCabinets + '개') +
+    card('green', '총 모듈 수', result.layout.totalModules + '개') +
+    card('orange', '화면 면적', result.layout.area.toFixed(2) + '㎡') +
+    card('purple', '예상 원가 합계', '¥' + fmt(result.totalCny));
+
+  document.getElementById('tbody-items').innerHTML = result.items.map((it) => `
+    <tr>
+      <td>${it.label}</td>
+      <td>${it.qty}</td>
+      <td class="tr">¥${fmt(it.unitPrice)}</td>
+      <td class="tr">¥${fmt(it.subtotal)}</td>
+      <td>${it.warning ? '<span style="color:var(--orange);font-size:11px;">⚠ ' + it.warning + '</span>' : ''}</td>
+    </tr>
+  `).join('');
+
+  const warningsBox = document.getElementById('warnings-box');
+  warningsBox.innerHTML = result.warnings.length
+    ? '<div class="notice">' + result.warnings.map((w) => '⚠ ' + w).join('<br>') + '</div>'
+    : '';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('tab-smd').addEventListener('click', () => switchTab('smd'));
+  document.getElementById('tab-gobcob').addEventListener('click', () => switchTab('gobcob'));
+  document.getElementById('sel-pitch').addEventListener('change', calc);
+  document.getElementById('inp-w').addEventListener('input', calc);
+  document.getElementById('inp-h').addEventListener('input', calc);
+
+  fillSelect(document.getElementById('sel-rcv'), LED_COST_DATA.receivingCards,
+    (r) => `${r.brand} ${r.model} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`);
+  fillSelect(document.getElementById('sel-smps'), LED_COST_DATA.smps,
+    (r) => `${r.voltage || ''} ${r.capacity || ''} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`);
+  fillSelect(document.getElementById('sel-proc'), LED_COST_DATA.processors,
+    (r) => `${r.brand} ${r.model} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`);
+  document.getElementById('sel-rcv').addEventListener('change', calc);
+  document.getElementById('sel-smps').addEventListener('change', calc);
+  document.getElementById('sel-proc').addEventListener('change', calc);
+
+  rebuildPitchSelect();
+  calc();
+});
 </script>
 
 </body>
