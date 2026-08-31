@@ -1,7 +1,6 @@
 window.LED_COST_DATA = {
   "ledModulesSmd": [
     {"pitch": 2, "indoor_outdoor": "indoor", "type": "SMD", "대표단가": 130, "통화": "CNY", "관측횟수": 8, "최소": 130, "최대": 145, "평균": 137.5, "최근견적일": "2025-12-01", "최신일자 동률 관측 수": 2, "최근견적파일명": "C:\\Users\\aquab\\xwechat_files\\wxid_wwblqsdogthi12_8609\\msg\\file\\2025-12\\960x1920.xlsx"},
-    {"indoor_outdoor": "indoor", "type": "SMD", "대표단가": 245, "통화": "CNY", "관측횟수": 17, "최소": 190, "최대": 253, "평균": 226.59, "최근견적일": "2025-07-21", "최신일자 동률 관측 수": 6, "최근견적파일명": "C:\\Users\\aquab\\xwechat_files\\wxid_wwblqsdogthi12_8609\\msg\\file\\2025-07\\250721텅차이 腾彩光电报价表(1).xlsx"},
     {"pitch": 2.5, "indoor_outdoor": "indoor", "type": "SMD", "대표단가": 110, "통화": "CNY", "관측횟수": 7, "최소": 110, "최대": 110, "평균": 110, "최근견적일": "2025-09-01", "최신일자 동률 관측 수": 2, "최근견적파일명": "C:\\Users\\aquab\\xwechat_files\\wxid_wwblqsdogthi12_8609\\msg\\file\\2025-09\\TOPIC 250523 하우스더큐브 (실내다이캐스팅 1280X2700)_폼메일 Rev.01.xlsx"},
     {"pitch": 1.86, "indoor_outdoor": "indoor", "type": "SMD", "대표단가": 148, "통화": "CNY", "관측횟수": 46, "최소": 110, "최대": 148, "평균": 140, "최근견적일": "2026-03-01", "최신일자 동률 관측 수": 2, "최근견적파일명": "C:\\Users\\aquab\\xwechat_files\\wxid_wwblqsdogthi12_8609\\msg\\file\\2026-03\\P1.86室内全彩4800x640mm.xlsx"},
     {"pitch": 2.97, "indoor_outdoor": "outdoor", "type": "SMD", "대표단가": 480, "통화": "CNY", "관측횟수": 8, "최소": 480, "최대": 7560, "평균": 5752.5, "최근견적일": "2025-07-01", "최신일자 동률 관측 수": 2, "최근견적파일명": "C:\\Users\\aquab\\xwechat_files\\wxid_wwblqsdogthi12_8609\\msg\\file\\2025-07\\P2.97-P3.91户外全彩前维护.xlsx"},

@@ -18,6 +18,8 @@ def read_category_sheet(wb, sheet_name: str) -> list[dict]:
 def split_led_modules(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     smd_rows, gob_cob_rows = [], []
     for row in rows:
+        if row.get('pitch') is None:
+            continue
         rtype = (row.get('type') or '').upper()
         count = row.get('관측횟수') or 0
         if rtype == 'SMD':
@@ -106,6 +108,16 @@ def _selftest():
     assert len(smd) == 1 and smd[0]['pitch'] == 1.86, smd
     assert len(gob_cob) == 2, gob_cob
     print('convert_cost_data self-test: OK')
+
+    smd_missing_pitch, gob_cob_missing_pitch = split_led_modules([
+        {'type': 'SMD', '관측횟수': 17, '대표단가': 245},   # pitch 없음, 관측횟수 높아도 제외
+        {'type': 'SMD', '관측횟수': 5, 'pitch': 1.86},
+        {'type': 'GOB', '관측횟수': 4},                      # pitch 없음 -> 제외
+        {'type': 'COB', '관측횟수': 3, 'pitch': 1.53},
+    ])
+    assert len(smd_missing_pitch) == 1 and smd_missing_pitch[0]['pitch'] == 1.86, smd_missing_pitch
+    assert len(gob_cob_missing_pitch) == 1 and gob_cob_missing_pitch[0]['pitch'] == 1.53, gob_cob_missing_pitch
+    print('convert_cost_data self-test (missing pitch regression): OK')
 
     boxes = filter_aluminum_boxes([
         {'material': 'aluminum', 'size': '640*480mm'},
