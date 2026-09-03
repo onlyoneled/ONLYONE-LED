@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ONLYONE LED — 원가 데이터 검토</title>
+<style>
+:root{
+  --primary:#1a56db;--primary-dark:#1e40af;--bg:#f1f5f9;--card:#fff;
+  --border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --green:#16a34a;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);}
+button,input{font:inherit;color:inherit;}
+a{color:inherit;}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;z-index:100;
+}
+.login-box{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+  padding:36px 32px;width:min(380px,92vw);display:flex;flex-direction:column;gap:16px;
+}
+.login-box h1{font-size:20px;font-weight:700;}
+.login-box p{font-size:13px;color:var(--muted);}
+.login-box input[type=password]{
+  border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;
+  font-size:15px;width:100%;outline:none;transition:border .2s;background:#fff;
+}
+.login-box input[type=password]:focus{border-color:var(--primary);}
+.btn-login{
+  background:var(--primary);color:#fff;font-weight:700;border:none;
+  border-radius:8px;padding:11px;font-size:15px;cursor:pointer;transition:opacity .15s;
+}
+.btn-login:hover{opacity:.88;}
+.login-err{color:var(--red);font-size:13px;min-height:18px;}
+
+/* ── APP SHELL ── */
+#app{display:none;flex-direction:column;min-height:100vh;}
+.hdr{background:linear-gradient(135deg,#1a56db,#7c3aed);color:#fff;padding:18px 32px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(26,86,219,.3);}
+.hdr h1{font-size:20px;font-weight:700;}
+.hdr p{font-size:12px;opacity:.8;margin-top:2px;}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px;width:100%;flex:1;}
+.card{background:var(--card);border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:20px;}
+.card h2{font-size:15px;font-weight:700;margin-bottom:16px;}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+th{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;}
+tbody tr:hover{background:#f8fafc;}
+.cat-badge{
+  display:inline-block;background:#eff6ff;color:var(--primary);font-weight:700;
+  border-radius:6px;padding:3px 8px;font-size:12px;white-space:nowrap;
+}
+.cat-badge.unclassified{background:#fef2f2;color:var(--red);}
+.attrs{font-size:12px;color:var(--muted);max-width:260px;line-height:1.5;}
+.price-cell{font-weight:700;white-space:nowrap;}
+.reason-cell{font-size:12px;color:var(--muted);max-width:200px;}
+.src-cell{font-size:12px;color:var(--muted);font-family:ui-monospace,monospace;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.actions-cell{white-space:nowrap;}
+.btn-approve,.btn-reject{
+  border:none;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;
+  cursor:pointer;transition:opacity .15s;margin-right:6px;
+}
+.btn-approve{background:var(--green);color:#fff;}
+.btn-reject{background:var(--red);color:#fff;}
+.btn-approve:hover:not(:disabled),.btn-reject:hover:not(:disabled){opacity:.85;}
+.btn-approve:disabled,.btn-reject:disabled{opacity:.4;cursor:default;}
+
+.empty-state{
+  text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;
+}
+.list-status{font-size:13px;color:var(--muted);padding:12px 0;}
+.list-err{color:var(--red);font-size:13px;padding:12px 0;}
+.pending-count{
+  display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;
+  padding:2px 10px;font-size:12px;font-weight:700;margin-left:8px;
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>ONLYONE LED</h1>
+    <p>원가 데이터 검토</p>
+    <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="btn-login" onclick="doLogin()">로그인</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div class="hdr">
+    <div>
+      <h1>원가 데이터 검토 <span class="pending-count" id="pending-count" style="display:none"></span></h1>
+      <p>검토대기 항목을 승인하거나 반려합니다</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>검토대기 목록</h2>
+      <div class="list-status" id="list-status">불러오는 중…</div>
+      <div class="list-err" id="list-err"></div>
+      <div class="empty-state" id="empty-state" style="display:none">검토할 항목이 없습니다</div>
+      <div class="table-wrap" id="table-wrap" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>카테고리</th>
+              <th>속성</th>
+              <th>가격</th>
+              <th>관측일</th>
+              <th>출처파일</th>
+              <th>사유</th>
+              <th>작업</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://onlyone-quote-worker.only1-d71.workers.dev';
+const PW_KEY = 'ql_token';
+
+let authToken = '';
+let items = [];
+
+// ── LOGIN ──────────────────────────────────────────────
+function doLogin() {
+  const pw = document.getElementById('pw-input').value.trim();
+  if (!pw) return;
+  authToken = pw;
+  localStorage.setItem(PW_KEY, pw);
+  initApp();
+}
+
+async function initApp() {
+  const res = await fetch(`${API_BASE}/api/vendors`, {
+    headers: { 'X-Auth-Token': authToken }
+  });
+  if (res.status === 401) {
+    localStorage.removeItem(PW_KEY);
+    document.getElementById('login-err').textContent = '비밀번호가 틀렸습니다.';
+    return;
+  }
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  loadReviewList();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(PW_KEY);
+  if (saved) { authToken = saved; initApp(); }
+});
+
+// ── LOAD LIST ──────────────────────────────────────────
+async function loadReviewList() {
+  const status = document.getElementById('list-status');
+  const err    = document.getElementById('list-err');
+  status.textContent = '불러오는 중…';
+  err.textContent = '';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/cost-review`, {
+      headers: { 'X-Auth-Token': authToken }
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem(PW_KEY);
+      location.reload();
+      return;
+    }
+
+    if (!res.ok) {
+      status.textContent = '';
+      err.textContent = `목록을 불러오지 못했습니다 (HTTP ${res.status})`;
+      return;
+    }
+
+    items = await res.json();
+    status.textContent = '';
+    renderTable();
+  } catch (e) {
+    status.textContent = '';
+    err.textContent = e.message || '네트워크 오류';
+  }
+}
+
+// ── RENDER ─────────────────────────────────────────────
+function renderTable() {
+  const emptyState = document.getElementById('empty-state');
+  const tableWrap  = document.getElementById('table-wrap');
+  const tbody      = document.getElementById('table-body');
+  const pendingBadge = document.getElementById('pending-count');
+
+  if (!items.length) {
+    emptyState.style.display = 'block';
+    tableWrap.style.display = 'none';
+    pendingBadge.style.display = 'none';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  tableWrap.style.display = 'block';
+  pendingBadge.style.display = 'inline-block';
+  pendingBadge.textContent = `${items.length}건`;
+
+  tbody.innerHTML = items.map((item) => `
+    <tr id="row-${item.id}">
+      <td><span class="cat-badge${item.category === 'unclassified' ? ' unclassified' : ''}">${esc(item.category)}</span></td>
+      <td class="attrs">${formatAttributes(item.attributes)}</td>
+      <td class="price-cell">${formatPrice(item.price)} ${esc(item.currency)}</td>
+      <td>${esc(item.observed_date)}</td>
+      <td class="src-cell" title="${esc(item.source_file)}">${esc(item.source_file)}</td>
+      <td class="reason-cell">${esc(item.status_reason)}</td>
+      <td class="actions-cell">
+        <button class="btn-approve" onclick="reviewAction(${item.id}, 'approve')">승인</button>
+        <button class="btn-reject" onclick="reviewAction(${item.id}, 'reject')">반려</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function formatAttributes(attrs) {
+  if (!attrs || typeof attrs !== 'object') return '';
+  const entries = Object.entries(attrs).filter(([, v]) => v !== null && v !== undefined && v !== '');
+  if (!entries.length) return '';
+  return entries.map(([k, v]) => `${esc(k)}: ${esc(v)}`).join('<br>');
+}
+
+function formatPrice(price) {
+  const n = Number(price);
+  if (Number.isNaN(n)) return esc(price);
+  return n.toLocaleString('ko-KR');
+}
+
+// ── APPROVE / REJECT ───────────────────────────────────
+async function reviewAction(id, action) {
+  const row = document.getElementById(`row-${id}`);
+  const buttons = row ? row.querySelectorAll('button') : [];
+  buttons.forEach((b) => b.disabled = true);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/cost-review/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': authToken,
+      },
+      body: JSON.stringify({ action }),
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem(PW_KEY);
+      location.reload();
+      return;
+    }
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      alert(`처리 실패: ${data.error || res.status}`);
+      buttons.forEach((b) => b.disabled = false);
+      return;
+    }
+
+    items = items.filter((it) => it.id !== id);
+    renderTable();
+  } catch (e) {
+    alert(`네트워크 오류: ${e.message || e}`);
+    buttons.forEach((b) => b.disabled = false);
+  }
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
