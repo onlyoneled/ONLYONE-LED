@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ONLYONE LED — 원가 데이터 업로드</title>
+<style>
+:root{
+  --primary:#1a56db;--primary-dark:#1e40af;--bg:#f1f5f9;--card:#fff;
+  --border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --green:#16a34a;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);}
+button,input{font:inherit;color:inherit;}
+a{color:inherit;}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;z-index:100;
+}
+.login-box{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+  padding:36px 32px;width:min(380px,92vw);display:flex;flex-direction:column;gap:16px;
+}
+.login-box h1{font-size:20px;font-weight:700;}
+.login-box p{font-size:13px;color:var(--muted);}
+.login-box input[type=password]{
+  border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;
+  font-size:15px;width:100%;outline:none;transition:border .2s;background:#fff;
+}
+.login-box input[type=password]:focus{border-color:var(--primary);}
+.btn-login{
+  background:var(--primary);color:#fff;font-weight:700;border:none;
+  border-radius:8px;padding:11px;font-size:15px;cursor:pointer;transition:opacity .15s;
+}
+.btn-login:hover{opacity:.88;}
+.login-err{color:var(--red);font-size:13px;min-height:18px;}
+
+/* ── APP SHELL ── */
+#app{display:none;flex-direction:column;min-height:100vh;}
+.hdr{background:linear-gradient(135deg,#1a56db,#7c3aed);color:#fff;padding:18px 32px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(26,86,219,.3);}
+.hdr h1{font-size:20px;font-weight:700;}
+.hdr p{font-size:12px;opacity:.8;margin-top:2px;}
+.wrap{max-width:640px;margin:0 auto;padding:32px 20px;width:100%;flex:1;}
+.card{background:var(--card);border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:20px;}
+.card h2{font-size:15px;font-weight:700;margin-bottom:16px;}
+
+/* ── FILE DROP ── */
+.file-drop{
+  background:#f8fafc;border:2px dashed var(--border);
+  border-radius:12px;padding:36px 20px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s;position:relative;
+}
+.file-drop:hover,.file-drop.drag{border-color:var(--primary);background:#eff6ff;}
+.file-drop input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.file-drop p{font-size:14px;color:var(--muted);pointer-events:none;}
+.file-drop strong{color:var(--primary);pointer-events:none;}
+
+.file-item{
+  display:flex;align-items:center;gap:10px;margin-top:14px;
+  background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;
+}
+.fi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+.fi-remove{
+  color:var(--muted);cursor:pointer;font-size:16px;line-height:1;background:none;border:none;padding:2px 6px;
+}
+.fi-remove:hover{color:var(--red);}
+
+.upload-btn-row{display:flex;gap:10px;margin-top:18px;}
+.btn-do-upload{
+  flex:1;background:var(--primary);color:#fff;font-weight:700;border:none;
+  border-radius:9px;padding:12px;font-size:14px;cursor:pointer;transition:opacity .15s;
+}
+.btn-do-upload:hover:not(:disabled){opacity:.88;}
+.btn-do-upload:disabled{opacity:.4;cursor:default;}
+
+.upload-status{font-size:13px;color:var(--muted);margin-top:12px;min-height:18px;}
+
+/* ── RESULT CARD ── */
+.result-card{display:none;}
+.result-card.show{display:block;}
+.result-card.ok{border-left:4px solid var(--green);}
+.result-card.rejected{border-left:4px solid var(--orange);}
+.result-card.error{border-left:4px solid var(--red);}
+.result-title{font-size:16px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.result-title.ok{color:var(--green);}
+.result-title.rejected{color:var(--orange);}
+.result-title.error{color:var(--red);}
+.result-filename{font-size:12px;color:var(--muted);margin-bottom:16px;font-family:ui-monospace,monospace;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.stat-card{border-radius:10px;padding:14px 10px;text-align:center;background:#f1f5f9;}
+.stat-card .lbl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;}
+.stat-card .val{font-size:20px;font-weight:800;color:var(--text);}
+.stat-card.pending .val{color:var(--orange);}
+.stat-card.unclassified .val{color:var(--red);}
+.result-reason{font-size:13px;color:var(--muted);background:#f8fafc;border-radius:8px;padding:12px 14px;line-height:1.5;}
+.review-link{
+  display:inline-flex;align-items:center;gap:6px;margin-top:16px;
+  background:var(--orange);color:#fff;font-weight:700;font-size:13px;
+  border-radius:8px;padding:10px 16px;text-decoration:none;transition:opacity .15s;
+}
+.review-link:hover{opacity:.88;}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>ONLYONE LED</h1>
+    <p>원가 데이터 업로드</p>
+    <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="btn-login" onclick="doLogin()">로그인</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div class="hdr">
+    <div>
+      <h1>원가 데이터 업로드</h1>
+      <p>xlsx 견적 파일을 업로드하면 자동으로 원가 항목을 추출합니다</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>xlsx 견적 파일 선택</h2>
+
+      <div class="file-drop" id="file-drop">
+        <input type="file" id="file-input" accept=".xlsx" onchange="onFileSelected(this.files)" />
+        <p>여기를 클릭하거나 xlsx 파일을 드래그해서 놓으세요<br><strong>파일 1개만 선택 가능</strong></p>
+      </div>
+
+      <div class="file-item" id="file-item" style="display:none">
+        <span class="fi-name" id="fi-name"></span>
+        <button class="fi-remove" onclick="clearFile()" title="선택 취소">✕</button>
+      </div>
+
+      <div class="upload-btn-row">
+        <button class="btn-do-upload" id="btn-do-upload" onclick="runUpload()" disabled>업로드</button>
+      </div>
+
+      <div class="upload-status" id="upload-status"></div>
+    </div>
+
+    <div class="card result-card" id="result-card">
+      <div class="result-title" id="result-title"></div>
+      <div class="result-filename" id="result-filename"></div>
+      <div id="result-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://onlyone-quote-worker.only1-d71.workers.dev';
+const PW_KEY = 'ql_token';
+
+let authToken    = '';
+let selectedFile = null;
+
+// ── LOGIN ──────────────────────────────────────────────
+function doLogin() {
+  const pw = document.getElementById('pw-input').value.trim();
+  if (!pw) return;
+  authToken = pw;
+  localStorage.setItem(PW_KEY, pw);
+  initApp();
+}
+
+async function initApp() {
+  const res = await fetch(`${API_BASE}/api/vendors`, {
+    headers: { 'X-Auth-Token': authToken }
+  });
+  if (res.status === 401) {
+    localStorage.removeItem(PW_KEY);
+    document.getElementById('login-err').textContent = '비밀번호가 틀렸습니다.';
+    return;
+  }
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(PW_KEY);
+  if (saved) { authToken = saved; initApp(); }
+
+  const drop = document.getElementById('file-drop');
+  drop.ondragover  = e => { e.preventDefault(); drop.classList.add('drag'); };
+  drop.ondragleave = () => drop.classList.remove('drag');
+  drop.ondrop      = e => {
+    e.preventDefault();
+    drop.classList.remove('drag');
+    onFileSelected(e.dataTransfer.files);
+  };
+});
+
+// ── FILE SELECT ────────────────────────────────────────
+function onFileSelected(files) {
+  const file = files && files[0];
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.xlsx')) {
+    alert('xlsx 파일만 업로드할 수 있습니다.');
+    return;
+  }
+  selectedFile = file;
+  document.getElementById('fi-name').textContent = file.name;
+  document.getElementById('file-item').style.display = 'flex';
+  document.getElementById('btn-do-upload').disabled = false;
+  hideResult();
+}
+
+function clearFile() {
+  selectedFile = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('file-item').style.display = 'none';
+  document.getElementById('btn-do-upload').disabled = true;
+}
+
+// ── UPLOAD ─────────────────────────────────────────────
+async function runUpload() {
+  if (!selectedFile) return;
+
+  const btn    = document.getElementById('btn-do-upload');
+  const status = document.getElementById('upload-status');
+  btn.disabled = true;
+  status.textContent = '업로드 중…';
+  hideResult();
+
+  try {
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+
+    const res  = await fetch(`${API_BASE}/api/cost-upload`, {
+      method: 'POST',
+      headers: { 'X-Auth-Token': authToken },
+      body: fd,
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem(PW_KEY);
+      location.reload();
+      return;
+    }
+
+    const data = await res.json();
+    status.textContent = '';
+
+    if (data.ok) {
+      showResultOk(data);
+    } else if (data.ok === false) {
+      showResultRejected(data);
+    } else {
+      showResultError(data.error || '알 수 없는 오류');
+    }
+  } catch (err) {
+    status.textContent = '';
+    showResultError(err.message || '네트워크 오류');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── RESULT DISPLAY ─────────────────────────────────────
+function hideResult() {
+  document.getElementById('result-card').classList.remove('show', 'ok', 'rejected', 'error');
+}
+
+function showResultOk(data) {
+  const card  = document.getElementById('result-card');
+  const title = document.getElementById('result-title');
+  const fname = document.getElementById('result-filename');
+  const body  = document.getElementById('result-body');
+
+  card.classList.add('show', 'ok');
+  title.className = 'result-title ok';
+  title.textContent = '✓ 업로드 완료';
+  fname.textContent = data.filename || '';
+
+  body.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="lbl">추출 항목</div>
+        <div class="val">${data.lineItemsCount ?? 0}</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="lbl">검토대기</div>
+        <div class="val">${data.pendingCount ?? 0}</div>
+      </div>
+      <div class="stat-card unclassified">
+        <div class="lbl">미분류</div>
+        <div class="val">${data.unclassifiedCount ?? 0}</div>
+      </div>
+    </div>
+    ${data.pendingCount > 0
+      ? `<a class="review-link" href="cost-review.html">검토대기 ${data.pendingCount}건 — 검토 페이지로 이동 →</a>`
+      : ''}
+  `;
+
+  clearFile();
+}
+
+function showResultRejected(data) {
+  const card  = document.getElementById('result-card');
+  const title = document.getElementById('result-title');
+  const fname = document.getElementById('result-filename');
+  const body  = document.getElementById('result-body');
+
+  card.classList.add('show', 'rejected');
+  title.className = 'result-title rejected';
+  title.textContent = '⚠ 견적 파일로 인식되지 않음';
+  fname.textContent = selectedFile ? selectedFile.name : '';
+  body.innerHTML = `<div class="result-reason">${esc(data.reason || '사유 없음')}</div>`;
+}
+
+function showResultError(message) {
+  const card  = document.getElementById('result-card');
+  const title = document.getElementById('result-title');
+  const fname = document.getElementById('result-filename');
+  const body  = document.getElementById('result-body');
+
+  card.classList.add('show', 'error');
+  title.className = 'result-title error';
+  title.textContent = '✕ 업로드 실패';
+  fname.textContent = selectedFile ? selectedFile.name : '';
+  body.innerHTML = `<div class="result-reason">${esc(message)}</div>`;
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
