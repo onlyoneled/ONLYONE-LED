@@ -142,9 +142,49 @@ tbody tr.spare-row{background:#fefce8;}
 
 </div><!-- /wrap -->
 
-<script src="data/led-cost-data.js"></script>
 <script src="admin-tools/led-quote-estimator-calc.js"></script>
 <script>
+const API_BASE = 'https://onlyone-quote-worker.only1-d71.workers.dev';
+let LED_COST_DATA = { ledModulesSmd: [], ledModulesGobCob: [], receivingCards: [], smps: [], processors: [], boxes: [], cable220v: [], cableCat6: [], cable16p: [], woodBox: [], freight: [] };
+
+async function loadCostData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/cost-data`);
+    const data = await res.json();
+    // API는 { category: [row, ...] } 형태로 온다. 계산기 엔진이 기대하는
+    // ledModulesSmd/receivingCards 같은 camelCase 키로 매핑한다.
+    const map = {
+      led_module: null, // led_module은 SMD/GOB-COB로 나눠야 하므로 별도 처리
+      receiving_card: 'receivingCards', smps: 'smps', processor: 'processors',
+      box: 'boxes', cable_220v: 'cable220v', cable_cat6: 'cableCat6', cable_16p: 'cable16p',
+      wood_box: 'woodBox', freight: 'freight',
+    };
+    for (const [apiKey, dataKey] of Object.entries(map)) {
+      if (dataKey && data[apiKey]) {
+        LED_COST_DATA[dataKey] = data[apiKey].map((r) => ({
+          ...r.attributes, 대표단가: r.representativePrice, 통화: r.currency,
+          관측횟수: r.observationCount, 최소: r.minPrice, 최대: r.maxPrice,
+        }));
+      }
+    }
+    // pitch가 없는 원본 행(빈 셀 등)은 이전에는 tools/convert_cost_data.py의
+    // split_led_modules()가 걸러줬다(36f760c) — 라이브 API 경로는 그 필터를
+    // 거치지 않으므로, "Pundefined" 드롭다운 항목이 다시 나타나지 않도록
+    // 여기서 동일하게 pitch 없는 행을 제외한다.
+    const ledRows = (data.led_module || [])
+      .filter((r) => r.attributes && r.attributes.pitch !== undefined && r.attributes.pitch !== null)
+      .map((r) => ({
+        ...r.attributes, 대표단가: r.representativePrice, 통화: r.currency,
+        관측횟수: r.observationCount, 최소: r.minPrice, 최대: r.maxPrice,
+      }));
+    LED_COST_DATA.ledModulesSmd = ledRows.filter((r) => r.type === 'SMD');
+    LED_COST_DATA.ledModulesGobCob = ledRows.filter((r) => r.type === 'GOB' || r.type === 'COB');
+  } catch (e) {
+    document.getElementById('warnings-box').innerHTML =
+      '<div class="notice">⚠ 원가 데이터를 불러오지 못했습니다 (' + e.message + ')</div>';
+  }
+}
+
 let currentGroup = 'smd';
 
 function ioLabel(io) {
@@ -258,7 +298,9 @@ function calc() {
     : '';
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadCostData();
+
   document.getElementById('tab-smd').addEventListener('click', () => switchTab('smd'));
   document.getElementById('tab-gobcob').addEventListener('click', () => switchTab('gobcob'));
   document.getElementById('sel-pitch').addEventListener('change', calc);

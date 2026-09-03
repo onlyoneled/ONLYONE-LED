@@ -1,3 +1,6 @@
+// NOTE: led-quote-estimator.html은 더 이상 이 파일을 쓰지 않는다
+// (Phase 3부터 GET /api/cost-data 라이브 API로 전환됨). 이 파일은
+// quote-worker/migrate-seed.js가 참고하는 Phase 1 원본 데이터로만 남아있다.
 window.LED_COST_DATA = {
   "ledModulesSmd": [
     {"pitch": 2, "indoor_outdoor": "indoor", "대표단가": 130, "통화": "CNY", "관측횟수": 8, "최소": 130, "최대": 145},
