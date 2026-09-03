@@ -144,11 +144,16 @@ function findBoxPrice(boxes, w, h) {
   return { row: best, exact: false };
 }
 
+// rows는 이미 convert_cost_data.py에서 관측횟수 내림차순으로 정렬되어
+// 도착한다 — 여기서 다시 정렬하지 않는다. led-quote-estimator.html의
+// fillSelect()가 이 배열을 그대로 순회해 option.value=index를 만들고
+// 그 index를 그대로 여기로 넘기므로, 이 함수가 배열을 재정렬하면
+// 드롭다운에서 고른 행과 실제로 가격이 매겨지는 행이 어긋난다
+// (2026-08-31 리뷰에서 발견된 버그 — 데이터 정렬은 소스에서 한 번만).
 function _pickTop(rows, index) {
   if (!rows || !rows.length) return null;
-  const sorted = [...rows].sort((a, b) => (b.관측횟수 || 0) - (a.관측횟수 || 0));
-  const i = (typeof index === 'number' && index >= 0 && index < sorted.length) ? index : 0;
-  return sorted[i];
+  const i = (typeof index === 'number' && index >= 0 && index < rows.length) ? index : 0;
+  return rows[i] || rows[0] || null;
 }
 
 function _pickDefault(rows) {
@@ -156,13 +161,46 @@ function _pickDefault(rows) {
 }
 
 const LOW_CONFIDENCE_THRESHOLD = 2;
+const DISPERSION_RATIO_THRESHOLD = 2;
+
+// 관측횟수가 충분해도(예: >2건) 최소/최대 가격 차이가 비정상적으로 크면
+// Phase 1 원본 데이터의 단위 혼선(㎡당 단가와 모듈당 단가가 섞이는 등)일
+// 가능성이 높다 — 관측횟수만 보는 경고로는 이런 케이스를 놓친다.
+function _dispersionWarning(row, label) {
+  if (!row) return null;
+  const min = row.최소, max = row.최대;
+  if (typeof min !== 'number' || typeof max !== 'number' || min <= 0) return null;
+  if (max / min > DISPERSION_RATIO_THRESHOLD) {
+    return `${label} 가격 편차가 큼 (최소 ¥${min} ~ 최대 ¥${max}) — 데이터 확인 필요`;
+  }
+  return null;
+}
 
 function _confWarning(row, label) {
   if (!row) return `${label} 데이터 없음`;
+  const msgs = [];
   if ((row.관측횟수 || 0) <= LOW_CONFIDENCE_THRESHOLD) {
-    return `${label} 관측 ${row.관측횟수 || 0}건 — 표본이 적어 참고용`;
+    msgs.push(`${label} 관측 ${row.관측횟수 || 0}건 — 표본이 적어 참고용`);
   }
-  return null;
+  const dispersion = _dispersionWarning(row, label);
+  if (dispersion) msgs.push(dispersion);
+  return msgs.length ? msgs.join('; ') : null;
+}
+
+// 같은 pitch라도 실내/실외(indoor_outdoor)가 다르면 단가가 크게 다를 수
+// 있다(예: P3.076 실내 ¥153 vs 실외 ¥4550) — pitch만으로 그룹핑하면
+// 파일 순서상 먼저 나온 행이 무조건 이기면서 훨씬 저렴하거나 훨씬 비싼
+// 행이 사용자에게 아예 안 보일 수 있다. pitch+indoor_outdoor 조합으로
+// 찾고, 그래도 남는 중복(같은 pitch·같은 indoor_outdoor)이 있으면
+// 관측횟수가 가장 높은 행을 쓴다 — 배열 순서에 의존하지 않기 위해
+// 명시적으로 비교한다(led 모듈 배열은 Fix 1의 정렬 대상이 아니므로).
+function _pickModuleRow(rows, pitch, indoorOutdoor) {
+  let best = null;
+  for (const r of rows || []) {
+    if (r.pitch !== pitch || r.indoor_outdoor !== indoorOutdoor) continue;
+    if (!best || (r.관측횟수 || 0) > (best.관측횟수 || 0)) best = r;
+  }
+  return best;
 }
 
 function computeQuote(input, costData) {
@@ -171,7 +209,7 @@ function computeQuote(input, costData) {
   const items = [];
 
   const moduleRows = input.moduleGroup === 'gobcob' ? costData.ledModulesGobCob : costData.ledModulesSmd;
-  const moduleRow = (moduleRows || []).find((r) => r.pitch === input.pitch) || null;
+  const moduleRow = _pickModuleRow(moduleRows, input.pitch, input.indoorOutdoor);
   {
     const price = moduleRow ? moduleRow.대표단가 : 0;
     const w = _confWarning(moduleRow, 'LED 모듈');
@@ -278,6 +316,6 @@ if (typeof module !== 'undefined') {
     MODULES, MODULE_MM_W, MODULE_MM_H, PX_PER_LINE,
     CABINET_WEIGHT, BREAKER_SIZES, SINGLE_V, THREE_V, PF,
     cabWeight, nextBreaker, decompWidth, decompHeight, cabRole, computeLED,
-    findNearestBucket, findBoxPrice, computeQuote,
+    findNearestBucket, findBoxPrice, computeQuote, _pickModuleRow,
   };
 }
