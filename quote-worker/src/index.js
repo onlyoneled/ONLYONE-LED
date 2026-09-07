@@ -16,7 +16,6 @@ function json(data, status = 200) {
 
 function checkAuth(request, url, env) {
   const token = request.headers.get('X-Auth-Token') || url.searchParams.get('token');
-  if (!token) return true; // 토큰 없으면 내부 접근으로 간주해서 허용
   return token === env.ACCESS_PASSWORD;
 }
 
