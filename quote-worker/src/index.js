@@ -1,3 +1,6 @@
+import { extractFile } from './cost-pipeline.js';
+import { makeSkuKey, aggregateByCategory, judgeConfidence } from './cost-aggregator.js';
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
@@ -22,7 +25,16 @@ export default {
     const path = url.pathname;
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
+    // 원가 데이터 조회 (공개 계산기 페이지용 — 인증 불필요)
+    if (path === '/api/cost-data' && request.method === 'GET') return handleCostData(env);
+
     if (!checkAuth(request, url, env)) return json({ error: 'Unauthorized' }, 401);
+
+    // xlsx 견적 업로드 → 파싱 → 원가 관측치 저장 / 검토대기 / 승인·반려
+    if (path === '/api/cost-upload'         && request.method === 'POST')  return handleCostUpload(request, env);
+    if (path === '/api/cost-review'         && request.method === 'GET')   return handleCostReviewList(env);
+    if (path.startsWith('/api/cost-review/') && request.method === 'PATCH') return handleCostReviewPatch(path.split('/')[3], request, env);
 
     // 목록 / 상세 / 업체
     if (path === '/api/quotes'          && request.method === 'GET')    return handleList(url, env);
@@ -215,4 +227,106 @@ async function handleBatchDelete(request, env) {
   ).bind(...ids).run();
 
   return json({ ok: true, deleted: ids.length });
+}
+
+// ── xlsx 업로드 → 파싱 → D1/R2 저장 ─────────────────────
+async function handleCostUpload(request, env) {
+  let form;
+  try { form = await request.formData(); } catch { return json({ error: 'multipart 파싱 실패' }, 400); }
+
+  const file = form.get('file');
+  if (!file) return json({ error: 'file 필요' }, 400);
+
+  const filename = file.name;
+  const arrayBuffer = await file.arrayBuffer();
+  const uploadDate = new Date().toISOString().slice(0, 10);
+
+  let extracted;
+  try {
+    extracted = extractFile(arrayBuffer, filename, uploadDate);
+  } catch (e) {
+    return json({ error: `파싱 실패: ${e.message}` }, 400);
+  }
+
+  if (!extracted.included) {
+    return json({ ok: false, reason: extracted.excludeReason });
+  }
+
+  const r2Key = `xlsx/${Date.now()}_${filename}`;
+  await env.PDF_BUCKET.put(r2Key, arrayBuffer, {
+    httpMetadata: { contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+  });
+
+  const uploadRow = await env.DB.prepare(
+    `INSERT INTO uploaded_quotes (filename, r2_key, line_items_count) VALUES (?, ?, ?) RETURNING id`
+  ).bind(filename, r2Key, extracted.lineItems.length).first();
+  const uploadId = uploadRow.id;
+
+  let pendingCount = 0;
+  for (const item of extracted.lineItems) {
+    const skuKey = makeSkuKey(item.category, item.attributes);
+    const existing = await env.DB.prepare(
+      `SELECT price FROM cost_observations WHERE category = ? AND sku_key = ? AND status = 'approved' ORDER BY observed_date DESC LIMIT 1`
+    ).bind(item.category, skuKey).first();
+    const existingPrice = existing ? existing.price : null;
+
+    let judged;
+    if (!item.category) {
+      judged = { status: 'pending', reason: '자동 분류 실패' };
+    } else {
+      judged = judgeConfidence(item.price, existingPrice);
+    }
+    if (judged.status === 'pending') pendingCount++;
+
+    await env.DB.prepare(
+      `INSERT INTO cost_observations
+         (category, sku_key, attributes, price, currency, observed_date, source_file, upload_id, status, status_reason)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      item.category || 'unclassified', skuKey, JSON.stringify(item.attributes),
+      item.price, item.currency, item.date, filename, uploadId,
+      judged.status, judged.reason,
+    ).run();
+  }
+
+  await env.DB.prepare(`UPDATE uploaded_quotes SET pending_count = ? WHERE id = ?`)
+    .bind(pendingCount, uploadId).run();
+
+  return json({
+    ok: true, uploadId, filename,
+    lineItemsCount: extracted.lineItems.length,
+    pendingCount,
+    unclassifiedCount: extracted.unclassifiedRows.length,
+  });
+}
+
+// ── 검토대기 목록 ────────────────────────────────────────
+async function handleCostReviewList(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, category, sku_key, attributes, price, currency, observed_date, source_file, status_reason
+     FROM cost_observations WHERE status = 'pending' ORDER BY created_at DESC`
+  ).all();
+  return json(results.map((r) => ({ ...r, attributes: JSON.parse(r.attributes) })));
+}
+
+// ── 승인/반려 ────────────────────────────────────────────
+async function handleCostReviewPatch(id, request, env) {
+  let body;
+  try { body = await request.json(); } catch { return json({ error: 'Invalid JSON' }, 400); }
+  if (!['approve', 'reject'].includes(body.action)) return json({ error: 'action은 approve|reject' }, 400);
+
+  const status = body.action === 'approve' ? 'approved' : 'rejected';
+  await env.DB.prepare(`UPDATE cost_observations SET status = ? WHERE id = ?`).bind(status, id).run();
+  return json({ ok: true, id: Number(id), status });
+}
+
+// ── 승인된 관측치 집계 → 계산기용 API (인증 불필요) ──────
+async function handleCostData(env) {
+  const { results } = await env.DB.prepare(
+    `SELECT category, attributes, price, currency, observed_date AS date
+     FROM cost_observations WHERE status = 'approved'`
+  ).all();
+  const lineItems = results.map((r) => ({ ...r, attributes: JSON.parse(r.attributes) }));
+  const grouped = aggregateByCategory(lineItems);
+  return json(grouped);
 }

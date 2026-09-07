@@ -6,5 +6,7 @@ Disallow: /onlyone_admin.html
 Disallow: /quotes.html
 Disallow: /led-cost-calculator.html
 Disallow: /quote-worker/
+Disallow: /led-quote-estimator.html
+Disallow: /data/led-cost-data.js
 
 Sitemap: https://www.only1led.com/sitemap.xml
