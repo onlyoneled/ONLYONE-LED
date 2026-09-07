@@ -150,6 +150,13 @@ let LED_COST_DATA = { ledModulesSmd: [], ledModulesGobCob: [], receivingCards: [
 async function loadCostData() {
   try {
     const res = await fetch(`${API_BASE}/api/cost-data`);
+    // fetch()는 네트워크 레벨 실패에만 reject한다 — 404/500 같은 비-2xx
+    // 응답도 정상적으로 resolve되고, Worker의 라우트 미매칭 fallback
+    // (quote-worker/src/index.js의 `json({ error: 'Not Found' }, 404)`)처럼
+    // 유효한 JSON을 반환하는 경우 res.json()도 그냥 성공해버린다. 이 체크가
+    // 없으면 API 호출 실패와 "카테고리에 관측치가 아직 없음"이 똑같이
+    // 빈 LED_COST_DATA로 보여서 구분이 안 된다.
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     // API는 { category: [row, ...] } 형태로 온다. 계산기 엔진이 기대하는
     // ledModulesSmd/receivingCards 같은 camelCase 키로 매핑한다.
