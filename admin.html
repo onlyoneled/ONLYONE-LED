@@ -709,7 +709,7 @@
 
     <!-- =============== QUOTES =============== -->
     <section class="page" data-page="quotes" style="padding:0;height:calc(100vh);">
-      <iframe id="quotesFrame" src="/quotes" style="flex:1;border:0;width:100%;height:100%;display:block;"></iframe>
+      <iframe id="quotesFrame" style="flex:1;border:0;width:100%;height:100%;display:block;"></iframe>
     </section>
 
     <!-- =============== FAQ =============== -->
@@ -1160,6 +1160,9 @@ function uid(p='id') { return p + '_' + Math.random().toString(36).slice(2,8); }
 function goPage(name) {
   $$('.navitem').forEach(n => n.setAttribute('aria-current', n.dataset.page===name?'true':'false'));
   $$('.page').forEach(p => p.classList.toggle('active', p.dataset.page===name));
+  if (name === 'quotes') {
+    document.getElementById('quotesFrame').src = '/quotes?from=admin';
+  }
   window.scrollTo({top:0});
 }
 $$('.navitem').forEach(n => n.addEventListener('click', () => goPage(n.dataset.page)));

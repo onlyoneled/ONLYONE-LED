@@ -244,16 +244,7 @@ a { color: inherit; text-decoration: none; }
 </head>
 <body>
 
-<!-- ── LOGIN ── -->
-<div id="login-screen">
-  <div class="login-box">
-    <h1>ONLYONE LED</h1>
-    <p>견적서 관리 시스템</p>
-    <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()" />
-    <button class="btn-login" onclick="doLogin()">로그인</button>
-    <div class="login-err" id="login-err"></div>
-  </div>
-</div>
+<!-- ── LOGIN ── (제거됨) ── -->
 
 <!-- ── APP ── -->
 <div id="app">
@@ -359,34 +350,15 @@ let authToken     = '';
 let currentVendor = '';
 let allVendors    = [];
 
-// ── LOGIN ──────────────────────────────────────────────
-const PW_KEY = 'ql_token';
-
-function doLogin() {
-  const pw = document.getElementById('pw-input').value.trim();
-  if (!pw) return;
-  authToken = pw;
-  localStorage.setItem(PW_KEY, pw);
-  initApp();
-}
-
+// ── AUTO LOGIN (로그인 화면 제거됨) ──────────────────
 async function initApp() {
-  const res = await fetch(`${API_BASE}/api/vendors`, {
-    headers: { 'X-Auth-Token': authToken }
-  });
-  if (res.status === 401) {
-    localStorage.removeItem(PW_KEY);
-    document.getElementById('login-err').textContent = '비밀번호가 틀렸습니다.';
-    return;
-  }
-  document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   route();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem(PW_KEY);
-  if (saved) { authToken = saved; initApp(); }
+  authToken = 'internal-access';
+  initApp();
 });
 
 // ── ROUTING ────────────────────────────────────────────
