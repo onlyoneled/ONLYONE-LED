@@ -306,6 +306,33 @@
   .cat-badge { font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:var(--accent); background:rgba(246,244,239,.06); padding:3px 8px; border-radius:4px; white-space:nowrap; flex-shrink:0; margin-top:3px; }
   .faq-admin-q { flex:1; font-size:14px; font-weight:500; min-width:0; line-height:1.5; }
   .faq-admin-q em { display:block; font-style:normal; font-size:12px; color:var(--mute); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ── COST REVIEW ── */
+  #costReviewPage { padding: 20px 24px; }
+  #costReviewPage .topbar { display: flex; align-items: center; gap: 16px; padding: 16px 0 20px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  #costReviewPage .topbar-title { font-family: var(--display); font-size: 20px; letter-spacing: -.01em; }
+  #costReviewPage .topbar-spacer { flex: 1; }
+  #costReviewPage .stats-mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  #costReviewPage .stat-box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  #costReviewPage .stat-box .lbl { font-size: 11px; letter-spacing: .08em; color: var(--mute); text-transform: uppercase; margin-bottom: 6px; }
+  #costReviewPage .stat-box .val { font-family: var(--display); font-size: 24px; color: var(--accent); }
+  #costReviewPage .table-wrap { overflow-x: auto; }
+  #costReviewPage table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #costReviewPage th { text-align: left; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--mute); padding: 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  #costReviewPage td { padding: 14px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  #costReviewPage tr:hover td { background: rgba(246,244,239,.03); }
+  #costReviewPage .td-category { font-weight: 500; }
+  #costReviewPage .td-sku { font-family: var(--mono); font-size: 12px; color: var(--mute); max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  #costReviewPage .td-price { font-family: var(--mono); text-align: right; }
+  #costReviewPage .btn-small { background: var(--panel-2); border: 1px solid var(--line); color: var(--mute); padding: 6px 12px; border-radius: 6px; font-family: var(--mono); font-size: 11px; cursor: pointer; transition: all .15s; }
+  #costReviewPage .btn-small:hover { border-color: var(--accent); color: var(--accent); }
+  #costReviewPage .btn-approve { color: #4ade80; border-color: rgba(74,222,128,.3); }
+  #costReviewPage .btn-approve:hover { border-color: #4ade80; }
+  #costReviewPage .btn-reject { color: #ff6b6b; border-color: rgba(255,107,107,.3); }
+  #costReviewPage .btn-reject:hover { border-color: #ff6b6b; }
+  #costReviewPage .empty { text-align: center; padding: 60px 20px; color: var(--mute); }
+  #costReviewPage .empty p { margin: 0; font-size: 14px; }
+  #costReviewPage .loading { text-align: center; padding: 40px 20px; color: var(--mute); }
 </style>
 </head>
 <body>
@@ -697,9 +724,9 @@
         </div>
       </div>
     </section>
-    <!-- =============== COST CALC =============== -->
-    <section class="page" data-page="costcalc" style="padding:0;height:calc(100vh);">
-      <iframe id="costcalcFrame" src="/onlyone_admin.html" style="flex:1;border:0;width:100%;height:100%;display:block;"></iframe>
+    <!-- =============== COST REVIEW (원가 데이터 검토) =============== -->
+    <section class="page" data-page="costcalc" style="padding:0;height:calc(100vh);flex-direction:column;">
+      <div id="costReviewPage" style="flex:1;overflow:auto;display:flex;flex-direction:column;background:#0a0a0a;color:#f6f4ef;font-family:var(--mono);"></div>
     </section>
 
     <!-- =============== LAYOUT CALC =============== -->
@@ -1163,10 +1190,128 @@ function goPage(name) {
   if (name === 'quotes') {
     document.getElementById('quotesFrame').src = '/quotes?from=admin';
   }
+  if (name === 'costcalc') {
+    loadCostReview();
+  }
   window.scrollTo({top:0});
 }
 $$('.navitem').forEach(n => n.addEventListener('click', () => goPage(n.dataset.page)));
 $$('[data-goto]').forEach(b => b.addEventListener('click', () => goPage(b.dataset.goto)));
+
+/* =================== COST REVIEW =================== */
+const COST_API = 'https://onlyone-quote-worker.only1-d71.workers.dev';
+
+async function loadCostReview() {
+  const page = $('#costReviewPage');
+  page.innerHTML = '<div class="loading">로드 중...</div>';
+  try {
+    const res = await fetch(`${COST_API}/api/cost-review`);
+    const data = await res.json();
+    if (res.status === 401) {
+      page.innerHTML = '<div class="empty"><p>⚠️ 인증 실패. 나중에 다시 시도해주세요.</p></div>';
+      return;
+    }
+    renderCostReview(data || []);
+  } catch(e) {
+    page.innerHTML = '<div class="empty"><p>❌ 데이터 로드 실패: ' + e.message + '</p></div>';
+  }
+}
+
+function renderCostReview(rows) {
+  const page = $('#costReviewPage');
+  if (!rows.length) {
+    page.innerHTML = '<div class="empty"><p>✓ 검토 대기 데이터가 없습니다.</p></div>';
+    return;
+  }
+
+  const html = `
+    <div class="topbar">
+      <div class="topbar-title">원가 데이터 검토</div>
+      <div class="topbar-spacer"></div>
+      <span style="color:var(--mute);font-size:13px;">대기 중: <strong style="color:var(--accent);">${rows.length}</strong>건</span>
+    </div>
+    <div class="stats-mini">
+      <div class="stat-box">
+        <div class="lbl">검토 대기</div>
+        <div class="val">${rows.length}</div>
+      </div>
+      <div class="stat-box">
+        <div class="lbl">카테고리</div>
+        <div class="val">${new Set(rows.map(r => r.category)).size}</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>카테고리</th>
+            <th>SKU</th>
+            <th>가격</th>
+            <th>통화</th>
+            <th>출처</th>
+            <th>사유</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td class="td-category">${r.category}</td>
+              <td class="td-sku">${r.sku_key}</td>
+              <td class="td-price">${r.price.toLocaleString()}</td>
+              <td>${r.currency}</td>
+              <td style="font-size:12px;color:var(--mute);">${r.source_file || '—'}</td>
+              <td style="font-size:12px;color:var(--mute);">${r.status_reason || '—'}</td>
+              <td style="text-align:right;gap:4px;display:flex;">
+                <button class="btn-small btn-approve" onclick="approveCost(${r.id})">승인</button>
+                <button class="btn-small btn-reject" onclick="rejectCost(${r.id})">반려</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  page.innerHTML = html;
+}
+
+async function approveCost(id) {
+  if (!confirm('이 데이터를 승인하시겠습니까?')) return;
+  try {
+    const res = await fetch(`${COST_API}/api/cost-review/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'approve' })
+    });
+    if (res.ok) {
+      toast('승인 완료 ✓');
+      loadCostReview();
+    } else {
+      alert('승인 실패');
+    }
+  } catch(e) {
+    alert('오류: ' + e.message);
+  }
+}
+
+async function rejectCost(id) {
+  if (!confirm('이 데이터를 반려하시겠습니까?')) return;
+  try {
+    const res = await fetch(`${COST_API}/api/cost-review/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject' })
+    });
+    if (res.ok) {
+      toast('반려 완료 ✓');
+      loadCostReview();
+    } else {
+      alert('반려 실패');
+    }
+  } catch(e) {
+    alert('오류: ' + e.message);
+  }
+}
 
 /* =================== LANG PICK =================== */
 $$('.lang-pick button').forEach(b => b.addEventListener('click', () => setEditLang(b.dataset.elang)));
