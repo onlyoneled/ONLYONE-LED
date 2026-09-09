@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LED 견적 예상 계산기</title>
+<style>
+:root{
+  --primary:#1a56db;--primary-dark:#1e40af;--bg:#f1f5f9;--card:#fff;
+  --border:#e2e8f0;--text:#1e293b;--muted:#64748b;
+  --green:#16a34a;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);}
+.hdr{background:linear-gradient(135deg,#1a56db,#7c3aed);color:#fff;padding:18px 32px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(26,86,219,.3);}
+.hdr h1{font-size:20px;font-weight:700;}
+.hdr p{font-size:12px;opacity:.8;margin-top:2px;}
+.wrap{max-width:1300px;margin:0 auto;padding:24px 20px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+.card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:20px;}
+.card h2{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;background:#e0e7ff;color:#3730a3;font-weight:600;}
+.sec-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid var(--border);}
+.frow{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.frow label{font-size:12px;font-weight:600;color:var(--muted);}
+.frow input,.frow select{border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;font-weight:500;color:var(--text);transition:border .2s;background:#fff;}
+.frow input:focus,.frow select:focus{outline:none;border-color:var(--primary);}
+.frow input[readonly]{background:#f8fafc;color:var(--muted);}
+.frow .hint{font-size:11px;color:var(--muted);}
+.radio-group{display:flex;gap:8px;flex-wrap:wrap;}
+.radio-group label{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;transition:all .2s;font-weight:500;line-height:1.4;}
+.radio-group label.checked{background:var(--primary);color:#fff;border-color:var(--primary);}
+.radio-group input{display:none;}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px;}
+.res-card{border-radius:12px;padding:14px;text-align:center;}
+.res-card .lbl{font-size:11px;font-weight:700;opacity:.8;margin-bottom:5px;}
+.res-card .val{font-size:18px;font-weight:800;}
+.res-card.blue{background:#dbeafe;color:#1d4ed8;}
+.res-card.green{background:#dcfce7;color:#15803d;}
+.res-card.orange{background:#ffedd5;color:#c2410c;}
+.res-card.purple{background:#ede9fe;color:#7c3aed;}
+.res-card.red{background:#fee2e2;color:#b91c1c;}
+.res-card.gray{background:#f1f5f9;color:#475569;}
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:#f8fafc;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:last-child{border:none;}
+tbody tr:hover{background:#f8fafc;}
+tbody td{padding:9px 12px;vertical-align:middle;}
+tbody tr.total-row{background:#1a56db;color:#fff;font-weight:700;}
+tbody tr.total-row td{padding:11px 12px;}
+tbody tr.spare-row{background:#fefce8;}
+.sep-row td{background:#f1f5f9;font-size:11px;font-weight:700;color:var(--muted);padding:5px 12px;}
+.tr{text-align:right;}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.tab-btn{padding:9px 18px;border-radius:10px;border:none;background:var(--card);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:all .2s;}
+.tab-btn.active{background:var(--primary);color:#fff;}
+.notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-bottom:14px;}
+.price-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.sale-total-box{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;background:linear-gradient(135deg,#1a56db,#7c3aed);border-radius:12px;padding:18px 16px;margin-top:16px;color:#fff;}
+.sale-total-box .st-item{text-align:center;}
+.sale-total-box .st-lbl{font-size:11px;opacity:.75;margin-bottom:6px;font-weight:600;}
+.sale-total-box .st-val{font-size:20px;font-weight:800;line-height:1.2;}
+.sticky-top{position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.10);}
+.rate-bar{background:#fff;border-bottom:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:14px;font-size:13px;flex-wrap:wrap;}
+.rate-bar .lbl{color:var(--muted);font-weight:600;}
+.rate-bar .rate-val{font-size:16px;font-weight:800;color:var(--primary);}
+.rate-bar .rate-time{font-size:11px;color:var(--muted);}
+.rate-badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;}
+.rate-badge.live{background:#dcfce7;color:#15803d;}
+.rate-badge.err{background:#fee2e2;color:#b91c1c;}
+.rate-badge.loading{background:#f1f5f9;color:#64748b;}
+.rate-btn{padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;margin-left:auto;}
+.rate-btn:hover{border-color:var(--primary);color:var(--primary);}
+</style>
+</head>
+<body>
+
+<div class="sticky-top">
+<div class="hdr">
+  <div style="font-size:26px;">📐</div>
+  <div>
+    <h1>LED 견적 예상 계산기</h1>
+    <p>실제 견적서 269건 분석 기반 — 화면 사이즈 입력 시 자동 산출</p>
+  </div>
+</div>
+</div>
+
+<div class="wrap">
+
+<div class="notice">
+  ⚠️ 이 계산기는 <b>과거 견적서에서 관측된 단가</b>를 근거로 한 예상치입니다.
+  실제 발주가는 업체 협상·시장 변동에 따라 달라질 수 있습니다.
+</div>
+
+<div class="card">
+  <h2>📏 화면 사이즈</h2>
+  <div class="grid2">
+    <div class="frow"><label>가로 (mm)</label><input type="number" id="inp-w" value="2000" min="320" step="10"></div>
+    <div class="frow"><label>세로 (mm)</label><input type="number" id="inp-h" value="1500" min="160" step="10"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>🔲 LED 모듈</h2>
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-smd">SMD</button>
+    <button class="tab-btn" id="tab-gobcob">GOB/COB (타업체 참고 데이터)</button>
+  </div>
+  <div id="group-banner" class="notice" style="display:none;background:#fef3c7;border-color:#fde68a;color:#92400e;">
+    ⚠ <b>다른 업체(GOB/COB 전문업체)의 참고 데이터입니다.</b> 온리원LED 자체 견적 데이터가 아니므로 참고용으로만 사용하세요.
+  </div>
+  <div class="frow">
+    <label>피치</label>
+    <select id="sel-pitch"></select>
+  </div>
+</div>
+
+<div class="card">
+  <h2>🎛️ 부품 선택</h2>
+  <div class="grid3">
+    <div class="frow"><label>수신카드</label><select id="sel-rcv"></select></div>
+    <div class="frow"><label>SMPS</label><select id="sel-smps"></select></div>
+    <div class="frow"><label>프로세서</label><select id="sel-proc"></select></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📊 예상 원가</h2>
+  <div class="res-grid" id="res-summary"></div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>항목</th><th>수량</th><th class="tr">단가(CNY)</th><th class="tr">소계(CNY)</th><th>비고</th></tr></thead>
+      <tbody id="tbody-items"></tbody>
+    </table>
+  </div>
+  <div id="warnings-box"></div>
+</div>
+
+</div><!-- /wrap -->
+
+<script src="admin-tools/led-quote-estimator-calc.js"></script>
+<script>
+const API_BASE = 'https://onlyone-quote-worker.only1-d71.workers.dev';
+let LED_COST_DATA = { ledModulesSmd: [], ledModulesGobCob: [], receivingCards: [], smps: [], processors: [], boxes: [], cable220v: [], cableCat6: [], cable16p: [], woodBox: [], freight: [] };
+
+async function loadCostData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/cost-data`);
+    // fetch()는 네트워크 레벨 실패에만 reject한다 — 404/500 같은 비-2xx
+    // 응답도 정상적으로 resolve되고, Worker의 라우트 미매칭 fallback
+    // (quote-worker/src/index.js의 `json({ error: 'Not Found' }, 404)`)처럼
+    // 유효한 JSON을 반환하는 경우 res.json()도 그냥 성공해버린다. 이 체크가
+    // 없으면 API 호출 실패와 "카테고리에 관측치가 아직 없음"이 똑같이
+    // 빈 LED_COST_DATA로 보여서 구분이 안 된다.
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    // API는 { category: [row, ...] } 형태로 온다. 계산기 엔진이 기대하는
+    // ledModulesSmd/receivingCards 같은 camelCase 키로 매핑한다.
+    const map = {
+      led_module: null, // led_module은 SMD/GOB-COB로 나눠야 하므로 별도 처리
+      receiving_card: 'receivingCards', smps: 'smps', processor: 'processors',
+      box: 'boxes', cable_220v: 'cable220v', cable_cat6: 'cableCat6', cable_16p: 'cable16p',
+      wood_box: 'woodBox', freight: 'freight',
+    };
+    for (const [apiKey, dataKey] of Object.entries(map)) {
+      if (dataKey && data[apiKey]) {
+        LED_COST_DATA[dataKey] = data[apiKey].map((r) => ({
+          ...r.attributes, 대표단가: r.representativePrice, 통화: r.currency,
+          관측횟수: r.observationCount, 최소: r.minPrice, 최대: r.maxPrice,
+        }));
+      }
+    }
+    // pitch가 없는 원본 행(빈 셀 등)은 이전에는 tools/convert_cost_data.py의
+    // split_led_modules()가 걸러줬다(36f760c) — 라이브 API 경로는 그 필터를
+    // 거치지 않으므로, "Pundefined" 드롭다운 항목이 다시 나타나지 않도록
+    // 여기서 동일하게 pitch 없는 행을 제외한다.
+    const ledRows = (data.led_module || [])
+      .filter((r) => r.attributes && r.attributes.pitch !== undefined && r.attributes.pitch !== null)
+      .map((r) => ({
+        ...r.attributes, 대표단가: r.representativePrice, 통화: r.currency,
+        관측횟수: r.observationCount, 최소: r.minPrice, 최대: r.maxPrice,
+      }));
+    LED_COST_DATA.ledModulesSmd = ledRows.filter((r) => r.type === 'SMD');
+    LED_COST_DATA.ledModulesGobCob = ledRows.filter((r) => r.type === 'GOB' || r.type === 'COB');
+  } catch (e) {
+    document.getElementById('warnings-box').innerHTML =
+      '<div class="notice">⚠ 원가 데이터를 불러오지 못했습니다 (' + e.message + ')</div>';
+  }
+}
+
+let currentGroup = 'smd';
+
+function ioLabel(io) {
+  if (io === 'indoor') return '실내';
+  if (io === 'outdoor') return '실외';
+  return '';
+}
+
+// pitch만으로 그룹핑하면 같은 pitch에서 실내/실외로 단가가 크게 갈리는
+// 행(예: P3.076 실내 ¥153 vs 실외 ¥4550)이 하나로 뭉개져 파일 순서상
+// 먼저 나온 행만 선택 가능해진다. pitch+indoor_outdoor 조합으로
+// 그룹핑하고, 그래도 남는 중복(같은 pitch·같은 indoor_outdoor)은
+// 관측횟수가 가장 높은 행을 대표로 삼는다(computeQuote의 선택 로직과
+// 동일한 기준 — admin-tools/led-quote-estimator-calc.js의 _pickModuleRow 참고).
+function pitchOptionsFor(group) {
+  const rows = group === 'gobcob' ? LED_COST_DATA.ledModulesGobCob : LED_COST_DATA.ledModulesSmd;
+  const byKey = {};
+  rows.forEach((r) => {
+    const key = r.pitch + '|' + (r.indoor_outdoor || '');
+    if (!byKey[key] || (r.관측횟수 || 0) > (byKey[key].관측횟수 || 0)) byKey[key] = r;
+  });
+  return Object.values(byKey).sort((a, b) => a.pitch - b.pitch || String(a.indoor_outdoor || '').localeCompare(String(b.indoor_outdoor || '')));
+}
+
+function fillSelect(selectEl, rows, labelFn) {
+  selectEl.innerHTML = '';
+  rows.forEach((r, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = labelFn(r);
+    selectEl.appendChild(o);
+  });
+}
+
+function rebuildPitchSelect() {
+  const rows = pitchOptionsFor(currentGroup);
+  const pitchCounts = {};
+  rows.forEach((r) => { pitchCounts[r.pitch] = (pitchCounts[r.pitch] || 0) + 1; });
+  fillSelect(document.getElementById('sel-pitch'), rows, (r) => {
+    const io = ioLabel(r.indoor_outdoor);
+    const suffix = (pitchCounts[r.pitch] > 1 && io) ? ' ' + io : '';
+    return `P${r.pitch}${suffix} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`;
+  });
+}
+
+function switchTab(group) {
+  currentGroup = group;
+  document.getElementById('tab-smd').classList.toggle('active', group === 'smd');
+  document.getElementById('tab-gobcob').classList.toggle('active', group === 'gobcob');
+  document.getElementById('group-banner').style.display = group === 'gobcob' ? 'block' : 'none';
+  rebuildPitchSelect();
+  calc();
+}
+
+function fmt(n) {
+  if (n === undefined || n === null || isNaN(n)) return '-';
+  return Math.round(n).toLocaleString('ko-KR');
+}
+
+function card(cls, lbl, val) {
+  return `<div class="res-card ${cls}"><div class="lbl">${lbl}</div><div class="val">${val}</div></div>`;
+}
+
+function calc() {
+  const pitchSel = document.getElementById('sel-pitch');
+  const pitchRows = pitchOptionsFor(currentGroup);
+  const selectedPitchRow = pitchRows.length ? pitchRows[pitchSel.value || 0] : null;
+  const pitch = selectedPitchRow ? selectedPitchRow.pitch : null;
+  if (pitch === null) {
+    document.getElementById('tbody-items').innerHTML = '<tr><td colspan="5">이 그룹에 등록된 모듈 데이터가 없습니다.</td></tr>';
+    return;
+  }
+
+  const input = {
+    W: parseFloat(document.getElementById('inp-w').value) || 0,
+    H: parseFloat(document.getElementById('inp-h').value) || 0,
+    moduleGroup: currentGroup,
+    pitch,
+    indoorOutdoor: selectedPitchRow.indoor_outdoor,
+    receivingCardIndex: parseInt(document.getElementById('sel-rcv').value || 0, 10),
+    smpsIndex: parseInt(document.getElementById('sel-smps').value || 0, 10),
+    processorIndex: parseInt(document.getElementById('sel-proc').value || 0, 10),
+  };
+
+  const result = computeQuote(input, LED_COST_DATA);
+
+  document.getElementById('res-summary').innerHTML =
+    card('blue', '총 캐비닛 수', result.layout.totalCabinets + '개') +
+    card('green', '총 모듈 수', result.layout.totalModules + '개') +
+    card('orange', '화면 면적', result.layout.area.toFixed(2) + '㎡') +
+    card('purple', '예상 원가 합계', '¥' + fmt(result.totalCny));
+
+  document.getElementById('tbody-items').innerHTML = result.items.map((it) => {
+    const obsText = (it.observationCount === null || it.observationCount === undefined) ? '-' : (it.observationCount + '건');
+    const obsSpan = `<span style="font-size:11px;color:var(--muted);">관측 ${obsText}</span>`;
+    const warnSpan = it.warning ? '<br><span style="color:var(--orange);font-size:11px;">⚠ ' + it.warning + '</span>' : '';
+    return `
+    <tr>
+      <td>${it.label}</td>
+      <td>${it.qty}</td>
+      <td class="tr">¥${fmt(it.unitPrice)}</td>
+      <td class="tr">¥${fmt(it.subtotal)}</td>
+      <td>${obsSpan}${warnSpan}</td>
+    </tr>
+  `;
+  }).join('');
+
+  const warningsBox = document.getElementById('warnings-box');
+  warningsBox.innerHTML = result.warnings.length
+    ? '<div class="notice">' + result.warnings.map((w) => '⚠ ' + w).join('<br>') + '</div>'
+    : '';
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadCostData();
+
+  document.getElementById('tab-smd').addEventListener('click', () => switchTab('smd'));
+  document.getElementById('tab-gobcob').addEventListener('click', () => switchTab('gobcob'));
+  document.getElementById('sel-pitch').addEventListener('change', calc);
+  document.getElementById('inp-w').addEventListener('input', calc);
+  document.getElementById('inp-h').addEventListener('input', calc);
+
+  fillSelect(document.getElementById('sel-rcv'), LED_COST_DATA.receivingCards,
+    (r) => `${r.brand} ${r.model} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`);
+  fillSelect(document.getElementById('sel-smps'), LED_COST_DATA.smps,
+    (r) => `${r.voltage || ''} ${r.capacity || ''} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`);
+  fillSelect(document.getElementById('sel-proc'), LED_COST_DATA.processors,
+    (r) => `${r.brand} ${r.model} — ¥${r.대표단가} (관측 ${r.관측횟수}건)`);
+  document.getElementById('sel-rcv').addEventListener('change', calc);
+  document.getElementById('sel-smps').addEventListener('change', calc);
+  document.getElementById('sel-proc').addEventListener('change', calc);
+
+  rebuildPitchSelect();
+  calc();
+});
+</script>
+
+</body>
+</html>
