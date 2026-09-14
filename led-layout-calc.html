@@ -227,6 +227,12 @@ function fmt1(n) { return (Math.round(n*10)/10).toFixed(1); }
 function fmt2(n) { return (Math.round(n*100)/100).toFixed(2); }
 
 // ═══════════════════════════════════════════════
+// BRAND CONFIG
+// ═══════════════════════════════════════════════
+const BRAND = new URLSearchParams(window.location.search).get('brand') || 'youngmedia';
+const BRAND_NAME = BRAND === 'onlyone' ? 'ONLYONE LED' : 'Young & Media';
+
+// ═══════════════════════════════════════════════
 // i18n
 // ═══════════════════════════════════════════════
 let LANG = localStorage.getItem('ledcalc_lang') || 'ko';
@@ -456,7 +462,7 @@ function exportPNG(r) {
   ctx.fillStyle='rgba(246,244,239,0.04)'; ctx.fillRect(x0,tb,r.usableW*s,H-tb-14);
   ctx.strokeStyle='rgba(246,244,239,0.16)'; ctx.lineWidth=1; ctx.strokeRect(x0,tb,r.usableW*s,H-tb-14);
   ctx.fillStyle=ACCENT; ctx.font='700 30px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
-  ctx.fillText('Young & Media', x0+20, tb+40);
+  ctx.fillText(BRAND_NAME, x0+20, tb+40);
   const specs=[
     fmtInt(r.inW)+' × '+fmtInt(r.inH)+' mm',
     fmtInt(r.totalResW)+' × '+fmtInt(r.totalResH)+' px',
@@ -490,7 +496,8 @@ function exportPNG(r) {
 
   const a=document.createElement('a');
   a.href=cv.toDataURL('image/png');
-  a.download='YoungAndMedia_'+r.inW+'x'+r.inH+'_P'+r.model.pitch+'.png';
+  const filename = BRAND === 'onlyone' ? 'ONLYONE_LED_' : 'YoungAndMedia_';
+  a.download=filename+r.inW+'x'+r.inH+'_P'+r.model.pitch+'.png';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
