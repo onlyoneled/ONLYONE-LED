@@ -1,6 +1,6 @@
 // planner/js/app.js — 화면 구성과 이벤트 연결
 import { t, setLang, getLang, fmtNum } from './i18n.js';
-import { GENERIC_PANELS, PANEL_FIELDS, makePanel, pitchOf, DEFAULT_PANEL_ID } from './catalog.js';
+import { GENERIC_PANELS, PANEL_FIELDS, makePanel, pitchOf, DEFAULT_PANEL_ID, ENVS, sizesFor, pitchesFor, mountsFor, panelId } from './catalog.js';
 import * as E from './engine.js';
 import * as S from './state.js';
 import { planSvg, sceneSvg, slicesSvg, PORT_COLORS, screenEnvelope } from './plan2d.js';
@@ -28,7 +28,7 @@ const active = () => project.screens.find((s) => s.id === project.activeId) || p
 const scr = (id) => project.screens.find((s) => s.id === id);
 const typeLabel = (type) => t('type' + type.charAt(0).toUpperCase() + type.slice(1));
 const screenName = (s) => s.name || typeLabel(s.type);
-const panelName = (p) => p ? (p.name + (p.builtin ? ` (${t('generic')})` : '')) : '—';
+const panelName = (p) => p ? (p.builtin ? `${p.name} · ${t('env_' + p.env)}` : p.name) : '—';
 const m2 = (mm) => fmtNum(mm / 1000, 2);
 
 // 프로젝트를 불러올 때: 프로젝트에 담긴 사용자 패널을 카탈로그에 합치고, 없는 패널 참조를 정리한다
@@ -40,8 +40,13 @@ function adoptProject(p) {
   if (changed) { S.saveCatalog(custom); panels = S.panelMap(custom); }
   for (const s of p.screens) {
     if (!panels[s.panelId]) s.panelId = DEFAULT_PANEL_ID;
-    if (!panels[s.mix.smallId]) s.mix.smallId = 'g500-p39';
-    if (!panels[s.mix.bigId]) s.mix.bigId = 'g1000-p39';
+    if (!panels[s.mix.smallId]) s.mix.smallId = panelId('outdoor', '500x500', '3.9');
+    if (!panels[s.mix.bigId]) s.mix.bigId = panelId('outdoor', '500x1000', '3.9');
+    const pp = panels[s.panelId];
+    if (pp.builtin) s.env = pp.env;
+    if (!s.env) s.env = 'outdoor';
+    if (!mountsFor(s.env).includes(s.mount)) s.mount = mountsFor(s.env)[0];
+    if (s.env === 'indoor') s.mix.on = false;
     s.cabs = (s.cabs || []).filter((c) => panels[c.p]);
     if (!s.cabs.length) S.regen(s, panels);
   }
@@ -100,9 +105,12 @@ const num = (bind, val, attrs = '') => `<input type="number" data-bind="${bind}"
 const chk = (bind, val, label, attrs = '') => `<label class="chk"><input type="checkbox" data-bind="${bind}" data-kind="bool" ${val ? 'checked' : ''} ${attrs}> ${esc(label)}</label>`;
 const field = (label, inner) => `<label class="field"><span>${esc(label)}</span>${inner}</label>`;
 
+// 혼합 배치 후보: 같은 용도·피치의 기본 사이즈(숨은 사이즈 포함) + 사용자 패널
+const mixFilter = (cur) => (x) => !x.builtin || (cur && x.env === 'outdoor' && x.pitchKey === cur.pitchKey);
+
 function panelInfo(p) {
   if (!p) return '';
-  return `${p.w}×${p.h} mm · ${p.px}×${p.py} px · ${t('realPitch')} ${pitchOf(p).toFixed(3)} mm${p.builtin ? ' · ' + t('presetNote') : ''}`;
+  return `${p.w}×${p.h} mm · ${p.px}×${p.py} px · ${t('realPitch')} ${pitchOf(p).toFixed(3)} mm${p.weight ? ` · ${p.weight} kg` : ''}${p.pMax ? ` · ${t('powerMax')} ${p.pMax} W` : ''}`;
 }
 
 // ───────────────────────── 디자인 (심플 + 프로 1) ─────────────────────────
@@ -113,8 +121,24 @@ function sideCards(pro) {
   const pick = pro && project.screens.length > 1
     ? `<div class="card"><label class="field"><span>${t('active')}</span><select data-bind="p.activeId" data-kind="str">${opts(project.screens.map((x) => [x.id, screenName(x)]), s.id)}</select></label></div>` : '';
 
+  // 패널: 용도 → 설치 형태 → 사이즈 → 피치
+  const isCustom = p && !p.builtin;
+  const envBtns = ENVS.map((v) => `<button type="button" data-act="pick" data-k="env" data-v="${v}" aria-pressed="${s.env === v}">${t('env_' + v)}</button>`).join('');
+  const mountBtns = ['install', 'rental'].map((v) => `<button type="button" data-act="pick" data-k="mount" data-v="${v}" aria-pressed="${s.mount === v}" ${mountsFor(s.env).includes(v) ? '' : 'disabled'}>${t('mount_' + v)}</button>`).join('');
+  const sizeOpts = opts(sizesFor(s.env).map((z) => [z.key, `${z.w} × ${z.h}`]), isCustom ? '' : p.sizeKey)
+    + (custom.length ? `<optgroup label="${esc(t('custom'))}">${opts(custom.map((c) => ['c:' + c.id, c.name]), isCustom ? 'c:' + p.id : '')}</optgroup>` : '');
+  const pitchSel = isCustom ? `<input type="text" value="${esc(p.pitchLabel || pitchOf(p).toFixed(2))}" disabled>`
+    : `<select data-act-change="pickPitch" ${s.mix.on ? 'disabled' : ''}>${opts(pitchesFor(p.sizeKey).map((x) => [x, 'P' + x]), p.pitchKey)}</select>`;
   const panelCard = `<div class="card"><h2><span class="num">1</span>${t('secPanel')}</h2>
-    <select data-bind="s.panelId" data-kind="str" data-regen="1" ${s.mix.on ? 'disabled' : ''}>${panelOptions(s.panelId)}</select>
+    <div class="grid2">
+      <div class="field"><span>${t('useType')}</span><div class="seg small" role="group">${envBtns}</div></div>
+      <div class="field"><span>${t('installType')}</span><div class="seg small" role="group">${mountBtns}</div></div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      ${field(t('panelSize') + ' (mm)', `<select data-act-change="pickSize" ${s.mix.on ? 'disabled' : ''}>${sizeOpts}</select>`)}
+      ${field(t('pitch'), pitchSel)}
+    </div>
+    ${s.env === 'indoor' ? `<p class="note">${t('indoorInstallOnly')}</p>` : ''}
     <div class="panel-info">${esc(panelInfo(p))}</div>
     <div class="row" style="margin-top:10px"><button type="button" class="btn sm" data-act="panelNew">${t('createPanel')}</button></div></div>`;
 
@@ -138,7 +162,7 @@ function sideCards(pro) {
     sizeBody += s.sizeMode === 'grid'
       ? `<div class="grid2" style="margin-top:10px">${field(t('cols'), num('s.cols', s.cols, 'min="1" max="200" data-regen="1"'))}${field(t('rows'), num('s.rows', s.rows, 'min="1" max="200" data-regen="1"'))}</div>`
       : `<div class="grid2" style="margin-top:10px">${field(t('widthM'), num('s.wM', s.wM, 'step="0.1" min="0.1" data-regen="1"'))}${field(t('heightM'), num('s.hM', s.hM, 'step="0.1" min="0.1" data-regen="1"'))}</div>
-         <p class="note">→ ${s.cols} × ${s.rows}</p>`;
+         <p class="note">→ ${s.cols} × ${s.rows}</p>${p && p.env === 'indoor' ? `<p class="note">${t('indoorFillNote')}</p>` : ''}`;
     if (p) {
       const sug = E.ratioSuggestions(p.px, p.py);
       sizeBody += `<h3>${t('near169')}</h3><div class="row">${sug.map((x) => `<button type="button" class="btn sm" data-act="suggest" data-c="${x.cols}" data-r="${x.rows}">${x.cols}×${x.rows} <span class="mono" style="color:var(--mute)">(${x.err >= 0 ? '+' : ''}${(x.err * 100).toFixed(2)}%)</span></button>`).join('')}</div>`;
@@ -151,7 +175,7 @@ function sideCards(pro) {
     const sm = panels[mx.smallId], bg = panels[mx.bigId];
     const sameFamily = sm && bg && sm.family && sm.family === bg.family;
     mixBody = `<div class="sub-box">
-      <div class="grid2">${field(t('mixSmall'), `<select data-bind="s.mix.smallId" data-kind="str" data-regen="1">${panelOptions(mx.smallId)}</select>`)}${field(t('mixBig'), `<select data-bind="s.mix.bigId" data-kind="str" data-regen="1">${panelOptions(mx.bigId)}</select>`)}</div>
+      <div class="grid2">${field(t('mixSmall'), `<select data-bind="s.mix.smallId" data-kind="str" data-regen="1">${panelOptions(mx.smallId, mixFilter(p))}</select>`)}${field(t('mixBig'), `<select data-bind="s.mix.bigId" data-kind="str" data-regen="1">${panelOptions(mx.bigId, mixFilter(p))}</select>`)}</div>
       <div class="grid2" style="margin-top:10px">${field(t('widthM'), num('s.mix.wM', mx.wM, 'step="0.1" min="0.1" data-regen="1"'))}${field(t('heightM'), num('s.mix.hM', mx.hM, 'step="0.1" min="0.1" data-regen="1"'))}</div>
       <div class="grid2" style="margin-top:10px">${field(t('stockSmall'), `<input type="number" min="0" data-bind="s.mix.stockSmall" data-kind="numOrEmpty" data-regen="1" value="${esc(mx.stockSmall)}" placeholder="∞">`)}${field(t('stockBig'), `<input type="number" min="0" data-bind="s.mix.stockBig" data-kind="numOrEmpty" data-regen="1" value="${esc(mx.stockBig)}" placeholder="∞">`)}</div>
       <div class="grid2" style="margin-top:10px">${field(t('goal'), `<select data-bind="s.mix.goal" data-kind="str" data-regen="1">${opts([['fewest', t('goalFewest')], ['stock', t('goalStock')], ['preferBig', t('goalBig')], ['preferSmall', t('goalSmall')]], mx.goal)}</select>`)}
@@ -163,7 +187,7 @@ function sideCards(pro) {
     </div>`;
   }
   const sizeCard = `<div class="card"><h2><span class="num">3</span>${t('secSize')}</h2>${sizeBody || ''}
-    <div style="margin-top:14px">${chk('s.mix.on', mx.on, t('mix'), 'data-regen="1"')}</div>${mixBody}</div>`;
+    ${s.env === 'outdoor' ? `<div style="margin-top:14px">${chk('s.mix.on', mx.on, t('mix'), 'data-regen="1"')}</div>${mixBody}` : ''}</div>`;
   return pick + panelCard + geomCard + sizeCard;
 }
 
@@ -173,7 +197,7 @@ function resultsCard() {
   const r = d.sum;
   const counts = Object.entries(r.counts).map(([id, n]) => `${n}× ${panels[id] ? panels[id].w + '×' + panels[id].h : id}`).join(' + ');
   const power = r.pMax !== null || r.pAvg !== null
-    ? `${t('powerMax')} ${fmtNum(r.pMax)} W · ${t('powerAvg')} ${fmtNum(r.pAvg)} W${r.ampsSingle !== null ? `<br>${t('single')} ${fmtNum(r.ampsSingle, 1)} A · ${t('three')} ${fmtNum(r.ampsThree, 1)} A` : ''}`
+    ? `${[r.pMax !== null ? `${t('powerMax')} ${fmtNum(r.pMax)} W` : '', r.pAvg !== null ? `${t('powerAvg')} ${fmtNum(r.pAvg)} W` : ''].filter(Boolean).join(' · ')}${r.ampsSingle !== null ? `<br>${t('single')} ${fmtNum(r.ampsSingle, 1)} A · ${t('three')} ${fmtNum(r.ampsThree, 1)} A` : ''}`
     : `${t('power')}: ${t('noData')}`;
   const cases = Object.entries(r.cases).map(([id, n]) => `${n} ${t('cases')} (${panels[id].w}×${panels[id].h})`).join(', ');
   const tiles = [
@@ -214,6 +238,9 @@ function overlaps(s, r, ignoreId) {
   });
 }
 
+// 도면에서 추가/교체할 수 있는 패널: 같은 용도·피치의 기본 사이즈(보조 사이즈 포함) + 사용자 패널
+const addable = (x, cur) => !x.builtin || !cur || !cur.builtin || (x.env === cur.env && x.pitchKey === cur.pitchKey);
+
 function numberingControls(s) {
   const n = s.numbering;
   return `<select data-bind="s.numbering.dir" data-kind="str" title="${t('route')}">${opts([['v', t('dirV')], ['h', t('dirH')]], n.dir)}</select>
@@ -241,7 +268,7 @@ function planCard() {
     <div class="plan-tools">
       <span style="font-size:13px;color:var(--mute)">${t('editOnPlan')}</span>
       <div class="seg small" role="group">${tools.map(([v, l]) => `<button type="button" data-act="tool" data-v="${v}" aria-pressed="${(ui.tool || '') === v}">${esc(l)}</button>`).join('')}</div>
-      <select data-act-change="addPanel" title="${t('addPanel')}">${opts(usedIds.concat(Object.keys(panels).filter((id) => !usedIds.includes(id))).map((id) => [id, panelName(panels[id])]), ui.addPanelId)}</select>
+      <select data-act-change="addPanel" title="${t('addPanel')}">${opts(usedIds.concat(Object.keys(panels).filter((id) => !usedIds.includes(id) && addable(panels[id], panels[s.panelId]))).map((id) => [id, panelName(panels[id])]), ui.addPanelId)}</select>
       <span class="sep"></span>
       <button type="button" class="btn sm" data-act="grow" data-v="col+">${t('plusCol')}</button><button type="button" class="btn sm" data-act="grow" data-v="col-">${t('minusCol')}</button>
       <button type="button" class="btn sm" data-act="grow" data-v="row+">${t('plusRow')}</button><button type="button" class="btn sm" data-act="grow" data-v="row-">${t('minusRow')}</button>
@@ -368,7 +395,7 @@ function catalogView() {
     ${isCustom ? `<button type="button" class="btn sm danger" data-act="panelDel" data-v="${p.id}">${t('del')}</button>` : ''}</div></div>`;
   return `<div class="card"><h2>${t('customPanels')}<span class="right"><button type="button" class="btn sm primary" data-act="panelNew">${t('createPanel')}</button><button type="button" class="btn sm" data-act="catExport">${t('exportCatalog')}</button><button type="button" class="btn sm" data-act="catImport">${t('importCatalog')}</button></span></h2>
     ${custom.length ? `<div class="cat-list">${custom.map((p) => item(p, true)).join('')}</div>` : `<p class="note">${t('noCustom')}</p>`}
-    <details open><summary>${t('builtinPresets')} (${GENERIC_PANELS.length})</summary><div class="cat-list">${GENERIC_PANELS.map((p) => item(p, false)).join('')}</div></details></div>`;
+    <details open><summary>${t('builtinPresets')} (${GENERIC_PANELS.filter((p) => !p.hidden).length})</summary><div class="cat-list">${GENERIC_PANELS.filter((p) => !p.hidden).map((p) => item(p, false)).join('')}</div></details></div>`;
 }
 
 // ───────────────────────── 렌더 ─────────────────────────
@@ -574,6 +601,16 @@ function rotateSelected(deg) {
 }
 
 const actions = {
+  pick(el) {
+    const s = active();
+    if (el.dataset.k === 'mount') { s.mount = el.dataset.v; persist(); render(); return; }
+    const env = el.dataset.v;
+    if (env === s.env) return;
+    s.env = env;
+    const cur = panels[s.panelId];
+    const size = sizesFor(env)[0].key;
+    applyPanel(s, resolvePanel(env, size, cur && cur.builtin ? cur.pitchKey : '2.5'));
+  },
   mode(el) { prefs.mode = el.dataset.v; savePrefs(); render(); schedule3d(true); },
   theme() { prefs.theme = prefs.theme === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', prefs.theme); savePrefs(); schedule3d(); },
   lang(el) { prefs.lang = el.dataset.v; setLang(prefs.lang); savePrefs(); render(); schedule3d(); },
@@ -767,7 +804,31 @@ const actions = {
   },
 };
 
+// 기본 패널 고르기: 피치가 없으면 숫자가 가장 가까운 피치로
+function resolvePanel(env, sizeKey, pitch) {
+  const list = pitchesFor(sizeKey);
+  const pk = list.includes(pitch) ? pitch : list.slice().sort((a, b) => Math.abs(a - pitch) - Math.abs(b - pitch))[0];
+  return panelId(env, sizeKey, pk);
+}
+function applyPanel(s, id) {
+  if (!panels[id]) return;
+  s.panelId = id;
+  const p = panels[id];
+  if (p.builtin) s.env = p.env;
+  if (!mountsFor(s.env).includes(s.mount)) s.mount = mountsFor(s.env)[0];
+  if (s.env === 'indoor') s.mix.on = false;
+  ui.addPanelId = null;
+  S.regen(s, panels);
+  persist(); render(); schedule3d(true);
+}
+
 const changeActs = {
+  pickSize(el) {
+    const s = active(), cur = panels[s.panelId];
+    if (el.value.startsWith('c:')) return applyPanel(s, el.value.slice(2));
+    applyPanel(s, resolvePanel(s.env, el.value, cur && cur.builtin ? cur.pitchKey : '3.9'));
+  },
+  pickPitch(el) { const s = active(), cur = panels[s.panelId]; if (cur && cur.builtin) applyPanel(s, panelId(cur.env, cur.sizeKey, el.value)); },
   addPanel(el) { ui.addPanelId = el.value; render(); },
   addScreen(el) {
     const type = el.value;

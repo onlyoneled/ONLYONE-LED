@@ -1,6 +1,6 @@
 // planner/js/state.js — 프로젝트 모델, 화면 재생성, 저장/불러오기
-import { GENERIC_PANELS, DEFAULT_PANEL_ID, makePanel } from './catalog.js';
-import { buildGrid, buildMix, gridFromMeters, uid, DEFAULT_PORT_PX } from './engine.js';
+import { GENERIC_PANELS, DEFAULT_PANEL_ID, makePanel, panelId as pid } from './catalog.js';
+import { buildGrid, buildMix, gridFromMeters, decomposeIndoor, buildFromStrips, uid, DEFAULT_PORT_PX } from './engine.js';
 
 const LS_PROJECTS = 'o1p.projects';
 const LS_CURRENT = 'o1p.current';
@@ -37,10 +37,10 @@ export function panelMap(custom) {
 export function newScreen(type = 'main', idx = 1, panelId = DEFAULT_PANEL_ID) {
   const d = SCREEN_TYPES[type] || SCREEN_TYPES.free;
   return {
-    id: uid('scr'), name: '', type, panelId,
+    id: uid('scr'), name: '', type, panelId, env: 'outdoor', mount: 'rental',
     geometry: d.geometry || 'flat', jointAngle: 5, arcAngle: 90,
     sizeMode: 'grid', cols: d.cols, rows: d.rows, wM: 4, hM: 2,
-    mix: { on: false, smallId: 'g500-p39', bigId: 'g1000-p39', wM: 4, hM: 3.5, stockSmall: '', stockBig: '', goal: 'fewest', band: 'bottom', confirmed: false },
+    mix: { on: false, smallId: pid('outdoor', '500x500', '3.9'), bigId: pid('outdoor', '500x1000', '3.9'), wM: 4, hM: 3.5, stockSmall: '', stockBig: '', goal: 'fewest', band: 'bottom', confirmed: false },
     cabs: [], edited: false,
     numbering: { dir: 'v', pattern: 'zigzag', start: 'bl' },
     cabling: { mode: 'auto', capacity: DEFAULT_PORT_PX, counts: [] },
@@ -69,6 +69,12 @@ export function regen(screen, panels) {
     const r = buildMix({ small: panels[m.smallId], big: panels[m.bigId], smallId: m.smallId, bigId: m.bigId, wM: +m.wM || 0, hM: +m.hM || 0, stockSmall: m.stockSmall === '' ? Infinity : +m.stockSmall, stockBig: m.stockBig === '' ? Infinity : +m.stockBig, goal: m.goal, band: m.band });
     screen.cabs = r.cabs;
     screen.mixInfo = { warnings: r.warnings, bigRows: r.bigRows, smallRows: r.smallRows, cols: r.cols, shortBig: r.shortBig || 0, shortSmall: r.shortSmall || 0 };
+  } else if (panel.env === 'indoor' && screen.sizeMode === 'meters') {
+    // 실내형: 목표 크기에 맞춰 보조 캐비닛까지 자동 조합
+    const d = decomposeIndoor(panel.h, (+screen.wM || 0) * 1000, (+screen.hM || 0) * 1000);
+    screen.cabs = buildFromStrips(d.cols, d.rows, (w, h) => pid('indoor', `${w}x${h}`, panel.pitchKey));
+    screen.cols = d.cols.length; screen.rows = d.rows.length;
+    screen.mixInfo = null;
   } else {
     if (screen.sizeMode === 'meters') {
       const g = gridFromMeters(panel, +screen.wM || 0, +screen.hM || 0);

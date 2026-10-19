@@ -33,6 +33,40 @@ export function gridFromMeters(panel, wM, hM) {
   };
 }
 
+// 실내형 자동 조합: 320×160 단위로 목표 크기 안에 맞추고, 기본 캐비닛(640×480 또는 640×640)에
+// 640×320 / 640×160 / 320×xxx 보조 캐비닛을 섞는다. 반환값은 열 폭·행 높이 목록(mm).
+export function decomposeIndoor(baseH, wMm, hMm) {
+  // 기존 배치 계산기와 같이 내림: 입력한 크기를 넘지 않게 채운다
+  const wu = Math.max(1, Math.floor(wMm / 320 + 1e-9));
+  const cols = [];
+  for (let i = 0; i < Math.floor(wu / 2); i++) cols.push(640);
+  if (wu % 2 === 1) cols.push(320);
+  const usable = Math.max(1, Math.floor(hMm / 160 + 1e-9)) * 160;
+  const rows = [];
+  if (baseH === 640) {
+    const q = Math.floor(usable / 640), r = usable - q * 640;
+    for (let i = 0; i < q; i++) rows.push(640);
+    if (r) rows.push(r);
+  } else {
+    const q = Math.floor(usable / 480), r = usable - q * 480;
+    if (r === 160 && q >= 1) { for (let i = 0; i < q - 1; i++) rows.push(480); rows.push(640); }
+    else { for (let i = 0; i < q; i++) rows.push(480); if (r) rows.push(r); }
+  }
+  return { cols, rows };
+}
+
+// 열 폭·행 높이 목록으로 캐비닛을 깐다. idOf(w, h) → 패널 id
+export function buildFromStrips(cols, rows, idOf) {
+  const cabs = [];
+  let y = 0;
+  for (const h of rows) {
+    let x = 0;
+    for (const w of cols) { cabs.push({ id: uid(), p: idOf(w, h), x, y, rot: 0 }); x += w; }
+    y += h;
+  }
+  return cabs;
+}
+
 // 소형+대형 혼합 배치. 두 패널은 가로 폭이 같고, 대형 높이가 소형 높이의 정수배여야 한다.
 // goal: fewest | stock | preferBig | preferSmall, band: top | bottom
 export function buildMix({ small, big, smallId, bigId, wM, hM, stockSmall = Infinity, stockBig = Infinity, goal = 'fewest', band = 'bottom' }) {

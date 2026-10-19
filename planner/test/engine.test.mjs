@@ -4,10 +4,11 @@ import { GENERIC_PANELS } from '../js/catalog.js';
 import {
   buildGrid, gridFromMeters, buildMix, ratioSuggestions, summarize, curvature,
   orderCabs, assignPorts, rectCorners, rotateGroup, packCanvas, buildSlices, ratioLabel, slicesCSV,
+  decomposeIndoor, buildFromStrips,
 } from '../js/engine.js';
 
 const panels = Object.fromEntries(GENERIC_PANELS.map((p) => [p.id, p]));
-const P1000 = panels['g1000-p39'], P500 = panels['g500-p39'];
+const P1000 = panels['outdoor-500x1000-p3.9'], P500 = panels['outdoor-500x500-p3.9'];
 
 let passed = 0;
 function test(name, fn) {
@@ -16,7 +17,7 @@ function test(name, fn) {
 }
 
 test('8×4 그리드 500×1000 P3.9: 4m×4m, 32개, 1024×1024, 16㎡', () => {
-  const cabs = buildGrid('g1000-p39', P1000, 8, 4);
+  const cabs = buildGrid('outdoor-500x1000-p3.9', P1000, 8, 4);
   const s = summarize(cabs, panels);
   assert.strictEqual(s.count, 32);
   assert.strictEqual(s.widthMm, 4000);
@@ -48,14 +49,14 @@ test('비율 라벨', () => {
 });
 
 test('혼합 배치: 4m×3.5m → 대형 3줄 + 소형 1줄 (아래)', () => {
-  const m = buildMix({ small: P500, big: P1000, smallId: 'g500-p39', bigId: 'g1000-p39', wM: 4, hM: 3.5, band: 'bottom' });
+  const m = buildMix({ small: P500, big: P1000, smallId: 'outdoor-500x500-p3.9', bigId: 'outdoor-500x1000-p3.9', wM: 4, hM: 3.5, band: 'bottom' });
   assert.strictEqual(m.cols, 8);
   assert.strictEqual(m.bigRows, 3);
   assert.strictEqual(m.smallRows, 1);
   const s = summarize(m.cabs, panels);
   assert.strictEqual(s.heightMm, 3500);
   assert.strictEqual(s.holes, false);
-  const smallYs = m.cabs.filter((c) => c.p === 'g500-p39').map((c) => c.y);
+  const smallYs = m.cabs.filter((c) => c.p === 'outdoor-500x500-p3.9').map((c) => c.y);
   assert.ok(smallYs.every((y) => y === 3000));
 });
 
@@ -68,7 +69,7 @@ test('혼합 배치: 재고 우선 → 대형 재고 부족 시 소형으로 대
 });
 
 test('혼합 배치: 폭이 다르면 거부', () => {
-  const m = buildMix({ small: panels['g640-p4'], big: P1000, smallId: 'a', bigId: 'b', wM: 4, hM: 3 });
+  const m = buildMix({ small: panels['indoor-640x480-p2.5'], big: P1000, smallId: 'a', bigId: 'b', wM: 4, hM: 3 });
   assert.deepStrictEqual(m.warnings, ['mixIncompatible']);
 });
 
@@ -81,7 +82,7 @@ test('곡률: 원통 8열 → 45°, 반지름', () => {
 });
 
 test('번호: 세로 지그재그, 왼쪽 아래 시작 (8×4)', () => {
-  const cabs = buildGrid('g1000-p39', P1000, 8, 4);
+  const cabs = buildGrid('outdoor-500x1000-p3.9', P1000, 8, 4);
   const order = orderCabs(cabs, panels, { dir: 'v', pattern: 'zigzag', start: 'bl' });
   const at = (c, r) => cabs[r * 8 + c].id;
   assert.strictEqual(order[0], at(0, 3));
@@ -92,7 +93,7 @@ test('번호: 세로 지그재그, 왼쪽 아래 시작 (8×4)', () => {
 });
 
 test('번호: 가로 일방향, 왼쪽 위 시작', () => {
-  const cabs = buildGrid('g1000-p39', P1000, 3, 2);
+  const cabs = buildGrid('outdoor-500x1000-p3.9', P1000, 3, 2);
   const order = orderCabs(cabs, panels, { dir: 'h', pattern: 'raster', start: 'tl' });
   assert.deepStrictEqual(order, cabs.map((c) => c.id));
 });
@@ -134,6 +135,32 @@ test('캔버스 배치와 슬라이스', () => {
   assert.strictEqual(sl.length, 2);
   assert.deepStrictEqual(sl[1].in, { x: 5, y: 0, w: 5, h: 5 });
   assert.ok(slicesCSV(sl, [{ name: 'Out 1' }]).split('\n')[1].startsWith('A 1,0,0,5,5,Out 1'));
+});
+
+test('카탈로그: 실내 640×480 피치별 해상도·전력·무게', () => {
+  const p = panels['indoor-640x480-p1.25'];
+  assert.deepStrictEqual([p.px, p.py, p.weight, p.pMax], [512, 384, 7.0, 228]);
+  assert.strictEqual(panels['indoor-640x640-p1.53'].px, 416);
+  assert.strictEqual(panels['outdoor-1000x1000-p3.9'].px, 256);
+  assert.strictEqual(panels['outdoor-960x960-p6.67'].px, 144);
+  assert.ok(panels['indoor-320x160-p2'].hidden);
+});
+
+test('실내 자동 조합: 640×480 기준', () => {
+  assert.deepStrictEqual(decomposeIndoor(480, 3840, 2160), { cols: [640, 640, 640, 640, 640, 640], rows: [480, 480, 480, 640] });
+  assert.deepStrictEqual(decomposeIndoor(480, 3840, 2240), { cols: [640, 640, 640, 640, 640, 640], rows: [480, 480, 480, 480, 320] });
+  assert.deepStrictEqual(decomposeIndoor(480, 2000, 1000), { cols: [640, 640, 640], rows: [480, 480] });
+  assert.deepStrictEqual(decomposeIndoor(480, 1300, 1120), { cols: [640, 640], rows: [480, 640] });
+  assert.deepStrictEqual(decomposeIndoor(480, 1000, 160), { cols: [640, 320], rows: [160] });
+});
+
+test('실내 자동 조합: 640×640 기준', () => {
+  assert.deepStrictEqual(decomposeIndoor(640, 1920, 1440), { cols: [640, 640, 640], rows: [640, 640, 160] });
+  const { cols, rows } = decomposeIndoor(640, 1600, 960);
+  const cabs = buildFromStrips(cols, rows, (w, h) => `indoor-${w}x${h}-p2`);
+  assert.ok(cabs.every((c) => panels[c.p]), '모든 조각 사이즈가 카탈로그에 있어야 함');
+  const s = summarize(cabs, panels);
+  assert.deepStrictEqual([s.widthMm, s.heightMm, s.holes], [1600, 960, false]);
 });
 
 console.log(`\n${passed} passed`);

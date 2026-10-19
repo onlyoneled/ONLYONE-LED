@@ -45,6 +45,7 @@ const BLANK = {
   modW: null, modH: null, modPx: null, modPy: null,
   curve: 'no', build: 'rigid', angMin: null, angMax: null, angStep: null, rMin: null,
   source: '', notes: '', builtin: false,
+  env: '', sizeKey: '', pitchKey: '', hidden: false,
 };
 
 export function makePanel(partial = {}) {
@@ -62,34 +63,60 @@ export function makePanel(partial = {}) {
 
 export function pitchOf(p) { return p.px ? p.w / p.px : 0; }
 
-function preset(id, w, h, px, py, label, family, use) {
+// ── 기본 패널: 용도(옥외/실내) → 설치 형태(설치/렌탈) → 사이즈 → 피치 ──
+// 피치 목록의 px 값은 기준 길이(base mm)당 픽셀 수. 패널 픽셀 = 패널 길이 / base × px
+const PITCH_SETS = {
+  out500: { base: 500, list: [['2.6', 192], ['2.9', 168], ['3.9', 128], ['4.8', 104]] },
+  out960: { base: 960, list: [['4', 240], ['5', 192], ['6.67', 144], ['8', 120], ['10', 96]] },
+  // 실내: 320×160 모듈 기준 (KI 시리즈)
+  in320: { base: 320, list: [['1.25', 256], ['1.53', 208], ['1.86', 172], ['2', 160], ['2.5', 128]] },
+};
+
+// 실내 모듈(320×160) 1장당 소비전력 W, 캐비닛 무게 kg — 기존 배치 계산기(admin-tools/led-layout-engine.js)와 같은 값
+const IN_MODULE_W = { '1.25': 38, '1.53': 35, '1.86': 33.3, '2': 33.3, '2.5': 35 };
+const IN_WEIGHT = { '640x640': 8.9, '640x480': 7.0, '640x320': 4.8, '640x160': 2.3, '320x640': 4.2, '320x480': 4.1, '320x320': 2.2, '320x160': 1.8 };
+
+// hidden: 패널 선택에는 안 보이고, 크기에 맞춰 자동 조합할 때만 쓰는 사이즈
+export const SIZES = [
+  { key: '500x1000', w: 500, h: 1000, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true },
+  { key: '1000x1000', w: 1000, h: 1000, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true },
+  { key: '960x960', w: 960, h: 960, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out960' },
+  { key: '500x500', w: 500, h: 500, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true, hidden: true },
+  { key: '640x640', w: 640, h: 640, env: 'indoor', mounts: ['install'], pitch: 'in320' },
+  { key: '640x480', w: 640, h: 480, env: 'indoor', mounts: ['install'], pitch: 'in320' },
+  { key: '640x320', w: 640, h: 320, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
+  { key: '640x160', w: 640, h: 160, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
+  { key: '320x640', w: 320, h: 640, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
+  { key: '320x480', w: 320, h: 480, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
+  { key: '320x320', w: 320, h: 320, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
+  { key: '320x160', w: 320, h: 160, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
+];
+export const ENVS = ['outdoor', 'indoor'];
+
+export function panelId(env, sizeKey, pitch) { return `${env}-${sizeKey}-p${pitch}`; }
+export function sizesFor(env, withHidden = false) { return SIZES.filter((s) => s.env === env && (withHidden || !s.hidden)); }
+export function pitchesFor(sizeKey) { const s = SIZES.find((x) => x.key === sizeKey); return s ? PITCH_SETS[s.pitch].list.map(([p]) => p) : []; }
+export function mountsFor(env) { return env === 'indoor' ? ['install'] : ['install', 'rental']; }
+
+function build(size, pitch, perBase) {
+  const set = PITCH_SETS[size.pitch];
+  const px = Math.round((size.w / set.base) * perBase), py = Math.round((size.h / set.base) * perBase);
+  const indoor = size.env === 'indoor';
+  const modules = indoor ? (size.w / 320) * (size.h / 160) : 0;
   return makePanel({
-    id, name: `${w}×${h} ${label}`, brand: '', model: '', use,
-    w, h, px, py, pitchLabel: label, family, builtin: true,
-    curve: family === 'rental-500' ? 'yes' : 'no',
-    build: family === 'rental-500' ? 'curvedLock' : 'rigid',
-    angMin: family === 'rental-500' ? -10 : null,
-    angMax: family === 'rental-500' ? 10 : null,
-    angStep: family === 'rental-500' ? 2.5 : null,
+    id: panelId(size.env, size.key, pitch), name: `${size.w}×${size.h} P${pitch}`,
+    use: size.env, env: size.env, sizeKey: size.key, pitchKey: pitch, hidden: !!size.hidden,
+    w: size.w, h: size.h, px, py, pitchLabel: 'P' + pitch, family: `${size.env}-${size.pitch}`, familyConfirmed: 'yes', builtin: true,
+    weight: indoor ? IN_WEIGHT[size.key] ?? null : null,
+    pMax: indoor ? Math.round(modules * IN_MODULE_W[pitch] * 10) / 10 : null,
+    modW: indoor ? 320 : null, modH: indoor ? 160 : null,
+    modPx: indoor ? perBase : null, modPy: indoor ? perBase / 2 : null,
+    curve: size.curve ? 'yes' : 'no', build: size.curve ? 'curvedLock' : 'rigid',
+    angMin: size.curve ? -10 : null, angMax: size.curve ? 10 : null, angStep: size.curve ? 2.5 : null,
+    source: indoor ? 'KI series spec' : '',
   });
 }
 
-export const GENERIC_PANELS = [
-  preset('g500-p26', 500, 500, 192, 192, 'P2.6', 'rental-500', 'rental'),
-  preset('g500-p29', 500, 500, 168, 168, 'P2.9', 'rental-500', 'rental'),
-  preset('g500-p39', 500, 500, 128, 128, 'P3.9', 'rental-500', 'rental'),
-  preset('g500-p48', 500, 500, 104, 104, 'P4.8', 'rental-500', 'rental'),
-  preset('g1000-p26', 500, 1000, 192, 384, 'P2.6', 'rental-500', 'rental'),
-  preset('g1000-p29', 500, 1000, 168, 336, 'P2.9', 'rental-500', 'rental'),
-  preset('g1000-p39', 500, 1000, 128, 256, 'P3.9', 'rental-500', 'rental'),
-  preset('g1000-p48', 500, 1000, 104, 208, 'P4.8', 'rental-500', 'rental'),
-  preset('g640-p25', 640, 480, 256, 192, 'P2.5', 'install-640', 'indoor'),
-  preset('g640-p4', 640, 480, 160, 120, 'P4', 'install-640', 'indoor'),
-  preset('g960-p4', 960, 960, 240, 240, 'P4', 'install-960', 'outdoor'),
-  preset('g960-p5', 960, 960, 192, 192, 'P5', 'install-960', 'outdoor'),
-  preset('g960-p667', 960, 960, 144, 144, 'P6.67', 'install-960', 'outdoor'),
-  preset('g960-p8', 960, 960, 120, 120, 'P8', 'install-960', 'outdoor'),
-  preset('g960-p10', 960, 960, 96, 96, 'P10', 'install-960', 'outdoor'),
-];
+export const GENERIC_PANELS = SIZES.flatMap((s) => PITCH_SETS[s.pitch].list.map(([p, per]) => build(s, p, per)));
 
-export const DEFAULT_PANEL_ID = 'g1000-p39';
+export const DEFAULT_PANEL_ID = panelId('outdoor', '500x1000', '3.9');
