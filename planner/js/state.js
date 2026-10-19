@@ -37,7 +37,7 @@ export function panelMap(custom) {
 export function newScreen(type = 'main', idx = 1, panelId = DEFAULT_PANEL_ID) {
   const d = SCREEN_TYPES[type] || SCREEN_TYPES.free;
   return {
-    id: uid('scr'), name: '', type, panelId, env: 'outdoor', mount: 'rental',
+    id: uid('scr'), name: '', type, panelId, env: 'indoor', mount: 'install',
     geometry: d.geometry || 'flat', jointAngle: 5, arcAngle: 90,
     sizeMode: 'grid', cols: d.cols, rows: d.rows, wM: 4, hM: 2,
     mix: { on: false, smallId: pid('outdoor', '500x500', '3.9'), bigId: pid('outdoor', '500x1000', '3.9'), wM: 4, hM: 3.5, stockSmall: '', stockBig: '', goal: 'fewest', band: 'bottom', confirmed: false },

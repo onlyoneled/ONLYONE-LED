@@ -78,10 +78,7 @@ const IN_WEIGHT = { '640x640': 8.9, '640x480': 7.0, '640x320': 4.8, '640x160': 2
 
 // hidden: 패널 선택에는 안 보이고, 크기에 맞춰 자동 조합할 때만 쓰는 사이즈
 export const SIZES = [
-  { key: '500x1000', w: 500, h: 1000, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true },
-  { key: '1000x1000', w: 1000, h: 1000, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true },
-  { key: '960x960', w: 960, h: 960, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out960' },
-  { key: '500x500', w: 500, h: 500, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true, hidden: true },
+  // 실내형 (먼저)
   { key: '640x640', w: 640, h: 640, env: 'indoor', mounts: ['install'], pitch: 'in320' },
   { key: '640x480', w: 640, h: 480, env: 'indoor', mounts: ['install'], pitch: 'in320' },
   { key: '640x320', w: 640, h: 320, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
@@ -90,8 +87,13 @@ export const SIZES = [
   { key: '320x480', w: 320, h: 480, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
   { key: '320x320', w: 320, h: 320, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
   { key: '320x160', w: 320, h: 160, env: 'indoor', mounts: ['install'], pitch: 'in320', hidden: true },
+  // 옥외형
+  { key: '500x500', w: 500, h: 500, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true },
+  { key: '500x1000', w: 500, h: 1000, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true },
+  { key: '1000x1000', w: 1000, h: 1000, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out500', curve: true },
+  { key: '960x960', w: 960, h: 960, env: 'outdoor', mounts: ['install', 'rental'], pitch: 'out960' },
 ];
-export const ENVS = ['outdoor', 'indoor'];
+export const ENVS = ['indoor', 'outdoor'];
 
 export function panelId(env, sizeKey, pitch) { return `${env}-${sizeKey}-p${pitch}`; }
 export function sizesFor(env, withHidden = false) { return SIZES.filter((s) => s.env === env && (withHidden || !s.hidden)); }
@@ -119,4 +121,4 @@ function build(size, pitch, perBase) {
 
 export const GENERIC_PANELS = SIZES.flatMap((s) => PITCH_SETS[s.pitch].list.map(([p, per]) => build(s, p, per)));
 
-export const DEFAULT_PANEL_ID = panelId('outdoor', '500x1000', '3.9');
+export const DEFAULT_PANEL_ID = panelId('indoor', '640x480', '2.5');
