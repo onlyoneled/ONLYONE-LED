@@ -13,3 +13,6 @@
 /*.xml
   Content-Type: application/xml; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
+
+/planner/*
+  X-Robots-Tag: noindex, nofollow
