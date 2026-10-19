@@ -139,7 +139,7 @@ export function sceneSvg(project, panels, sums, opts = {}) {
     for (let gy = gy0; gy <= vb[1] + vb[3]; gy += step) lines.push(`M${vb[0]},${gy}H${vb[0] + vb[2]}`);
     parts.push(`<path d="${lines.join('')}" stroke="var(--grid)" stroke-width="${sw * 0.7}" fill="none"/>`);
   }
-  if (view !== 'top') parts.push(`<line x1="${vb[0]}" y1="0" x2="${vb[0] + vb[2]}" y2="0" stroke="var(--mute)" stroke-width="${sw * 2}"/><text x="${vb[0] + fs * 0.5}" y="${fs * 1.2}" font-size="${fs * 0.8}" fill="var(--mute)">FLOOR 0 m</text>`);
+  if (view !== 'top') parts.push(`<line x1="${vb[0]}" y1="0" x2="${vb[0] + vb[2]}" y2="0" stroke="var(--mute)" stroke-width="${sw * 2}"/><text x="${vb[0] + fs * 0.5}" y="${fs * 1.2}" font-size="${fs * 0.8}" fill="var(--mute)">${esc(opts.floorLabel || 'FLOOR')} 0 m</text>`);
   for (const it of items) {
     const sel = it.s.id === opts.selectedId;
     const label = it.s.name || opts.typeLabel(it.s.type);

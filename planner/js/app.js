@@ -303,7 +303,7 @@ function sceneCard() {
       <div class="scene-wrap" id="sceneWrap">${sceneMarkup()}</div></div></div></div>`;
 }
 function sceneMarkup(vb) {
-  return sceneSvg(project, panels, sumsOf(), { view: prefs.sceneView, grid: prefs.snap, showGrid: prefs.showGrid, labels: prefs.labels, dims: prefs.sceneDims, selectedId: project.activeId, typeLabel, vb });
+  return sceneSvg(project, panels, sumsOf(), { view: prefs.sceneView, grid: prefs.snap, showGrid: prefs.showGrid, labels: prefs.labels, dims: prefs.sceneDims, selectedId: project.activeId, typeLabel, vb, floorLabel: t('floor') });
 }
 
 function designView(pro) {
@@ -357,13 +357,13 @@ function canvasView() {
     : `<p class="note">${t('noSlices')}</p>`;
   const sel = new Set(ui.selSlices);
   const previews = sl.length ? `<div class="grid2" style="margin-top:14px">
-      <div><h3>Canvas ${cv.W}×${cv.H}</h3><div class="plan-wrap">${slicesSvg(cv.W, cv.H, sl, { selected: sel })}</div></div>
+      <div><h3>${t('canvasLabel')} ${cv.W}×${cv.H}</h3><div class="plan-wrap">${slicesSvg(cv.W, cv.H, sl, { selected: sel })}</div></div>
       ${cv.outputs.map((o, i) => `<div><h3>${esc(o.name)} ${o.w}×${o.h}</h3><div class="plan-wrap">${slicesSvg(o.w, o.h, sl.filter((s) => s.output === i), { selected: sel, useOut: true })}</div></div>`).join('')}</div>` : '';
   const rotBtns = [[-1, '↺ 1°'], [1, '↻ 1°'], [-5, '↺ 5°'], [5, '↻ 5°'], [90, '↻ 90°']].map(([v, l]) => `<button type="button" class="btn sm" data-act="rot" data-v="${v}" ${sel.size ? '' : 'disabled'}>${l}</button>`).join('');
   return `<div class="layout"><aside class="side">
       <div class="card"><h2>${t('canvasOut')}</h2><p class="note" style="margin-top:0">${t('canvasNote')}</p>
         <div class="grid2" style="margin-top:12px">${field(t('canvasW'), num('p.canvas.W', cv.W, 'min="1"'))}${field(t('canvasH'), num('p.canvas.H', cv.H, 'min="1"'))}</div>
-        <div class="row" style="margin-top:10px">${field(t('canvasPreset'), `<select data-bind="p.canvas.preset" data-kind="str">${opts([['custom', 'Custom'], ['1920x1080', '1920 × 1080'], ['3840x2160', '3840 × 2160']], cv.preset)}</select>`)}</div>
+        <div class="row" style="margin-top:10px">${field(t('canvasPreset'), `<select data-bind="p.canvas.preset" data-kind="str">${opts([['custom', t('presetCustom')], ['1920x1080', '1920 × 1080'], ['3840x2160', '3840 × 2160']], cv.preset)}</select>`)}</div>
         <div class="row" style="margin-top:10px"><button type="button" class="btn sm" data-act="fitCanvas">${t('fitContent')}</button></div>
         <h3>${t('outputs')}</h3><div class="outs">${outputs}</div>
         <div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-act="addOutput">${t('addOutput')}</button></div></div>
@@ -453,7 +453,7 @@ async function ensure3d() {
     schedule3d(true);
   } catch (e) {
     scene3dFailed = true;
-    host.innerHTML = '<div class="v3d-msg">3D를 불러오지 못했습니다 / 3D failed to load</div>';
+    host.innerHTML = `<div class="v3d-msg">${t('load3dError')}</div>`;
     console.error(e);
   } finally { scene3dLoading = false; }
 }
@@ -800,7 +800,7 @@ const actions = {
       const base = S.safeName(project.name || 'onlyone-led-planner');
       if (fmt === 'pdf') await rep.exportPdf(pages, base + '.pdf'); else await rep.exportPngs(pages, base, S.download);
       closeModal();
-    } catch (e) { console.error(e); toast('Export error'); el.disabled = false; el.textContent = t('download'); }
+    } catch (e) { console.error(e); toast(t('exportError')); el.disabled = false; el.textContent = t('download'); }
   },
 };
 
