@@ -1,9 +1,9 @@
 // planner/js/app.js — 화면 구성과 이벤트 연결
-import { t, setLang, getLang, fmtNum } from './i18n.js';
+import { t, tf, setLang, getLang, fmtNum } from './i18n.js';
 import { GENERIC_PANELS, PANEL_FIELDS, makePanel, pitchOf, DEFAULT_PANEL_ID, ENVS, sizesFor, pitchesFor, mountsFor, panelId } from './catalog.js';
 import * as E from './engine.js';
 import * as S from './state.js';
-import { planSvg, sceneSvg, slicesSvg, PORT_COLORS, screenEnvelope } from './plan2d.js';
+import { planSvg, sceneSvg, slicesSvg, PORT_COLORS, POWER_COLORS, screenEnvelope } from './plan2d.js';
 import { buildArenaXml, mergeIntoArenaXml } from './resolume.js';
 
 // ───────────────────────── 상태 ─────────────────────────
@@ -12,7 +12,8 @@ const prefs = Object.assign({
   planMode: 'cabs', dims: true, nums: true, person: true, pattern: true,
   sceneView: 'front', snap: 100, showGrid: true, labels: true, sceneDims: true,
 }, S.loadPrefs());
-const ui = { tool: null, addPanelId: null, selSlices: new Set(), customRot: 15, dragging: false };
+// draw: 배선을 직접 그리는 중이면 { kind: 'cable'|'power', idx: 배선 번호(0부터) | null }
+const ui = { tool: null, addPanelId: null, selSlices: new Set(), customRot: 15, dragging: false, draw: null, drawMsg: '' };
 
 let custom = S.loadCatalog();
 let panels = S.panelMap(custom);
@@ -61,14 +62,24 @@ function derive() {
     const labels = {};
     order.forEach((id, i) => { labels[id] = String(i + 1); });
     const items = order.map((id) => ({ id, px: pm.map[id].w * pm.map[id].h }));
-    const cab = E.assignPorts(items, { capacity: s.cabling.capacity, mode: s.cabling.mode, manualCounts: s.cabling.counts });
+    const cab = s.cabling.mode === 'draw'
+      ? E.routeLoads(s.cabling.routes, items, s.cabling.capacity)
+      : E.assignPorts(items, { capacity: s.cabling.capacity, mode: s.cabling.mode, manualCounts: s.cabling.counts });
     const portOf = {};
     cab.ports.forEach((p) => p.ids.forEach((id, i) => { portOf[id] = { n: p.n, i: i + 1 }; }));
+    // 전원선: 캐비닛 소비전력(최대 W). 정보가 없으면 직접 넣은 값(fallbackW)을 쓴다
+    const pById = Object.fromEntries(s.cabs.map((c) => [c.id, panels[c.p]]));
+    const fb = s.power.fallbackW === '' || s.power.fallbackW === null ? null : +s.power.fallbackW;
+    const wOf = (id) => { const p = pById[id]; return p && p.pMax !== null && p.pMax !== undefined ? p.pMax : fb; };
+    const powerNoData = order.some((id) => wOf(id) === null);
+    const pw = E.routeLoads(s.power.routes, order.map((id) => ({ id, px: wOf(id) || 0 })), s.power.capacity);
+    const powerOf = {};
+    pw.ports.forEach((p) => p.ids.forEach((id, i) => { powerOf[id] = { n: p.n, i: i + 1 }; }));
     const panel = panels[s.panelId];
     const ncols = panel ? Math.max(1, Math.round(sum.widthMm / panel.w)) : 1;
     const curv = s.geometry !== 'flat' && panel ? E.curvature(s.geometry, ncols, panel.w, { jointAngle: s.jointAngle, arcAngle: s.arcAngle }) : null;
     const curvWarn = curv ? E.curveWarnings(s.geometry, panel, curv) : [];
-    out[s.id] = { sum, pm, order, labels, cab, portOf, curv, curvWarn };
+    out[s.id] = { sum, pm, order, labels, cab, portOf, pw, powerOf, wOf, powerNoData, curv, curvWarn };
   }
   return out;
 }
@@ -209,8 +220,13 @@ function resultsCard() {
     [t('totalPx'), fmtNum(r.totalPx), 'px'],
     [t('ratio'), r.ratio, `${r.vs169 >= 0 ? '+' : ''}${(r.vs169 * 100).toFixed(2)}% ${t('vs169')}`],
     [t('weightPower'), r.weight !== null ? `${fmtNum(r.weight, 1)} kg` : t('noData'), power + (cases ? '<br>' + cases : '')],
-    [t('portsUsed'), fmtNum(d.cab.ports.length), `${t('minPossible')} ${d.cab.minPorts}`],
+    [t('portsUsed'), fmtNum(d.cab.ports.filter((p) => p.ids.length).length), s.cabling.mode === 'draw' ? `${t('drawMode')} · ${t('minPossible')} ${d.cab.minPorts}` : `${t('minPossible')} ${d.cab.minPorts}`],
   ];
+  const usedPw = d.pw.ports.filter((p) => p.ids.length);
+  if (usedPw.length) {
+    const maxW = Math.max(...usedPw.map((p) => p.px));
+    tiles.push([t('powerLines'), fmtNum(usedPw.length), `${t('powerBusiest')} ${fmtNum(maxW)} / ${fmtNum(d.pw.capacity)} W${d.pw.unassigned.length ? `<br><span class="bad">${t('notConnected')} ${d.pw.unassigned.length}</span>` : ''}`]);
+  }
   return `<div class="card"><h2>${t('results')}${project.screens.length > 1 ? ` <span style="color:var(--mute);font-weight:400">· ${esc(screenName(s))}</span>` : ''}</h2>
     <div class="tiles">${tiles.map(([k, v, sub]) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`).join('')}</div></div>`;
 }
@@ -248,6 +264,65 @@ function numberingControls(s) {
     <select data-bind="s.numbering.start" data-kind="str">${opts([['tl', t('startTL')], ['tr', t('startTR')], ['bl', t('startBL')], ['br', t('startBR')]], n.start)}</select>`;
 }
 
+// 배선 보기 / 전원선 보기 공통 그리기 설정
+function wireOpts(s, d, mode) {
+  const drawingNow = ui.draw && ui.draw.kind === mode && ui.draw.idx !== null;
+  const route = drawingNow ? (mode === 'cable' ? s.cabling.routes : s.power.routes)[ui.draw.idx] : null;
+  const base = { activeN: drawingNow ? ui.draw.idx + 1 : null, lastId: route && route.ids.length ? route.ids[route.ids.length - 1] : null };
+  if (mode === 'power') return { ...base, mode: 'power', prefix: 'E', palette: POWER_COLORS, portOf: d.powerOf, ports: d.pw.ports, loadLabel: (p) => `E${p.n} · ${fmtNum(p.px)} W` };
+  if (mode === 'cable') return { ...base, mode: 'cable', portOf: d.portOf, ports: d.cab.ports, loadLabel: (p) => `P${p.n} · ${fmtNum(p.px)} px` };
+  return { mode: 'cabs' };
+}
+const drawing = (kind) => !!(ui.draw && ui.draw.kind === kind);
+
+// 배선을 직접 그리는 도구 줄. kind: cable | power
+function drawBar(s, d, kind) {
+  const isCable = kind === 'cable';
+  const set = isCable ? s.cabling : s.power;
+  const loads = isCable ? d.cab : d.pw;
+  const palette = isCable ? PORT_COLORS : POWER_COLORS;
+  const unit = isCable ? 'px' : 'W';
+  const name = (n) => (isCable ? `${t('port')} ${n}` : `${t('powerRoute')} ${n}`);
+  if (isCable && set.mode !== 'draw') {
+    return `<div class="draw-bar"><span class="note" style="margin:0">${t('autoRouteNote')}</span>
+      <button type="button" class="btn sm primary" data-act="drawStart" data-k="cable">✎ ${t('drawStart')}</button></div>`;
+  }
+  const active = drawing(kind) ? ui.draw.idx : null;
+  const chips = set.routes.map((r, i) => {
+    const p = loads.ports[i] || { px: 0, ids: [], over: false };
+    const color = palette[i % palette.length];
+    const pct = Math.min(100, (p.px / loads.capacity) * 100);
+    return `<button type="button" class="route-chip${active === i ? ' on' : ''}${p.over ? ' over' : ''}" data-act="drawPick" data-k="${kind}" data-v="${i}">
+      <span class="dot" style="background:${color}"></span><b>${esc(name(i + 1))}</b>
+      <span class="mono">${fmtNum(p.px)} / ${fmtNum(loads.capacity)} ${unit}</span>
+      <span class="bar"><i style="width:${pct}%;background:${p.over ? 'var(--bad)' : color}"></i></span></button>`;
+  }).join('');
+  const capField = isCable
+    ? field(t('capacity'), num('s.cabling.capacity', s.cabling.capacity, 'step="1000" min="1000"'))
+    : field(t('powerCap'), num('s.power.capacity', s.power.capacity, 'step="100" min="100"'));
+  const fbField = !isCable && d.powerNoData
+    ? `<div class="warn" style="margin-top:8px">${t('powerNoData')}<div style="margin-top:6px;max-width:220px">${field(t('powerFallback'), `<input type="number" min="0" step="10" data-bind="s.power.fallbackW" data-kind="numOrEmpty" value="${esc(s.power.fallbackW)}">`)}</div></div>` : '';
+  let hint;
+  if (ui.drawMsg) hint = ui.drawMsg;
+  else if (!drawing(kind) || active === null) hint = t('drawHintPick');
+  else if (!(set.routes[active].ids.length)) hint = tf('drawHintFirst', { name: name(active + 1) });
+  else hint = t('drawHintNext');
+  const unassigned = loads.unassigned.length && set.routes.some((r) => r.ids.length) ? `<span class="bad" style="font-size:13px">${t('notConnected')} ${loads.unassigned.length}</span>` : '';
+  return `<div class="draw-bar">
+      ${isCable ? `<button type="button" class="btn sm" data-act="drawAuto">${t('backToAuto')}</button>` : ''}
+      <div class="route-chips">${chips}<button type="button" class="btn sm" data-act="drawAdd" data-k="${kind}">${isCable ? t('addPort') : t('addPowerRoute')}</button></div>
+      <div class="row">
+        <button type="button" class="btn sm primary" data-act="drawSave" ${active === null ? 'disabled' : ''}>${t('saveRoute')}</button>
+        <button type="button" class="btn sm" data-act="drawClear" ${active === null ? 'disabled' : ''}>${t('clearRoute')}</button>
+        <button type="button" class="btn sm danger" data-act="drawRemove" data-k="${kind}" ${set.routes.length < 2 ? 'disabled' : ''}>${t('removeLastRoute')}</button>
+        <button type="button" class="btn sm" data-act="drawEnd" ${drawing(kind) ? '' : 'disabled'}>${t('finishDraw')}</button>
+        ${unassigned}
+      </div>
+      <div style="max-width:240px">${capField}</div>${fbField}
+      <p class="note" style="margin:0">${esc(hint)}</p>
+    </div>`;
+}
+
 function planCard() {
   const s = active();
   const d = derived[s.id];
@@ -255,13 +330,13 @@ function planCard() {
   if (!ui.addPanelId || !panels[ui.addPanelId]) ui.addPanelId = usedIds[0];
   const addPanel = panels[ui.addPanelId];
   const slots = ui.tool === 'add' && addPanel ? addSlots(s, addPanel) : [];
-  const svg = planSvg(s.cabs, panels, { mode: prefs.planMode, dims: prefs.dims, nums: prefs.nums, labels: d.labels, portOf: d.portOf, ports: d.cab.ports, pxMap: d.pm, slots });
+  const svg = planSvg(s.cabs, panels, { ...wireOpts(s, d, prefs.planMode), dims: prefs.dims, nums: prefs.nums, labels: d.labels, pxMap: d.pm, slots });
   const hint = ui.tool ? t(ui.tool + 'Hint') : '';
   const foot = Object.entries(d.sum.counts).map(([id, n]) => { const p = panels[id]; return `${n} × ${esc(panelName(p))} — ${p.w}×${p.h} mm — ${p.px}×${p.py} px — pitch ${pitchOf(p).toFixed(3)} mm`; }).join('<br>');
   const tools = [['', t('toolNone')], ['add', t('toolAdd')], ['remove', t('toolRemove')], ['rotate', t('toolRotate')], ['swap', t('toolSwap')]];
   return `<div class="card"><h2>${t('plan')}</h2>
     <div class="plan-tools">
-      ${seg('u.planMode', [['cabs', t('viewCabs')], ['cable', t('viewCable')]], prefs.planMode)}
+      ${seg('u.planMode', [['cabs', t('viewCabs')], ['cable', t('viewCable')], ['power', t('viewPower')]], prefs.planMode)}
       ${chk('u.dims', prefs.dims, t('dims'))}${chk('u.nums', prefs.nums, t('numbering'))}
       <span class="sep"></span>${numberingControls(s)}
     </div>
@@ -273,8 +348,9 @@ function planCard() {
       <button type="button" class="btn sm" data-act="grow" data-v="col+">${t('plusCol')}</button><button type="button" class="btn sm" data-act="grow" data-v="col-">${t('minusCol')}</button>
       <button type="button" class="btn sm" data-act="grow" data-v="row+">${t('plusRow')}</button><button type="button" class="btn sm" data-act="grow" data-v="row-">${t('minusRow')}</button>
     </div>
+    ${prefs.planMode !== 'cabs' ? drawBar(s, d, prefs.planMode) : ''}
     ${hint ? `<p class="note">${esc(hint)}</p>` : ''}${s.edited ? `<p class="note">✎ ${t('manualEdited')}</p>` : ''}
-    <div class="plan-wrap" id="planWrap">${svg}</div>
+    <div class="plan-wrap${drawing(prefs.planMode) ? ' drawing' : ''}" id="planWrap" data-draw-wrap="${prefs.planMode}">${svg}</div>
     <div class="plan-foot">${foot}<br>${esc(screenName(s))}: ${d.sum.count} ${t('cabinets')} · ${fmtNum(d.sum.areaM2, 2)} m² · ${d.sum.resW}×${d.sum.resH} px (${fmtNum(d.sum.totalPx)} px)</div></div>`;
 }
 
@@ -327,16 +403,16 @@ function cablingView() {
     ? `<h3>${t('manualCounts')}</h3><div class="grid3">${(c.counts || []).map((n, i) => field(`${t('port')} ${i + 1}`, num(`s.cabling.counts.${i}`, n, 'min="0"'))).join('')}</div>
        <div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-act="port" data-v="+">${t('addPort')}</button><button type="button" class="btn sm" data-act="port" data-v="-">${t('delPort')}</button></div>
        ${d.cab.unassigned.length ? `<p class="warn">${t('unassigned')}: ${d.cab.unassigned.length}</p>` : ''}` : '';
-  const svg = planSvg(s.cabs, panels, { mode: 'cable', dims: false, labels: d.labels, portOf: d.portOf, ports: d.cab.ports, pxMap: d.pm });
+  const svg = planSvg(s.cabs, panels, { ...wireOpts(s, d, 'cable'), dims: false, labels: d.labels, pxMap: d.pm });
   return chips + `<div class="layout"><aside class="side"><div class="card"><h2>${t('dataPorts')} · ${esc(screenName(s))}</h2>
-      ${seg('s.cabling.mode', [['auto', t('auto')], ['balanced', t('balanced')], ['manual', t('manual')]], c.mode)}
+      ${seg('s.cabling.mode', [['auto', t('auto')], ['balanced', t('balanced')], ['manual', t('manual')], ['draw', t('drawMode')]], c.mode)}
       <div style="margin-top:10px">${field(t('capacity'), num('s.cabling.capacity', c.capacity, 'step="1000" min="1000"'))}</div>
       <h3>${t('route')}</h3><div class="row">${numberingControls(s)}</div>
       <p class="note">${t('portsUsed')}: <b>${d.cab.ports.length}</b> (${t('minPossible')}: ${d.cab.minPorts}) · ${fmtNum(d.cab.total)} px</p>
       ${manual}
       <div class="ports" style="margin-top:12px">${ports}</div>
       <p class="note">${t('cablingNote')}</p></div></aside>
-    <section class="content"><div class="card"><h2>${t('pixelPlot')}</h2><div class="plan-wrap">${svg}</div>
+    <section class="content"><div class="card"><h2>${t('pixelPlot')}</h2>${c.mode === 'draw' ? drawBar(s, d, 'cable') : ''}<div class="plan-wrap${drawing('cable') ? ' drawing' : ''}" data-draw-wrap="cable">${svg}</div>
       <div class="plan-foot">${esc(screenName(s))} · ${d.sum.resW}×${d.sum.resH} px · ${d.cab.ports.length} ${t('port')}<br>${d.cab.ports.map((p) => `P${p.n} · IN → ${p.ids.length} ${t('cabsShort')} · ${fmtNum(p.px)} / ${fmtNum(d.cab.capacity)} px`).join('<br>')}</div></div></section></div>`;
 }
 
@@ -505,6 +581,8 @@ function afterSet(path, el) {
   if (path === 's.cabling.capacity') s.cabling.capacity = Math.max(1000, s.cabling.capacity);
   if (path === 'p.activeId') { ui.tool = null; ui.addPanelId = null; }
   if (path === 'u.lang') setLang(prefs.lang);
+  if (path === 'u.planMode') { ui.drawMsg = ''; if (ui.draw && ui.draw.kind !== prefs.planMode) ui.draw = null; if (prefs.planMode === 'power') { ensureRoutes('power'); if (!active().power.routes.some((r) => r.ids.length)) { ui.tool = null; ui.draw = { kind: 'power', idx: 0 }; } } }
+  if (path === 's.cabling.mode') { ui.drawMsg = ''; if (s.cabling.mode === 'draw') { ensureRoutes('cable'); ui.tool = null; ui.draw = { kind: 'cable', idx: 0 }; } else if (ui.draw && ui.draw.kind === 'cable') ui.draw = null; }
   if (el && el.dataset.regen) S.regen(s, panels);
   if (path.startsWith('u.')) savePrefs(); else persist();
   if (path.startsWith('s.pos') || path === 's.geometry' || path === 's.jointAngle' || path === 's.arcAngle' || el && el.dataset.regen) schedule3d(path !== 's.pos.x' && !path.startsWith('s.pos'));
@@ -600,7 +678,77 @@ function rotateSelected(deg) {
   for (const s of sel) if (!s.group) s.rot = E.normDeg((s.rot || 0) + deg);
 }
 
+// 배선 그리기: 캐비닛을 눌렀을 때
+function drawClick(id) {
+  const s = active(), d = derived[s.id], kind = ui.draw.kind;
+  const set = kind === 'cable' ? s.cabling : s.power;
+  const idx = ui.draw.idx;
+  // 지워진 캐비닛 id는 미리 정리
+  const alive = new Set(s.cabs.map((c) => c.id));
+  set.routes.forEach((r) => { r.ids = r.ids.filter((x) => alive.has(x)); });
+  const valueOf = kind === 'cable' ? (x) => d.pm.map[x].w * d.pm.map[x].h : (x) => d.wOf(x) || 0;
+  const cap = kind === 'cable' ? d.cab.capacity : d.pw.capacity;
+  const st = E.routeStep(set.routes, idx, id, valueOf, cap);
+  const name = (n) => (kind === 'cable' ? `${t('port')} ${n}` : `${t('powerRoute')} ${n}`);
+  const unit = kind === 'cable' ? 'px' : 'W';
+  ui.drawMsg = '';
+  if (st.reason === 'undo') set.routes[idx].ids.pop();
+  else if (st.reason === 'add') set.routes[idx].ids.push(id);
+  else if (st.reason === 'inThis') return toast(t('drawInThis'));
+  else if (st.reason === 'inOther') return toast(tf('drawInOther', { name: name(st.other) }));
+  else if (st.reason === 'over') return toast(tf('drawOver', { max: fmtNum(cap), cur: fmtNum(st.cur), add: fmtNum(st.add), unit }));
+  persist(); render();
+}
+function routeSet(kind) { const s = active(); return kind === 'cable' ? s.cabling : s.power; }
+function ensureRoutes(kind) {
+  const set = routeSet(kind);
+  const want = kind === 'cable' ? 4 : 1; // 데이터 포트는 1~4번, 전원선은 1번부터 시작
+  while (set.routes.length < want) set.routes.push({ ids: [] });
+}
+
 const actions = {
+  drawStart(el) {
+    const kind = el.dataset.k;
+    if (kind === 'cable') active().cabling.mode = 'draw';
+    ensureRoutes(kind);
+    ui.tool = null; ui.draw = { kind, idx: 0 }; ui.drawMsg = '';
+    persist(); render();
+  },
+  drawAuto() { active().cabling.mode = 'auto'; ui.draw = null; ui.drawMsg = ''; persist(); render(); },
+  drawPick(el) {
+    const kind = el.dataset.k, i = +el.dataset.v;
+    ui.tool = null; ui.drawMsg = '';
+    ui.draw = ui.draw && ui.draw.kind === kind && ui.draw.idx === i ? { kind, idx: null } : { kind, idx: i };
+    render();
+  },
+  drawAdd(el) {
+    const kind = el.dataset.k;
+    ensureRoutes(kind);
+    const set = routeSet(kind);
+    set.routes.push({ ids: [] });
+    ui.tool = null; ui.draw = { kind, idx: set.routes.length - 1 }; ui.drawMsg = '';
+    persist(); render();
+  },
+  drawSave() {
+    if (!ui.draw || ui.draw.idx === null) return;
+    const kind = ui.draw.kind, n = ui.draw.idx + 1;
+    ui.draw = { kind, idx: null };
+    ui.drawMsg = tf('drawSaved', { name: kind === 'cable' ? `${t('port')} ${n}` : `${t('powerRoute')} ${n}` });
+    persist(); render();
+  },
+  drawClear() {
+    if (!ui.draw || ui.draw.idx === null) return;
+    routeSet(ui.draw.kind).routes[ui.draw.idx].ids = [];
+    ui.drawMsg = ''; persist(); render();
+  },
+  drawRemove(el) {
+    const set = routeSet(el.dataset.k);
+    if (set.routes.length < 2) return;
+    set.routes.pop();
+    if (ui.draw && ui.draw.idx !== null && ui.draw.idx >= set.routes.length) ui.draw.idx = null;
+    persist(); render();
+  },
+  drawEnd() { ui.draw = null; ui.drawMsg = ''; render(); },
   pick(el) {
     const s = active();
     if (el.dataset.k === 'mount') { s.mount = el.dataset.v; persist(); render(); return; }
@@ -624,10 +772,10 @@ const actions = {
     render();
   },
   suggest(el) { const s = active(); s.cols = +el.dataset.c; s.rows = +el.dataset.r; s.sizeMode = 'grid'; S.regen(s, panels); persist(); render(); schedule3d(true); },
-  tool(el) { ui.tool = el.dataset.v || null; render(); },
+  tool(el) { ui.tool = el.dataset.v || null; if (ui.tool) ui.draw = null; render(); },
   grow(el) { growScreen(el.dataset.v); persist(); render(); schedule3d(true); },
   reset3d() { if (scene3d) scene3d.resetView(); },
-  selScreen(el) { project.activeId = el.dataset.v; ui.tool = null; ui.addPanelId = null; persist(); render(); schedule3d(); },
+  selScreen(el) { project.activeId = el.dataset.v; ui.tool = null; ui.addPanelId = null; ui.draw = null; ui.drawMsg = ''; persist(); render(); schedule3d(); },
   mount(el) { active().pos.tilt = +el.dataset.v; persist(); render(); schedule3d(); },
   delScreen() {
     if (project.screens.length < 2 || !confirm(t('confirmDelete'))) return;
@@ -785,7 +933,7 @@ const actions = {
     openModal(`<h2>${t('exportTitle')}</h2>
       <div class="field"><span>${t('format')}</span><div class="row"><label class="chk"><input type="radio" name="fmt" value="pdf" checked> PDF</label><label class="chk"><input type="radio" name="fmt" value="png"> PNG</label></div></div>
       <div class="field" style="margin-top:12px"><span>${t('include')}</span><div class="row">
-        ${[['results', 'incResults'], ['plan', 'incPlan'], ['cabling', 'incCabling'], ['view3d', 'inc3d'], ['slices', 'incSlices']].map(([k, l]) => `<label class="chk"><input type="checkbox" name="inc" value="${k}" checked> ${t(l)}</label>`).join('')}</div></div>
+        ${[['results', 'incResults'], ['plan', 'incPlan'], ['cabling', 'incCabling'], ['power', 'incPower'], ['view3d', 'inc3d'], ['slices', 'incSlices']].map(([k, l]) => `<label class="chk"><input type="checkbox" name="inc" value="${k}" checked> ${t(l)}</label>`).join('')}</div></div>
       <div class="modal-foot"><button type="button" class="btn" data-act="closeModal">${t('cancel')}</button><button type="button" class="btn primary" data-act="doExport">${t('download')}</button></div>`);
   },
   async doExport(el) {
@@ -866,9 +1014,12 @@ function reportContext(include) {
     return {
       title: screenName(s), rows: kv,
       planSvg: planSvg(s.cabs, panels, { mode: 'cabs', dims: true, nums: true, labels: d.labels, pxMap: d.pm }),
-      cableSvg: planSvg(s.cabs, panels, { mode: 'cable', dims: false, labels: d.labels, portOf: d.portOf, ports: d.cab.ports, pxMap: d.pm }),
+      cableSvg: planSvg(s.cabs, panels, { ...wireOpts(s, d, 'cable'), activeN: null, lastId: null, dims: false, labels: d.labels, pxMap: d.pm }),
+      powerSvg: d.pw.ports.some((p) => p.ids.length) ? planSvg(s.cabs, panels, { ...wireOpts(s, d, 'power'), activeN: null, lastId: null, dims: false, labels: d.labels, pxMap: d.pm }) : null,
+      powerHead: [t('powerRoute'), t('cabinets'), 'W'],
+      powerRows: d.pw.ports.filter((p) => p.ids.length).map((p) => [`E${p.n}`, p.ids.length, `${fmtNum(p.px)} / ${fmtNum(d.pw.capacity)}`]),
       portHead: [t('port'), t('cabinets'), 'px'],
-      portRows: d.cab.ports.map((p) => [`P${p.n}`, p.ids.length, `${fmtNum(p.px)} / ${fmtNum(d.cab.capacity)}`]),
+      portRows: d.cab.ports.filter((p) => p.ids.length).map((p) => [`P${p.n}`, p.ids.length, `${fmtNum(p.px)} / ${fmtNum(d.cab.capacity)}`]),
     };
   });
   const sl = project.canvas.slices;
@@ -901,6 +1052,15 @@ document.addEventListener('click', (e) => {
   if (actEl && !actEl.disabled) {
     if (actEl.type === 'checkbox' && actEl.dataset.act) { actions[actEl.dataset.act]?.(actEl, e); return; }
     if (actEl.tagName !== 'INPUT') { actions[actEl.dataset.act]?.(actEl, e); return; }
+  }
+  // 배선 그리기
+  const dw = e.target.closest('[data-draw-wrap]');
+  if (dw && ui.draw && ui.draw.kind === dw.dataset.drawWrap) {
+    const cabEl = e.target.closest('[data-cab]');
+    if (!cabEl) return;
+    if (ui.draw.idx === null) { toast(t('drawHintPick')); return; }
+    drawClick(cabEl.dataset.cab);
+    return;
   }
   // 도면 편집
   const wrap = e.target.closest('#planWrap');

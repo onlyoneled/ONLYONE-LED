@@ -314,6 +314,41 @@ export function assignPorts(items, { capacity = DEFAULT_PORT_PX, mode = 'auto', 
   return { ports, minPorts, total, capacity: cap, unassigned };
 }
 
+// 직접 그린 배선 합계. routes: [{ids:[...]}], items: [{id, px}] (px 자리에 W를 넣으면 전원선)
+// 없는 캐비닛과 앞 배선에 이미 들어간 캐비닛은 건너뛴다.
+export function routeLoads(routes, items, capacity) {
+  const cap = Math.max(1, +capacity || 1);
+  const val = new Map(items.map((i) => [i.id, i.px]));
+  const used = new Set();
+  const ports = (routes || []).map((r, i) => {
+    const ids = (r.ids || []).filter((id) => val.has(id) && !used.has(id));
+    ids.forEach((id) => used.add(id));
+    const px = ids.reduce((sum, id) => sum + val.get(id), 0);
+    return { n: i + 1, ids, px, over: px > cap };
+  });
+  const total = items.reduce((sum, i) => sum + i.px, 0);
+  return {
+    ports, total, capacity: cap,
+    minPorts: items.length ? Math.max(1, Math.ceil(total / cap)) : 0,
+    unassigned: items.filter((i) => !used.has(i.id)).map((i) => i.id),
+  };
+}
+
+// 배선에 캐비닛 하나를 더 이을 수 있는지. 반환: { ok, reason, cur, add }
+// reason: undo(마지막 캐비닛을 다시 누름) | inThis | inOther | over
+export function routeStep(routes, idx, id, valueOf, capacity) {
+  const route = routes[idx];
+  const last = route.ids[route.ids.length - 1];
+  if (last === id) return { ok: true, reason: 'undo' };
+  if (route.ids.includes(id)) return { ok: false, reason: 'inThis' };
+  const other = routes.findIndex((r, i) => i !== idx && r.ids.includes(id));
+  if (other >= 0) return { ok: false, reason: 'inOther', other: other + 1 };
+  const cur = route.ids.reduce((sum, x) => sum + (valueOf(x) || 0), 0);
+  const add = valueOf(id) || 0;
+  if (cur + add > capacity) return { ok: false, reason: 'over', cur, add };
+  return { ok: true, reason: 'add', cur, add };
+}
+
 // 직사각형 네 꼭짓점을 중심 기준 회전
 export function rectCorners({ x, y, w, h }, deg = 0) {
   const cx = x + w / 2, cy = y + h / 2;

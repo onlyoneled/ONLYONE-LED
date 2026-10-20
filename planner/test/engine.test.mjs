@@ -4,7 +4,7 @@ import { GENERIC_PANELS } from '../js/catalog.js';
 import {
   buildGrid, gridFromMeters, buildMix, ratioSuggestions, summarize, curvature,
   orderCabs, assignPorts, rectCorners, rotateGroup, packCanvas, buildSlices, ratioLabel, slicesCSV,
-  decomposeIndoor, buildFromStrips,
+  decomposeIndoor, buildFromStrips, routeLoads, routeStep,
 } from '../js/engine.js';
 
 const panels = Object.fromEntries(GENERIC_PANELS.map((p) => [p.id, p]));
@@ -161,6 +161,25 @@ test('실내 자동 조합: 640×640 기준', () => {
   assert.ok(cabs.every((c) => panels[c.p]), '모든 조각 사이즈가 카탈로그에 있어야 함');
   const s = summarize(cabs, panels);
   assert.deepStrictEqual([s.widthMm, s.heightMm, s.holes], [1600, 960, false]);
+});
+
+test('직접 그린 배선: 합계, 중복·미연결 처리', () => {
+  const items = ['a', 'b', 'c', 'd'].map((id) => ({ id, px: 300000 }));
+  const r = routeLoads([{ ids: ['a', 'b', 'zz'] }, { ids: ['b', 'c'] }, { ids: [] }], items, 650000);
+  assert.deepStrictEqual(r.ports.map((p) => [p.ids, p.px, p.over]), [[['a', 'b'], 600000, false], [['c'], 300000, false], [[], 0, false]]);
+  assert.deepStrictEqual(r.unassigned, ['d']);
+  assert.strictEqual(r.minPorts, 2);
+});
+
+test('배선 한 칸 잇기: 추가 / 되돌리기 / 한도 초과 / 다른 배선', () => {
+  const routes = [{ ids: ['a', 'b'] }, { ids: ['c'] }];
+  const v = () => 300000;
+  assert.strictEqual(routeStep(routes, 0, 'b', v, 650000).reason, 'undo');
+  assert.strictEqual(routeStep(routes, 0, 'a', v, 650000).reason, 'inThis');
+  assert.deepStrictEqual([routeStep(routes, 0, 'c', v, 650000).reason, routeStep(routes, 0, 'c', v, 650000).other], ['inOther', 2]);
+  const over = routeStep(routes, 0, 'd', v, 650000);
+  assert.deepStrictEqual([over.ok, over.reason, over.cur, over.add], [false, 'over', 600000, 300000]);
+  assert.strictEqual(routeStep(routes, 1, 'd', v, 650000).reason, 'add');
 });
 
 console.log(`\n${passed} passed`);

@@ -166,6 +166,20 @@ details summary { cursor: pointer; font-weight: 700; color: var(--ink-2); margin
 .saved-item .grow { flex: 1; min-width: 0; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--panel); padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 200; }
 
+/* 배선 직접 그리기 */
+.draw-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.draw-bar > .note:first-child { margin: 0; }
+.route-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.route-chip { display: grid; grid-template-columns: 12px auto; grid-template-areas: "dot name" "px px" "bar bar"; column-gap: 6px; row-gap: 3px; align-items: center; text-align: left; border: 1px solid var(--line-2); background: var(--panel); border-radius: 8px; padding: 6px 10px; cursor: pointer; min-width: 150px; }
+.route-chip .dot { grid-area: dot; width: 12px; height: 12px; border-radius: 3px; }
+.route-chip b { grid-area: name; font-size: 13px; }
+.route-chip .mono { grid-area: px; font-size: 12px; color: var(--mute); }
+.route-chip .bar { grid-area: bar; height: 5px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.route-chip .bar i { display: block; height: 100%; }
+.route-chip.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.route-chip.over { border-color: var(--bad); }
+.plan-wrap.drawing .plan-svg .cab { cursor: crosshair; }
+
 /* 반응형 */
 @media (max-width: 1100px) {
   .layout { grid-template-columns: 1fr; }

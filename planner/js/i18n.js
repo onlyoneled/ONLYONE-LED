@@ -76,6 +76,19 @@ const ko = {
   o_indoor: '실내', o_outdoor: '옥외', o_rental: '렌탈', o_install: '설치', o_floor: '바닥용', o_transparent: '투명',
   o_rigid: '일반', o_flexible: '휘는 패널', o_curvedLock: '각도 조절형', o_any: '상관없음', o_hang: '매달기', o_stack: '쌓기', o_wall: '벽 고정', o_no: '아니요', o_yes: '예',
   curveUnsupported: '이 패널은 휘어서 설치할 수 있는지 확인되지 않았어요.', curveOutOfRange: '이 패널이 꺾을 수 있는 각도를 넘었어요.', curveRadiusSmall: '이 패널이 휠 수 있는 것보다 반지름이 작아요.',
+  viewPower: '전원선 보기', drawMode: '직접 그리기', drawStart: '배선 직접 그리기', backToAuto: '← 자동 배선으로',
+  autoRouteNote: '지금은 번호 순서대로 자동으로 연결돼 있어요. 원하는 대로 그리려면 오른쪽 버튼을 누르세요.',
+  powerRoute: '전원선', addPowerRoute: '+ 전원선 추가', saveRoute: '배선 저장', clearRoute: '이 배선 지우기', removeLastRoute: '마지막 번호 삭제', finishDraw: '끝내기',
+  drawHintPick: '연결할 번호를 먼저 골라 주세요.',
+  drawHintFirst: '{name}을(를) 시작할 캐비닛을 눌러 주세요.',
+  drawHintNext: '다음 캐비닛을 누르면 화살표로 이어져요. 마지막 캐비닛을 한 번 더 누르면 취소돼요. 다 그렸으면 [배선 저장]을 누르세요.',
+  drawSaved: '{name}을(를) 저장했어요. 다음 번호를 고르거나 [끝내기]를 누르세요.',
+  drawInThis: '이미 이 배선에 들어 있는 캐비닛이에요. 마지막 캐비닛만 다시 눌러서 취소할 수 있어요.',
+  drawInOther: '이 캐비닛은 이미 {name}에 연결돼 있어요.',
+  drawOver: '한 배선에는 {max} {unit}까지만 연결할 수 있어요. (지금 {cur} + 이 캐비닛 {add})',
+  powerCap: '전원선 1개당 최대 (W)', powerFallback: '캐비닛 1개 소비전력 (W)',
+  powerNoData: '이 패널은 소비전력 정보가 없어요. 캐비닛 1개의 소비전력을 넣어 주세요.',
+  powerLines: '전원선 수', powerBusiest: '가장 많은 선', notConnected: '연결 안 된 캐비닛', incPower: '전원선 배선도',
   // 저장/내보내기
   savedProjects: '저장된 프로젝트', noSaved: '저장된 프로젝트가 없어요.', open: '열기', updated: '마지막 수정',
   confirmNew: '지금 프로젝트는 자동으로 저장돼 있어요. 새 프로젝트를 시작할까요?', importError: '파일을 읽지 못했어요. 이 도구에서 저장한 파일이 맞는지 확인해 주세요.',
@@ -154,6 +167,19 @@ const en = {
   o_indoor: 'Indoor', o_outdoor: 'Outdoor', o_rental: 'Rental', o_install: 'Fixed install', o_floor: 'Floor', o_transparent: 'Transparent',
   o_rigid: 'Rigid', o_flexible: 'Flexible', o_curvedLock: 'Curve lock', o_any: 'Any', o_hang: 'Hanging', o_stack: 'Stacking', o_wall: 'Wall mount', o_no: 'No', o_yes: 'Yes',
   curveUnsupported: 'Curving support is not confirmed for this panel.', curveOutOfRange: 'Angle is outside the panel’s allowed range.', curveRadiusSmall: 'Radius is smaller than the panel minimum.',
+  viewPower: 'Power view', drawMode: 'Draw by hand', drawStart: 'Draw cabling by hand', backToAuto: '← Back to auto',
+  autoRouteNote: 'Cabinets are connected automatically in number order. Use the button to draw your own routes.',
+  powerRoute: 'Power line', addPowerRoute: '+ Add power line', saveRoute: 'Save route', clearRoute: 'Clear this route', removeLastRoute: 'Delete last number', finishDraw: 'Done',
+  drawHintPick: 'Pick a number to connect first.',
+  drawHintFirst: 'Click the cabinet where {name} starts.',
+  drawHintNext: 'Click the next cabinet to draw an arrow. Click the last cabinet again to undo. Press [Save route] when finished.',
+  drawSaved: '{name} saved. Pick another number or press [Done].',
+  drawInThis: 'This cabinet is already on this route. Only the last cabinet can be clicked again to undo.',
+  drawInOther: 'This cabinet is already connected to {name}.',
+  drawOver: 'A route can carry at most {max} {unit}. (now {cur} + this cabinet {add})',
+  powerCap: 'Max per power line (W)', powerFallback: 'Power per cabinet (W)',
+  powerNoData: 'This panel has no power data. Enter the power of one cabinet.',
+  powerLines: 'Power lines', powerBusiest: 'busiest', notConnected: 'Not connected', incPower: 'Power line plan',
   savedProjects: 'Saved projects', noSaved: 'No saved projects.', open: 'Open', updated: 'Updated',
   confirmNew: 'The current project is auto-saved. Start a new project?', importError: 'Could not read the file.',
   exportTitle: 'Export report', format: 'Format', include: 'Include', incResults: 'Results table', incPlan: 'Plan', incCabling: 'Cabling plot', inc3d: '3D image', incSlices: 'Slice table',
@@ -170,6 +196,8 @@ let current = 'ko';
 export function setLang(l) { current = DICTS[l] ? l : 'ko'; document.documentElement.lang = current; }
 export function getLang() { return current; }
 export function t(key) { return (DICTS[current] && DICTS[current][key]) ?? ko[key] ?? key; }
+// {이름} 자리에 값을 넣는다
+export function tf(key, vars = {}) { return t(key).replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)); }
 export function fmtNum(n, digits = 0) {
   if (n === null || n === undefined || !Number.isFinite(n)) return '—';
   return n.toLocaleString(current === 'ko' ? 'ko-KR' : 'en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });

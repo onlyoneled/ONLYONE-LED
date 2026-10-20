@@ -43,7 +43,9 @@ export function newScreen(type = 'main', idx = 1, panelId = DEFAULT_PANEL_ID) {
     mix: { on: false, smallId: pid('outdoor', '500x500', '3.9'), bigId: pid('outdoor', '500x1000', '3.9'), wM: 4, hM: 3.5, stockSmall: '', stockBig: '', goal: 'fewest', band: 'bottom', confirmed: false },
     cabs: [], edited: false,
     numbering: { dir: 'v', pattern: 'zigzag', start: 'bl' },
-    cabling: { mode: 'auto', capacity: DEFAULT_PORT_PX, counts: [] },
+    cabling: { mode: 'auto', capacity: DEFAULT_PORT_PX, counts: [], routes: [] },
+    // 전원선: 직접 그린 배선, 전원선 1개당 최대 W. fallbackW = 소비전력 정보가 없는 캐비닛에 쓸 값
+    power: { capacity: 3000, routes: [], fallbackW: '' },
     pos: { x: (idx - 1) * 5000, y: 0, z: 0, tilt: 0, yaw: 0 },
     canvas: { x: 0, y: 0 },
   };
@@ -86,6 +88,9 @@ export function regen(screen, panels) {
     screen.mixInfo = null;
   }
   screen.edited = false;
+  // 캐비닛이 새로 만들어지면 직접 그린 배선은 비운다 (배선 개수는 유지)
+  if (screen.cabling && screen.cabling.routes) screen.cabling.routes = screen.cabling.routes.map(() => ({ ids: [] }));
+  if (screen.power && screen.power.routes) screen.power.routes = screen.power.routes.map(() => ({ ids: [] }));
 }
 
 export function normalizeProject(p) {
@@ -93,7 +98,7 @@ export function normalizeProject(p) {
   const out = { ...base, ...p, canvas: { ...base.canvas, ...(p.canvas || {}) } };
   out.screens = (p.screens || []).map((s, i) => {
     const d = newScreen(s.type || 'main', i + 1);
-    return { ...d, ...s, mix: { ...d.mix, ...(s.mix || {}) }, numbering: { ...d.numbering, ...(s.numbering || {}) }, cabling: { ...d.cabling, ...(s.cabling || {}) }, pos: { ...d.pos, ...(s.pos || {}) }, canvas: { ...d.canvas, ...(s.canvas || {}) } };
+    return { ...d, ...s, mix: { ...d.mix, ...(s.mix || {}) }, numbering: { ...d.numbering, ...(s.numbering || {}) }, cabling: { ...d.cabling, ...(s.cabling || {}) }, power: { ...d.power, ...(s.power || {}) }, pos: { ...d.pos, ...(s.pos || {}) }, canvas: { ...d.canvas, ...(s.canvas || {}) } };
   });
   if (!out.screens.length) out.screens = base.screens;
   if (!out.screens.find((s) => s.id === out.activeId)) out.activeId = out.screens[0].id;

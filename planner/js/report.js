@@ -118,6 +118,14 @@ export async function buildPages(ctx) {
     if (inc.cabling && s.cableSvg) { try { fitDraw(g, await svgToImage(s.cableSvg), right, both ? top + avail / 2 + 10 : top, rw, both ? avail / 2 - 10 : avail); } catch { /* skip */ } }
     if (inc.cabling && s.portRows && s.portRows.length) gridTable(g, s.portHead, s.portRows.slice(0, 14), M, y + 30, [120, 160, 240]);
     pages.push(cv);
+    // 전원선 배선도가 있으면 화면마다 한 쪽 더
+    if (inc.power && s.powerSvg) {
+      const pg = newPage(ctx);
+      heading(pg.g, `${s.title} · ${ctx.t('incPower')}`, M, 160);
+      if (s.powerRows.length) gridTable(pg.g, s.powerHead, s.powerRows.slice(0, 20), M, 185, [140, 160, 220]);
+      try { fitDraw(pg.g, await svgToImage(s.powerSvg), M + 560, 130, PAGE_W - M * 2 - 560, PAGE_H - 220); } catch { /* skip */ }
+      pages.push(pg.cv);
+    }
   }
   if (inc.slices && ctx.slices && ctx.slices.rows.length) {
     const per = 26;

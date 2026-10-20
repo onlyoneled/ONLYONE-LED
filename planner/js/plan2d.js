@@ -2,12 +2,14 @@
 import { cabDims, bbox, curvature } from './engine.js';
 
 export const PORT_COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d', '#ea580c', '#4f46e5', '#0d9488', '#be123c'];
+// 전원선은 데이터 배선과 헷갈리지 않게 따뜻한 색부터 쓴다
+export const POWER_COLORS = ['#ea580c', '#9333ea', '#0d9488', '#be123c', '#ca8a04', '#0369a1', '#4d7c0f', '#db2777', '#c2410c', '#4f46e5'];
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const fmtM = (mm) => { const m = mm / 1000; return (Math.round(m * 100) / 100).toString(); };
 
 function edges(vals) { return [...new Set(vals.map((v) => Math.round(v)))].sort((a, b) => a - b); }
 
-// 도면 SVG. opts: { mode:'cabs'|'cable', dims, nums, labels:{id:'1'}, portOf:{id:{n,i}}, ports, order, pxMap, slots:[{x,y,w,h}], selected:Set }
+// 도면 SVG. opts: { mode:'cabs'|'cable'|'power', prefix, palette, loadLabel(port), activeN, lastId, dims, nums, labels:{id:'1'}, portOf:{id:{n,i}}, ports, order, pxMap, slots:[{x,y,w,h}], selected:Set }
 export function planSvg(cabs, panels, opts = {}) {
   const b = bbox(cabs, panels);
   const unit = Math.max(b.w, b.h, 500);
@@ -26,38 +28,45 @@ export function planSvg(cabs, panels, opts = {}) {
     parts.push(`<g class="slot" data-slot="${s.x},${s.y}"><rect x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" fill="var(--slot-fill)" stroke="var(--accent)" stroke-width="${sw}" stroke-dasharray="${sw * 4} ${sw * 3}"/><text x="${s.x + s.w / 2}" y="${s.y + s.h / 2}" font-size="${fs * 1.6}" fill="var(--accent)" text-anchor="middle" dominant-baseline="central">+</text></g>`);
   }
 
+  // 배선 보기(cable)·전원선 보기(power): 같은 방식으로 그리고 색과 앞글자만 다르다
+  const wired = (opts.mode === 'cable' || opts.mode === 'power') && opts.portOf;
+  const palette = opts.palette || PORT_COLORS;
+  const prefix = opts.prefix || 'P';
   const panelIds = [...new Set(cabs.map((c) => c.p))];
   for (const c of cabs) {
     const d = cabDims(c, panels[c.p]);
-    const port = opts.mode === 'cable' && opts.portOf ? opts.portOf[c.id] : null;
-    const color = port ? PORT_COLORS[(port.n - 1) % PORT_COLORS.length] : null;
+    const port = wired ? opts.portOf[c.id] : null;
+    const color = port ? palette[(port.n - 1) % palette.length] : null;
     const alt = panelIds.length > 1 && panelIds.indexOf(c.p) > 0;
     const fill = color ? color + '22' : (alt ? 'var(--cab-alt)' : 'var(--cab)');
     const stroke = color || 'var(--cab-line)';
     const sel = opts.selected && opts.selected.has(c.id);
+    const last = opts.lastId === c.id;
     parts.push(`<g class="cab${sel ? ' sel' : ''}" data-cab="${c.id}"><rect x="${c.x}" y="${c.y}" width="${d.w}" height="${d.h}" fill="${fill}" stroke="${sel ? 'var(--accent)' : stroke}" stroke-width="${sel ? sw * 3 : sw}"/>`);
+    if (last) parts.push(`<rect x="${c.x + sw * 3}" y="${c.y + sw * 3}" width="${d.w - sw * 6}" height="${d.h - sw * 6}" fill="none" stroke="${color || 'var(--accent)'}" stroke-width="${sw * 3}" stroke-dasharray="${sw * 5} ${sw * 3}"/>`);
     let label = null;
-    if (opts.mode === 'cable' && port) label = `P${port.n}:${String(port.i).padStart(2, '0')}`;
+    if (wired && port) label = `${prefix}${port.n}:${String(port.i).padStart(2, '0')}`;
     else if (opts.nums && opts.labels) label = opts.labels[c.id];
     if (label) {
-      const f = opts.mode === 'cable' ? fs * 0.62 : fs;
+      const f = wired ? fs * 0.62 : fs;
       parts.push(`<text x="${c.x + d.w / 2}" y="${c.y + d.h / 2}" font-size="${f}" fill="${color || 'var(--ink)'}" text-anchor="middle" dominant-baseline="central" font-weight="600">${esc(label)}</text>`);
     }
     if (c.rot) parts.push(`<text x="${c.x + d.w - fs * 0.3}" y="${c.y + fs * 0.7}" font-size="${fs * 0.55}" fill="var(--mute)" text-anchor="end">↻</text>`);
     parts.push('</g>');
   }
 
-  // 결선 경로
-  if (opts.mode === 'cable' && opts.ports) {
+  // 배선 경로와 화살표, 시작점(IN)과 배선별 합계
+  if (wired && opts.ports) {
     const center = {};
     for (const c of cabs) { const d = cabDims(c, panels[c.p]); center[c.id] = [c.x + d.w / 2, c.y + d.h / 2]; }
     for (const p of opts.ports) {
-      const color = PORT_COLORS[(p.n - 1) % PORT_COLORS.length];
+      const color = palette[(p.n - 1) % palette.length];
       const pts = p.ids.map((id) => center[id]).filter(Boolean);
       if (!pts.length) continue;
+      const dim = opts.activeN && opts.activeN !== p.n ? ' opacity=".35"' : '';
       const off = fs * 0.75;
-      const path = pts.map(([x, y]) => `${x},${y + off}`).join(' ');
-      parts.push(`<polyline points="${path}" fill="none" stroke="${color}" stroke-width="${sw * 2.2}" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>`);
+      parts.push(`<g pointer-events="none"${dim}>`);
+      if (pts.length > 1) parts.push(`<polyline points="${pts.map(([x, y]) => `${x},${y + off}`).join(' ')}" fill="none" stroke="${color}" stroke-width="${sw * 2.2}" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>`);
       for (let i = 1; i < pts.length; i++) {
         const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
         const mx = (ax + bx) / 2, my = (ay + by) / 2 + off;
@@ -65,7 +74,16 @@ export function planSvg(cabs, panels, opts = {}) {
         parts.push(`<path d="M${-fs * 0.22},${-fs * 0.18} L${fs * 0.2},0 L${-fs * 0.22},${fs * 0.18}" transform="translate(${mx},${my}) rotate(${ang})" fill="none" stroke="${color}" stroke-width="${sw * 2}"/>`);
       }
       const [sx, sy] = pts[0];
-      parts.push(`<g><circle cx="${sx}" cy="${sy + off}" r="${fs * 0.42}" fill="${color}"/><text x="${sx}" y="${sy + off}" font-size="${fs * 0.36}" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">IN</text></g>`);
+      parts.push(`<circle cx="${sx}" cy="${sy + off}" r="${fs * 0.42}" fill="${color}"/><text x="${sx}" y="${sy + off}" font-size="${fs * 0.36}" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">IN</text>`);
+      if (opts.loadLabel) {
+        // 시작점 아래에 배선 합계를 색 상자로 표시
+        const raw = opts.loadLabel(p);
+        const lf = fs * 0.5, lw = raw.length * lf * 0.62 + lf * 1.2, lh = lf * 1.6;
+        const ty = sy + off + fs * 0.55;
+        const bg = p.over ? '#dc2626' : color;
+        parts.push(`<rect x="${sx - lw / 2}" y="${ty}" width="${lw}" height="${lh}" rx="${lh / 2}" fill="${bg}"/><text x="${sx}" y="${ty + lh / 2}" font-size="${lf}" fill="#fff" text-anchor="middle" dominant-baseline="central" font-weight="700">${esc(raw)}</text>`);
+      }
+      parts.push('</g>');
     }
   }
 
